@@ -27,8 +27,8 @@ export default function BottomNav() {
             onClick={() => navigate(path)}
             className={`bottom-nav-item ${isActive ? "active" : ""}`}
           >
-            <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-xs font-medium">{label}</span>
+            <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+            <span className="text-[10px] font-medium">{label}</span>
           </button>
         );
       })}
