@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Zap, Droplet, Bath, MapPin } from "lucide-react";
+import { ArrowLeft, Zap, Droplet, Bath, MapPin, Sun, SquareStack, Fence, BatteryCharging, Car, Wrench } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import Button from "@/components/shared/Button";
 import { useJob } from "@/hooks/useJob";
@@ -8,14 +8,19 @@ import { useChecklist } from "@/hooks/useChecklist";
 import { JobType, Jurisdiction } from "@/types";
 
 const JOB_TYPES: { type: JobType; label: string; icon: typeof Zap; description: string }[] = [
+  { type: "AC_HVAC_CHANGEOUT", label: "AC/HVAC Changeout", icon: Sun, description: "Like-for-like system replacement" },
+  { type: "WATER_HEATER", label: "Water Heater", icon: Droplet, description: "Tank or tankless installation" },
+  { type: "RE_ROOFING", label: "Re-Roofing", icon: SquareStack, description: "Shingle, tile, or metal roofing" },
   { type: "ELECTRICAL_PANEL", label: "Electrical Panel", icon: Zap, description: "Panel upgrades and replacements" },
-  { type: "WATER_HEATER", label: "Water Heater", icon: Droplet, description: "Installation and replacement" },
-  { type: "BATH_REMODEL", label: "Bath Remodel", icon: Bath, description: "Bathroom renovation projects" },
+  { type: "WINDOW_DOOR_REPLACEMENT", label: "Window/Door", icon: SquareStack, description: "Impact windows and entry doors" },
+  { type: "POOL_BARRIER", label: "Pool Barrier", icon: Fence, description: "Safety fence or enclosure" },
+  { type: "GENERATOR_INSTALL", label: "Generator", icon: BatteryCharging, description: "Standby generator installation" },
+  { type: "EV_CHARGER", label: "EV Charger", icon: Car, description: "Level 2 charging station" },
+  { type: "SMALL_BATH_REMODEL", label: "Bath Remodel", icon: Bath, description: "Small bathroom renovation" },
 ];
 
 const JURISDICTIONS: { code: Jurisdiction; label: string }[] = [
   { code: "PINELLAS", label: "Pinellas County" },
-  { code: "TAMPA", label: "City of Tampa" },
 ];
 
 export default function NewJobPage() {

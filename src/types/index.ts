@@ -1,7 +1,39 @@
-// Job Types
-export type JobType = "ELECTRICAL_PANEL" | "WATER_HEATER" | "BATH_REMODEL";
-export type Jurisdiction = "PINELLAS" | "TAMPA";
+// Job Types - Top 9 Pinellas County Permits
+export type JobType = 
+  | "AC_HVAC_CHANGEOUT"
+  | "WATER_HEATER"
+  | "RE_ROOFING"
+  | "ELECTRICAL_PANEL"
+  | "WINDOW_DOOR_REPLACEMENT"
+  | "POOL_BARRIER"
+  | "GENERATOR_INSTALL"
+  | "EV_CHARGER"
+  | "SMALL_BATH_REMODEL";
+
+export type Jurisdiction = "PINELLAS";
 export type JobStatus = "IN_PROGRESS" | "READY_FOR_PREVIEW";
+
+// Legal Source Types
+export interface LegalSource {
+  label: string;
+  url: string;
+  description: string;
+  lastUpdated?: string;
+}
+
+// Flowchart Types
+export type FlowchartNodeType = "start" | "decision" | "action" | "inspection" | "end";
+export type FlowchartNodeStatus = "pending" | "current" | "complete" | "skipped";
+
+export interface FlowchartNode {
+  id: string;
+  label: string;
+  type: FlowchartNodeType;
+  status: FlowchartNodeStatus;
+  legalSource?: LegalSource;
+  nextNodes?: { [condition: string]: string } | string;
+  pinellasSpecific?: boolean;
+}
 
 export interface Job {
   id: string;
@@ -96,6 +128,7 @@ export interface QuestionStep {
   followUp?: {
     [value: string]: string;
   };
+  legalSource?: LegalSource;
 }
 
 export interface ChecklistQuestions {

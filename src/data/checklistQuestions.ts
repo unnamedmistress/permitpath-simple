@@ -335,101 +335,169 @@ const WATER_HEATER_QUESTIONS: { [jurisdiction: string]: ChecklistQuestions } = {
   }
 };
 
-// Questions for Bathroom Remodel permits
-const BATH_REMODEL_QUESTIONS: { [jurisdiction: string]: ChecklistQuestions } = {
+// Questions for Small Bathroom Remodel permits - Pinellas County
+const SMALL_BATH_REMODEL_QUESTIONS: { [jurisdiction: string]: ChecklistQuestions } = {
   PINELLAS: {
-    "Scope of Work": [
+    "Scope Assessment": [
       {
         id: "scope-type",
-        intro: "Let's figure out what work you're doing. This determines which inspections you'll need! 🛁",
-        question: "What are you changing in the bathroom?",
+        intro: "Let's figure out your bathroom project! I'll ask a few questions to determine what permits you need. 🛁",
+        question: "What work are you doing in this bathroom?",
         options: [
-          { label: "Fixtures only (sink, toilet, tub)", value: "fixtures" },
-          { label: "Moving plumbing", value: "plumbing" },
-          { label: "Adding/moving electrical", value: "electrical" },
+          { label: "Just cosmetic (paint, mirror, towel bars)", value: "cosmetic" },
+          { label: "Replacing fixtures in same spots", value: "fixtures_same" },
+          { label: "Moving plumbing to new locations", value: "plumbing_move" },
+          { label: "Adding or moving electrical", value: "electrical" },
           { label: "Full gut remodel", value: "full" }
         ],
-        field: "scopeType"
+        field: "scopeType",
+        legalSource: {
+          label: "FBC Section 105.2 - Work Exempt from Permit",
+          url: "https://codes.iccsafe.org/content/FLBC2023P1/chapter-1-scope-and-administration#FLBC2023P1_Ch01_Sec105.2",
+          description: "Lists work that is exempt from building permits, including minor repairs and cosmetic changes."
+        }
       },
       {
-        id: "scope-fixtures",
-        question: "Which fixtures are you replacing or adding?",
+        id: "water-damage",
+        question: "Is this repair work from water damage?",
         options: [
-          { label: "Toilet", value: "toilet" },
-          { label: "Sink/vanity", value: "sink" },
-          { label: "Tub or shower", value: "tub_shower" },
-          { label: "All of the above", value: "all" }
+          { label: "Yes, had a leak or flood", value: "yes" },
+          { label: "No, just upgrading", value: "no" }
         ],
-        field: "fixtures"
+        field: "waterDamage"
+      }
+    ],
+    "Plumbing Work": [
+      {
+        id: "fixture-changes",
+        intro: "Let's document any plumbing changes. 🔧",
+        question: "Are you changing any plumbing fixtures?",
+        options: [
+          { label: "Replacing toilet (same spot)", value: "toilet_same" },
+          { label: "Replacing sink/vanity (same spot)", value: "sink_same" },
+          { label: "Moving toilet or sink to new location", value: "moving" },
+          { label: "Adding new fixture", value: "adding" },
+          { label: "No plumbing changes", value: "none" }
+        ],
+        field: "fixtureChanges",
+        legalSource: {
+          label: "Florida Plumbing Code",
+          url: "https://codes.iccsafe.org/content/FLPC2023P1",
+          description: "Requirements for plumbing fixtures, drains, water supply, and venting systems."
+        }
+      },
+      {
+        id: "drain-work",
+        question: "Does this involve cutting into the floor or walls for new drain lines?",
+        options: [
+          { label: "Yes, new drain routing", value: "yes" },
+          { label: "No, using existing drains", value: "no" }
+        ],
+        field: "drainWork"
       }
     ],
     "Electrical Work": [
       {
-        id: "elec-work",
+        id: "electrical-scope",
         intro: "Let's check on the electrical side of things. ⚡",
-        question: "Are you doing any electrical work?",
+        question: "What electrical work is involved?",
         options: [
-          { label: "Adding outlets", value: "outlets" },
-          { label: "New lighting", value: "lighting" },
-          { label: "Exhaust fan", value: "fan" },
-          { label: "No electrical work", value: "none" }
+          { label: "None - keeping existing", value: "none" },
+          { label: "Replacing light fixture (same wiring)", value: "light_replace" },
+          { label: "Adding new outlet", value: "new_outlet" },
+          { label: "Installing exhaust fan", value: "exhaust_fan" },
+          { label: "Adding heated floors", value: "heated_floor" }
         ],
-        field: "electricalWork"
+        field: "electricalScope",
+        legalSource: {
+          label: "NEC Article 210.8 - GFCI Protection",
+          url: "https://www.nfpa.org/codes-and-standards/nfpa-70-standard-development/70",
+          description: "Requires GFCI protection for outlets in bathrooms and other wet locations."
+        }
       },
       {
-        id: "gfci",
-        question: "Will outlets near water have GFCI protection?",
+        id: "gfci-check",
+        question: "Are all outlets near water GFCI protected?",
         options: [
-          { label: "Yes", value: "yes" },
-          { label: "Not sure what that is", value: "explain" },
-          { label: "No electrical near water", value: "na" }
+          { label: "Yes, they have Test/Reset buttons", value: "yes" },
+          { label: "Not sure - I'll take a photo", value: "photo" },
+          { label: "No GFCI currently", value: "no" }
         ],
         field: "hasGfci",
         followUp: {
-          explain: "GFCI outlets have 'Test' and 'Reset' buttons — they protect you from shocks near water. They're required in bathrooms!"
+          no: "GFCI outlets are required by code in all bathrooms. This will need to be addressed as part of your project."
+        }
+      }
+    ],
+    "Drywall Repairs": [
+      {
+        id: "drywall-scope",
+        intro: "Let's document any drywall work. 🔨",
+        question: "Do you need to repair or replace drywall?",
+        options: [
+          { label: "No drywall work", value: "none" },
+          { label: "Small patch repair (under 4 sq ft)", value: "small_patch" },
+          { label: "Replacing one wall section", value: "one_wall" },
+          { label: "Multiple walls or ceiling", value: "multiple" }
+        ],
+        field: "drywallScope"
+      },
+      {
+        id: "drywall-exposure",
+        question: "Will the drywall work expose any plumbing or electrical?",
+        options: [
+          { label: "Yes, pipes/wires will be visible", value: "yes" },
+          { label: "No, just surface patching", value: "no" },
+          { label: "Not sure", value: "unknown" }
+        ],
+        field: "exposesUtilities",
+        followUp: {
+          yes: "If plumbing or electrical will be exposed, those systems need inspection before closing the wall."
         }
       }
     ],
     "Ventilation": [
       {
-        id: "vent-fan",
+        id: "vent-type",
         intro: "Bathrooms need proper ventilation to prevent mold. 💨",
-        question: "Does the bathroom have an exhaust fan?",
+        question: "How is the bathroom ventilated?",
         options: [
-          { label: "Yes, keeping existing", value: "existing" },
-          { label: "Yes, installing new", value: "new" },
-          { label: "No fan (has window)", value: "window" },
+          { label: "Has window that opens", value: "window" },
+          { label: "Has exhaust fan to outside", value: "fan_exterior" },
+          { label: "Fan vents to attic", value: "fan_attic" },
           { label: "No fan, no window", value: "none" }
         ],
-        field: "ventilation"
-      }
-    ]
-  },
-  TAMPA: {
-    "Scope of Work": [
-      {
-        id: "scope-type",
-        intro: "What's the plan for your bathroom? 🛁",
-        question: "What kind of work are you doing?",
-        options: [
-          { label: "Just replacing fixtures", value: "fixtures" },
-          { label: "Moving plumbing around", value: "plumbing" },
-          { label: "Full remodel", value: "full" }
-        ],
-        field: "scopeType"
+        field: "ventilationType",
+        legalSource: {
+          label: "FBC Residential R303 - Ventilation",
+          url: "https://codes.iccsafe.org/content/FLRC2023P1/chapter-3-building-planning#FLRC2023P1_Ch03_SecR303",
+          description: "Requirements for bathroom ventilation including exhaust fan CFM ratings."
+        },
+        followUp: {
+          fan_attic: "Venting to the attic is not code compliant. The exhaust must vent to the exterior.",
+          none: "A bathroom without a window requires a mechanical exhaust fan vented to the exterior."
+        }
       }
     ],
-    "Plumbing": [
+    "NOC Requirements": [
       {
-        id: "plumb-changes",
-        intro: "Let's document the plumbing changes. 🔧",
-        question: "Are you moving any drains or water lines?",
+        id: "project-value",
+        intro: "Almost done! Let's check if you need a Notice of Commencement. 📄",
+        question: "What's the estimated total project value?",
         options: [
-          { label: "Yes", value: "yes" },
-          { label: "No, same locations", value: "no" },
-          { label: "Not sure", value: "unknown" }
+          { label: "Under $2,500", value: "under_2500" },
+          { label: "$2,500 - $5,000", value: "2500_5000" },
+          { label: "Over $5,000", value: "over_5000" }
         ],
-        field: "plumbingChanges"
+        field: "projectValue",
+        legalSource: {
+          label: "Florida Statute 713.13 - Notice of Commencement",
+          url: "https://www.flsenate.gov/Laws/Statutes/2023/713.13",
+          description: "Requires recording a Notice of Commencement for construction projects over $2,500."
+        },
+        followUp: {
+          over_5000: "You'll need to record a Notice of Commencement with the Pinellas County Clerk before starting work."
+        }
       }
     ]
   }
@@ -440,14 +508,13 @@ export function getChecklistQuestions(
   jobType: string,
   jurisdiction: string
 ): ChecklistQuestions {
-  const jobTypeKey = jobType as keyof typeof questionsByJobType;
-  const questionsByJobType = {
+  const questionsByJobType: Record<string, { [jurisdiction: string]: ChecklistQuestions }> = {
     ELECTRICAL_PANEL: ELECTRICAL_PANEL_QUESTIONS,
     WATER_HEATER: WATER_HEATER_QUESTIONS,
-    BATH_REMODEL: BATH_REMODEL_QUESTIONS
+    SMALL_BATH_REMODEL: SMALL_BATH_REMODEL_QUESTIONS
   };
 
-  const questionsForType = questionsByJobType[jobTypeKey];
+  const questionsForType = questionsByJobType[jobType];
   if (!questionsForType) {
     console.warn(`No questions found for job type: ${jobType}`);
     return {};

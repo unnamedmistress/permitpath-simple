@@ -1,50 +1,84 @@
 import { useState, useCallback } from "react";
 import { ChecklistItem, ChecklistItemStatus, JobType, Jurisdiction } from "@/types";
 
-// Checklist templates per job type and jurisdiction
+// Checklist templates per job type and jurisdiction (Pinellas-focused)
 const CHECKLIST_TEMPLATES: Record<JobType, Record<Jurisdiction, Omit<ChecklistItem, "id" | "jobId">[]>> = {
-  ELECTRICAL_PANEL: {
+  AC_HVAC_CHANGEOUT: {
     PINELLAS: [
-      { title: "Panel Specifications", description: "Confirm main panel amperage, manufacturer, and number of circuits", order: 1, status: "PENDING", isConfirmed: false },
-      { title: "Service Entrance", description: "Document service entrance cable size and type (e.g., 2/0 aluminum)", order: 2, status: "PENDING", isConfirmed: false },
-      { title: "Grounding System", description: "Verify grounding electrode conductor size and connections", order: 3, status: "PENDING", isConfirmed: false },
-      { title: "Load Calculation", description: "Provide NEC Article 220 load calculation worksheet", order: 4, status: "PENDING", isConfirmed: false },
-      { title: "Permit Application", description: "Complete electrical permit application form", order: 5, status: "PENDING", isConfirmed: false },
-    ],
-    TAMPA: [
-      { title: "Panel Information", description: "Document panel brand, amperage rating, and circuit count", order: 1, status: "PENDING", isConfirmed: false },
-      { title: "Meter Base", description: "Confirm meter base compatibility and FPL requirements", order: 2, status: "PENDING", isConfirmed: false },
-      { title: "Main Disconnect", description: "Verify main disconnect location and accessibility", order: 3, status: "PENDING", isConfirmed: false },
-      { title: "Bonding", description: "Document bonding of gas, water, and CSST if applicable", order: 4, status: "PENDING", isConfirmed: false },
-    ],
+      { title: "Equipment Specifications", description: "Document system type, tonnage, and SEER2 rating", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Location & Ductwork", description: "Verify installation location and ductwork condition", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Electrical Requirements", description: "Confirm electrical service and disconnect specs", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Permit Documents", description: "Complete express permit application", order: 4, status: "PENDING", isConfirmed: false },
+    ]
   },
   WATER_HEATER: {
     PINELLAS: [
-      { title: "Unit Specifications", description: "Record water heater capacity, type, and energy source", order: 1, status: "PENDING", isConfirmed: false },
-      { title: "T&P Valve", description: "Confirm temperature and pressure relief valve installation", order: 2, status: "PENDING", isConfirmed: false },
-      { title: "Drain Pan", description: "Verify drain pan installation if located in attic or living space", order: 3, status: "PENDING", isConfirmed: false },
-      { title: "Venting", description: "Document venting configuration for gas units", order: 4, status: "PENDING", isConfirmed: false },
-    ],
-    TAMPA: [
-      { title: "Equipment Info", description: "Record make, model, and gallon capacity", order: 1, status: "PENDING", isConfirmed: false },
-      { title: "Safety Devices", description: "Confirm T&P valve and expansion tank if required", order: 2, status: "PENDING", isConfirmed: false },
-      { title: "Location", description: "Document installation location and clearances", order: 3, status: "PENDING", isConfirmed: false },
-    ],
+      { title: "Unit Specifications", description: "Record water heater type, capacity, and fuel source", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Installation Location", description: "Document location and drain pan requirements", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Venting (Gas Units)", description: "Verify venting configuration for gas water heaters", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Permit Documents", description: "Complete express permit application", order: 4, status: "PENDING", isConfirmed: false },
+    ]
   },
-  BATH_REMODEL: {
+  RE_ROOFING: {
     PINELLAS: [
-      { title: "Scope of Work", description: "Define all changes: fixtures, electrical, plumbing, structural", order: 1, status: "PENDING", isConfirmed: false },
-      { title: "Plumbing Changes", description: "Document any fixture relocations or additions", order: 2, status: "PENDING", isConfirmed: false },
-      { title: "Electrical", description: "Confirm GFCI protection and ventilation fan specs", order: 3, status: "PENDING", isConfirmed: false },
-      { title: "Ventilation", description: "Document exhaust fan CFM rating and ducting", order: 4, status: "PENDING", isConfirmed: false },
-      { title: "Floor Plan", description: "Provide dimensioned floor plan showing layout", order: 5, status: "PENDING", isConfirmed: false },
-    ],
-    TAMPA: [
-      { title: "Project Scope", description: "List all work items and materials", order: 1, status: "PENDING", isConfirmed: false },
-      { title: "Fixtures", description: "Document all fixture types and locations", order: 2, status: "PENDING", isConfirmed: false },
-      { title: "Electrical Requirements", description: "Confirm circuits for outlets, lighting, and fan", order: 3, status: "PENDING", isConfirmed: false },
-    ],
+      { title: "Roof Type & Material", description: "Select roofing material and document existing conditions", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Deck Fastening", description: "Document deck type and fastening method for mitigation affidavit", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Secondary Water Barrier", description: "Specify underlayment and water barrier installation", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Inspections Required", description: "Understand dry-in and final inspection requirements", order: 4, status: "PENDING", isConfirmed: false },
+    ]
   },
+  ELECTRICAL_PANEL: {
+    PINELLAS: [
+      { title: "Panel Specifications", description: "Confirm main panel amperage, manufacturer, and number of circuits", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Service Entrance", description: "Document service entrance cable size and type", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Grounding System", description: "Verify grounding electrode conductor size and connections", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Load Calculation", description: "Provide NEC Article 220 load calculation worksheet", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Permit Documents", description: "Complete electrical permit application form", order: 5, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  WINDOW_DOOR_REPLACEMENT: {
+    PINELLAS: [
+      { title: "Product Selection", description: "Verify Florida Product Approval numbers for windows/doors", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Opening Layout", description: "Document size and location of each opening", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Impact Rating", description: "Confirm impact rating requirements for wind zone", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Permit Documents", description: "Complete window/door replacement form", order: 4, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  POOL_BARRIER: {
+    PINELLAS: [
+      { title: "Barrier Type", description: "Select fence, screen enclosure, or other barrier type", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Gate & Latch", description: "Verify self-closing, self-latching gate requirements", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Height & Spacing", description: "Confirm barrier height and picket spacing meet code", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Permit Documents", description: "Complete pool barrier permit application", order: 4, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  GENERATOR_INSTALL: {
+    PINELLAS: [
+      { title: "Generator Specifications", description: "Document generator size, fuel type, and transfer switch", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Electrical Load Calc", description: "Prepare load calculation for circuits served", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Fuel Connection", description: "Document gas line size and connection requirements", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Setback & Location", description: "Verify setback distances from openings and property lines", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Permit Documents", description: "Complete generator permit application", order: 5, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  EV_CHARGER: {
+    PINELLAS: [
+      { title: "Charger Level", description: "Determine Level 1 or Level 2 installation", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Electrical Circuit", description: "Document circuit size and panel capacity", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Location", description: "Verify charger mounting location and accessibility", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Permit Documents", description: "Complete express electrical permit", order: 4, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  SMALL_BATH_REMODEL: {
+    PINELLAS: [
+      { title: "Scope Assessment", description: "Determine if permit is required based on work scope", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Plumbing Work", description: "Document fixture changes and drain/supply modifications", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Electrical Work", description: "Verify GFCI protection and exhaust fan requirements", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Drywall Repairs", description: "Assess drywall repair scope and inspection needs", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Ventilation", description: "Confirm exhaust fan CFM and ducting to exterior", order: 5, status: "PENDING", isConfirmed: false },
+      { title: "NOC Requirements", description: "Determine if Notice of Commencement is needed", order: 6, status: "PENDING", isConfirmed: false },
+    ]
+  }
 };
 
 // In-memory storage

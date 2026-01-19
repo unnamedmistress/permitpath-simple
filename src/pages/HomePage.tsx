@@ -1,21 +1,33 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath } from "lucide-react";
+import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, Wrench } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import { useJob } from "@/hooks/useJob";
 import { Job, JobType } from "@/types";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 
 const JOB_ICONS: Record<JobType, typeof Zap> = {
-  ELECTRICAL_PANEL: Zap,
+  AC_HVAC_CHANGEOUT: Sun,
   WATER_HEATER: Droplet,
-  BATH_REMODEL: Bath,
+  RE_ROOFING: SquareStack,
+  ELECTRICAL_PANEL: Zap,
+  WINDOW_DOOR_REPLACEMENT: SquareStack,
+  POOL_BARRIER: Fence,
+  GENERATOR_INSTALL: BatteryCharging,
+  EV_CHARGER: Car,
+  SMALL_BATH_REMODEL: Bath,
 };
 
 const JOB_LABELS: Record<JobType, string> = {
-  ELECTRICAL_PANEL: "Electrical Panel",
+  AC_HVAC_CHANGEOUT: "AC/HVAC Changeout",
   WATER_HEATER: "Water Heater",
-  BATH_REMODEL: "Bath Remodel",
+  RE_ROOFING: "Re-Roofing",
+  ELECTRICAL_PANEL: "Electrical Panel",
+  WINDOW_DOOR_REPLACEMENT: "Window/Door",
+  POOL_BARRIER: "Pool Barrier",
+  GENERATOR_INSTALL: "Generator",
+  EV_CHARGER: "EV Charger",
+  SMALL_BATH_REMODEL: "Bath Remodel",
 };
 
 export default function HomePage() {

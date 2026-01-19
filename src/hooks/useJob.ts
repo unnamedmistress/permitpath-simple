@@ -114,9 +114,15 @@ export function useJob() {
 
 function getJobTitle(jobType: JobType, address?: string): string {
   const typeLabels: Record<JobType, string> = {
-    ELECTRICAL_PANEL: "Panel Upgrade",
+    AC_HVAC_CHANGEOUT: "AC/HVAC Changeout",
     WATER_HEATER: "Water Heater",
-    BATH_REMODEL: "Bath Remodel",
+    RE_ROOFING: "Re-Roofing",
+    ELECTRICAL_PANEL: "Panel Upgrade",
+    WINDOW_DOOR_REPLACEMENT: "Window/Door",
+    POOL_BARRIER: "Pool Barrier",
+    GENERATOR_INSTALL: "Generator",
+    EV_CHARGER: "EV Charger",
+    SMALL_BATH_REMODEL: "Bath Remodel",
   };
   const label = typeLabels[jobType];
   return address ? `${label} - ${address.split(",")[0]}` : label;
