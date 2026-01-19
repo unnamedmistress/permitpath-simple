@@ -13,7 +13,7 @@ export default function PageWrapper({
 }: PageWrapperProps) {
   return (
     <div 
-      className={`min-h-screen bg-background ${hasBottomNav ? "pb-20" : ""} ${className}`}
+      className={`min-h-screen bg-background ${hasBottomNav ? "pb-16" : ""} ${className}`}
     >
       {children}
     </div>

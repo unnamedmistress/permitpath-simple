@@ -149,11 +149,12 @@
 
   /* Bottom navigation */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 flex justify-around items-center safe-area-inset-bottom;
+    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1 flex justify-around items-center;
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
   }
   
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-1 py-2 px-4 rounded-lg transition-colors;
+    @apply flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg transition-colors;
   }
   
   .bottom-nav-item.active {

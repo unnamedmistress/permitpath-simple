@@ -8,6 +8,7 @@ import { useChecklist } from "@/hooks/useChecklist";
 import { JobType, Jurisdiction } from "@/types";
 
 const JOB_TYPES: { type: JobType; label: string; icon: typeof Zap; description: string }[] = [
+  { type: "SMALL_BATH_REMODEL", label: "Bath Remodel", icon: Bath, description: "Small bathroom renovation" },
   { type: "AC_HVAC_CHANGEOUT", label: "AC/HVAC Changeout", icon: Sun, description: "Like-for-like system replacement" },
   { type: "WATER_HEATER", label: "Water Heater", icon: Droplet, description: "Tank or tankless installation" },
   { type: "RE_ROOFING", label: "Re-Roofing", icon: SquareStack, description: "Shingle, tile, or metal roofing" },
@@ -16,7 +17,6 @@ const JOB_TYPES: { type: JobType; label: string; icon: typeof Zap; description: 
   { type: "POOL_BARRIER", label: "Pool Barrier", icon: Fence, description: "Safety fence or enclosure" },
   { type: "GENERATOR_INSTALL", label: "Generator", icon: BatteryCharging, description: "Standby generator installation" },
   { type: "EV_CHARGER", label: "EV Charger", icon: Car, description: "Level 2 charging station" },
-  { type: "SMALL_BATH_REMODEL", label: "Bath Remodel", icon: Bath, description: "Small bathroom renovation" },
 ];
 
 const JURISDICTIONS: { code: Jurisdiction; label: string }[] = [
