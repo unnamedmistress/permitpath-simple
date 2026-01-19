@@ -1,0 +1,200 @@
+import { Job, ChecklistItem, Photo } from "@/types";
+
+interface ExportData {
+  job: Job;
+  checklist: ChecklistItem[];
+  photos: Photo[];
+}
+
+export const generatePermitPackageHtml = (data: ExportData): string => {
+  const { job, checklist, photos } = data;
+
+  const jobTypeLabels: Record<string, string> = {
+    ELECTRICAL_PANEL: "Electrical Panel Upgrade",
+    WATER_HEATER: "Water Heater Installation",
+    BATH_REMODEL: "Bathroom Remodel",
+  };
+
+  const jurisdictionLabels: Record<string, string> = {
+    PINELLAS: "Pinellas County",
+    TAMPA: "City of Tampa",
+  };
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const checklistHtml = checklist
+    .sort((a, b) => a.order - b.order)
+    .map(
+      (item) => `
+      <div class="checklist-item ${item.status === "COMPLETE" ? "complete" : ""}">
+        <div class="status-icon">${item.status === "COMPLETE" ? "✓" : "○"}</div>
+        <div class="item-content">
+          <h4>${item.title}</h4>
+          <p>${item.description}</p>
+          ${item.value ? `<div class="value">${item.value}</div>` : ""}
+        </div>
+      </div>
+    `
+    )
+    .join("");
+
+  const photosHtml = photos
+    .filter((p) => p.status === "COMPLETE")
+    .map(
+      (photo) => `
+      <div class="photo-item">
+        <img src="${photo.url}" alt="Job documentation photo" />
+        ${photo.extractedData ? `<p class="extraction">${JSON.stringify(photo.extractedData)}</p>` : ""}
+      </div>
+    `
+    )
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Permit Package - ${jobTypeLabels[job.jobType] || job.jobType}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fff;
+    }
+    header {
+      border-bottom: 3px solid #1d4ed8;
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    h1 { color: #1d4ed8; font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .meta { color: #666; font-size: 0.9rem; }
+    .meta span { margin-right: 1.5rem; }
+    section { margin-bottom: 2rem; }
+    h2 { 
+      color: #1d4ed8; 
+      font-size: 1.25rem; 
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .checklist-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+    }
+    .checklist-item.complete {
+      background: #f0fdf4;
+      border-color: #22c55e;
+    }
+    .status-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .complete .status-icon { background: #22c55e; color: white; }
+    .item-content h4 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .item-content p { color: #666; font-size: 0.9rem; }
+    .value { 
+      margin-top: 0.5rem; 
+      padding: 0.5rem; 
+      background: #f3f4f6; 
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .photo-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .extraction {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+      color: #666;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    @media print {
+      body { padding: 1rem; }
+      .photo-item { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>${jobTypeLabels[job.jobType] || job.jobType}</h1>
+    <div class="meta">
+      <span><strong>Jurisdiction:</strong> ${jurisdictionLabels[job.jurisdiction] || job.jurisdiction}</span>
+      <span><strong>Date:</strong> ${formatDate(job.createdAt)}</span>
+      ${job.address ? `<span><strong>Address:</strong> ${job.address}</span>` : ""}
+    </div>
+  </header>
+
+  <section>
+    <h2>Permit Requirements Checklist</h2>
+    ${checklistHtml || "<p>No checklist items recorded.</p>"}
+  </section>
+
+  ${
+    photos.length > 0
+      ? `
+  <section>
+    <h2>Documentation Photos</h2>
+    <div class="photos-grid">
+      ${photosHtml}
+    </div>
+  </section>
+  `
+      : ""
+  }
+
+  <footer>
+    <p>Generated by AI Permit Assistant on ${formatDate(new Date())}</p>
+  </footer>
+</body>
+</html>`;
+};
+
+export const downloadHtml = (html: string, filename: string): void => {
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
