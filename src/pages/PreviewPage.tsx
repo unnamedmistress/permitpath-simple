@@ -139,16 +139,16 @@ export default function PreviewPage() {
   return (
     <PageWrapper hasBottomNav={false}>
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 flex items-center justify-between safe-area-inset-top sticky top-0 z-10">
-        <div className="flex items-center gap-3">
+      <header className="bg-card border-b border-border px-3 py-3 flex items-center justify-between safe-area-inset-top sticky top-0 z-10">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(`/wizard/${jobId}`)}
-            className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-1.5 -ml-1 rounded-lg hover:bg-muted transition-colors"
           >
-            <ArrowLeft size={24} className="text-foreground" />
+            <ArrowLeft size={20} className="text-foreground" />
           </button>
           <div>
-            <h1 className="font-semibold text-foreground">Permit Summary</h1>
+            <h1 className="font-semibold text-sm text-foreground">Permit Summary</h1>
             <p className="text-xs text-muted-foreground">
               {completedItems.length} of {checklistItems.length} items complete
             </p>
@@ -157,23 +157,23 @@ export default function PreviewPage() {
       </header>
 
       {/* Content */}
-      <div className="p-4 space-y-6 pb-8">
+      <div className="p-3 space-y-4 pb-6">
         {/* Job Summary Card */}
-        <div className="bg-card rounded-xl border border-border p-5">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <FileText size={24} className="text-primary" />
+        <div className="bg-card rounded-lg border border-border p-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <FileText size={20} className="text-primary" />
             </div>
-            <div className="flex-1">
-              <h2 className="font-semibold text-foreground">
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-sm text-foreground">
                 {JOB_TYPE_LABELS[jobType]}
               </h2>
-              <div className="flex items-center gap-1 mt-1">
-                <MapPin size={14} className="text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Pinellas County</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <MapPin size={12} className="text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">Pinellas County</p>
               </div>
               {currentJob?.address && (
-                <p className="text-sm text-muted-foreground mt-1">{currentJob.address}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{currentJob.address}</p>
               )}
             </div>
           </div>
@@ -181,17 +181,17 @@ export default function PreviewPage() {
 
         {/* Permits You May Need */}
         <section>
-          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Scale size={18} className="text-primary" />
+          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
+            <Scale size={16} className="text-primary" />
             Permits You May Need
           </h3>
-          <div className="bg-card rounded-xl border border-border divide-y divide-border">
+          <div className="bg-card rounded-lg border border-border divide-y divide-border">
             {permitInfo.permits.map((permit, idx) => (
-              <div key={idx} className="p-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <FileText size={16} className="text-primary" />
+              <div key={idx} className="p-3 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <FileText size={14} className="text-primary" />
                 </div>
-                <span className="text-foreground">{permit}</span>
+                <span className="text-sm text-foreground">{permit}</span>
               </div>
             ))}
           </div>
@@ -199,17 +199,17 @@ export default function PreviewPage() {
 
         {/* Required Inspections */}
         <section>
-          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-            <CheckCircle2 size={18} className="text-success" />
+          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
+            <CheckCircle2 size={16} className="text-success" />
             Required Inspections
           </h3>
-          <div className="bg-card rounded-xl border border-border divide-y divide-border">
+          <div className="bg-card rounded-lg border border-border divide-y divide-border">
             {permitInfo.inspections.map((inspection, idx) => (
-              <div key={idx} className="p-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-success font-semibold text-sm">{idx + 1}</span>
+              <div key={idx} className="p-3 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-success font-semibold text-xs">{idx + 1}</span>
                 </div>
-                <span className="text-foreground">{inspection}</span>
+                <span className="text-sm text-foreground">{inspection}</span>
               </div>
             ))}
           </div>
@@ -217,17 +217,17 @@ export default function PreviewPage() {
 
         {/* Forms Needed */}
         <section>
-          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-            <AlertCircle size={18} className="text-warning" />
+          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
+            <AlertCircle size={16} className="text-warning" />
             Forms You'll Need
           </h3>
-          <div className="bg-card rounded-xl border border-border divide-y divide-border">
+          <div className="bg-card rounded-lg border border-border divide-y divide-border">
             {permitInfo.forms.map((form, idx) => (
-              <div key={idx} className="p-4 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
-                  <FileText size={16} className="text-warning" />
+              <div key={idx} className="p-3 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
+                  <FileText size={14} className="text-warning" />
                 </div>
-                <span className="text-foreground">{form}</span>
+                <span className="text-sm text-foreground">{form}</span>
               </div>
             ))}
           </div>
@@ -236,19 +236,19 @@ export default function PreviewPage() {
         {/* Your Answers Summary */}
         {completedItems.length > 0 && (
           <section>
-            <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-success" />
+            <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
+              <CheckCircle2 size={16} className="text-success" />
               Your Answers ({completedItems.length})
             </h3>
             <div className="space-y-2">
               {completedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-success/5 border border-success/20 rounded-lg p-4"
+                  className="bg-success/5 border border-success/20 rounded-lg p-3"
                 >
-                  <h4 className="font-medium text-foreground">{item.title}</h4>
+                  <h4 className="font-medium text-sm text-foreground">{item.title}</h4>
                   {item.value && (
-                    <div className="mt-2 px-3 py-2 bg-card rounded text-sm text-foreground">
+                    <div className="mt-1.5 px-2 py-1.5 bg-card rounded text-xs text-foreground">
                       {item.value}
                     </div>
                   )}
@@ -261,18 +261,18 @@ export default function PreviewPage() {
         {/* Pending Items */}
         {pendingItems.length > 0 && (
           <section>
-            <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-              <AlertCircle size={18} className="text-warning" />
+            <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
+              <AlertCircle size={16} className="text-warning" />
               Still Needed ({pendingItems.length})
             </h3>
             <div className="space-y-2">
               {pendingItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-warning/5 border border-warning/20 rounded-lg p-4"
+                  className="bg-warning/5 border border-warning/20 rounded-lg p-3"
                 >
-                  <h4 className="font-medium text-foreground">{item.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                  <h4 className="font-medium text-sm text-foreground">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
                 </div>
               ))}
             </div>
@@ -282,10 +282,10 @@ export default function PreviewPage() {
         {/* Photos */}
         {photos.length > 0 && (
           <section>
-            <h3 className="font-semibold text-foreground mb-3">
+            <h3 className="font-semibold text-sm text-foreground mb-2">
               Documentation Photos ({photos.length})
             </h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5">
               {photos.filter(p => p.status === "COMPLETE").map((photo) => (
                 <img
                   key={photo.id}
@@ -300,12 +300,12 @@ export default function PreviewPage() {
 
         {/* Legal Sources & Citations */}
         <section>
-          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-            <BookOpen size={18} className="text-primary" />
+          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
+            <BookOpen size={16} className="text-primary" />
             Official Sources & Citations
           </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Click any source below to read the official requirements directly.
+          <p className="text-xs text-muted-foreground mb-3">
+            Tap any source below to read the official requirements.
           </p>
           <div className="space-y-2">
             {relevantSources.map((source) => (
@@ -314,22 +314,22 @@ export default function PreviewPage() {
                 href={source.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block bg-card rounded-xl border border-border p-4 hover:border-primary/50 hover:bg-primary/5 transition-all group"
+                className="block bg-card rounded-lg border border-border p-3 hover:border-primary/50 hover:bg-primary/5 transition-all group"
               >
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <ExternalLink size={18} className="text-primary" />
+                <div className="flex items-start gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <ExternalLink size={14} className="text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    <h4 className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
                       {source.label}
                     </h4>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                       {source.description}
                     </p>
                     {source.lastUpdated && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Last updated: {source.lastUpdated}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Updated: {source.lastUpdated}
                       </p>
                     )}
                   </div>
@@ -340,11 +340,11 @@ export default function PreviewPage() {
         </section>
 
         {/* Action Buttons */}
-        <div className="pt-4 space-y-3">
+        <div className="pt-3 space-y-2">
           <Button
             onClick={() => navigate(`/wizard/${jobId}`)}
             variant="primary"
-            size="lg"
+            size="md"
             className="w-full"
           >
             Continue Editing
@@ -353,19 +353,19 @@ export default function PreviewPage() {
           <Button
             onClick={handleStartOver}
             variant="outline"
-            size="lg"
+            size="md"
             className="w-full"
-            icon={<RotateCcw size={18} />}
+            icon={<RotateCcw size={16} />}
           >
             Start Over
           </Button>
         </div>
 
         {/* Disclaimer */}
-        <div className="bg-muted/50 rounded-xl p-4 mt-6">
-          <p className="text-xs text-muted-foreground text-center">
+        <div className="bg-muted/50 rounded-lg p-3 mt-4">
+          <p className="text-xs text-muted-foreground text-center leading-relaxed">
             <strong>Disclaimer:</strong> This summary is for informational purposes only. 
-            Always verify requirements with Pinellas County Building Services before submitting permit applications.
+            Verify requirements with Pinellas County Building Services before submitting.
           </p>
         </div>
       </div>
