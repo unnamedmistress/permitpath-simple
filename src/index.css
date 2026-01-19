@@ -81,9 +81,9 @@
 }
 
 @layer components {
-  /* Action button styles */
+  /* Compact action button styles for mobile */
   .btn-action {
-    @apply flex-1 py-4 px-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 transition-all active:scale-95;
+    @apply flex-1 py-2 px-3 rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 transition-all active:scale-95;
   }
   
   .btn-photo {
@@ -96,7 +96,7 @@
 
   /* Progress bar */
   .progress-track {
-    @apply h-2 rounded-full;
+    @apply h-1.5 rounded-full;
     background: hsl(var(--progress-bg));
   }
   
@@ -105,22 +105,22 @@
     background: hsl(var(--progress-fill));
   }
 
-  /* Chat bubbles */
+  /* Chat bubbles - compact */
   .chat-bubble-user {
-    @apply rounded-2xl rounded-br-md px-4 py-3 max-w-[85%] ml-auto;
+    @apply rounded-2xl rounded-br-md px-3 py-2 max-w-[85%] ml-auto;
     background: hsl(var(--chat-user));
     color: hsl(var(--chat-user-foreground));
   }
   
   .chat-bubble-ai {
-    @apply rounded-2xl rounded-bl-md px-4 py-3 max-w-[85%];
+    @apply rounded-2xl rounded-bl-md px-3 py-2 max-w-[85%];
     background: hsl(var(--chat-ai));
     color: hsl(var(--chat-ai-foreground));
   }
 
-  /* Checklist items */
+  /* Checklist items - compact */
   .checklist-item {
-    @apply flex items-start gap-3 p-3 rounded-lg border transition-all;
+    @apply flex items-start gap-2 p-2 rounded-lg border transition-all;
   }
   
   .checklist-complete {
@@ -139,22 +139,22 @@
 
   /* Job cards */
   .job-card {
-    @apply bg-card rounded-xl p-4 shadow-sm border border-border transition-all hover:shadow-md active:scale-[0.98];
+    @apply bg-card rounded-xl p-3 shadow-sm border border-border transition-all hover:shadow-md active:scale-[0.98];
   }
 
-  /* Photo thumbnail */
+  /* Photo thumbnail - smaller for mobile */
   .photo-thumb {
-    @apply w-20 h-20 rounded-lg object-cover border-2 border-border flex-shrink-0;
+    @apply w-14 h-14 rounded-lg object-cover border-2 border-border flex-shrink-0;
   }
 
-  /* Bottom navigation */
+  /* Bottom navigation - compact */
   .bottom-nav {
     @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1 flex justify-around items-center;
     padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
   }
   
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg transition-colors;
+    @apply flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-colors;
   }
   
   .bottom-nav-item.active {
@@ -163,6 +163,28 @@
   
   .bottom-nav-item:not(.active) {
     @apply text-muted-foreground;
+  }
+
+  /* Tab switcher for mobile */
+  .tab-switcher {
+    @apply flex bg-muted rounded-lg p-0.5;
+  }
+
+  .tab-button {
+    @apply flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-all;
+  }
+
+  .tab-button.active {
+    @apply bg-card text-foreground shadow-sm;
+  }
+
+  .tab-button:not(.active) {
+    @apply text-muted-foreground;
+  }
+
+  /* Compact header */
+  .compact-header {
+    @apply bg-card border-b border-border px-3 py-2 safe-area-inset-top;
   }
 }
 
@@ -173,5 +195,26 @@
   
   .safe-area-inset-top {
     padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+
+  /* Dynamic viewport height for mobile browsers */
+  .h-screen-safe {
+    height: 100dvh;
+    height: -webkit-fill-available;
+  }
+
+  /* Minimum touch target */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

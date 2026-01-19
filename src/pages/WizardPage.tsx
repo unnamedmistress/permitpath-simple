@@ -29,6 +29,8 @@ export default function WizardPage() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [conversationStarted, setConversationStarted] = useState(false);
+  const [activeTab, setActiveTab] = useState<"chat" | "checklist">("chat");
+  const [photosExpanded, setPhotosExpanded] = useState(false);
 
   // Handle completing a checklist item
   const handleCompleteItem = useCallback((itemId: string, data: Record<string, unknown>) => {
@@ -111,6 +113,7 @@ export default function WizardPage() {
     setIsAiLoading(true);
     await handleChecklistItemClick(item);
     setIsAiLoading(false);
+    setActiveTab("chat"); // Switch to chat when clicking a checklist item
   }, [handleChecklistItemClick]);
 
   const handleAddPhoto = () => {
@@ -134,10 +137,12 @@ export default function WizardPage() {
     
     setPhotos(prev => [...prev, newPhoto]);
     memoryPhotos[jobId] = [...(memoryPhotos[jobId] || []), newPhoto];
+    setPhotosExpanded(true); // Show photos when a new one is added
     
     // Add a message about the photo
     await addMessage("📷 I've uploaded a photo", "user");
     setIsAiLoading(true);
+    setActiveTab("chat"); // Switch to chat to see AI response
     
     // Simulate AI vision analysis
     setTimeout(async () => {
@@ -179,7 +184,7 @@ export default function WizardPage() {
   if (!initialized || jobLoading) {
     return (
       <PageWrapper hasBottomNav={false}>
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen-safe">
           <LoadingSpinner size="lg" text="Loading job..." />
         </div>
       </PageWrapper>
@@ -187,7 +192,7 @@ export default function WizardPage() {
   }
 
   return (
-    <PageWrapper hasBottomNav={false} className="flex flex-col h-screen">
+    <PageWrapper hasBottomNav={false} className="flex flex-col h-screen-safe">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -198,7 +203,7 @@ export default function WizardPage() {
         className="hidden"
       />
       
-      {/* Progress Header - 10vh */}
+      {/* Compact Progress Header */}
       <ProgressHeader
         title={currentJob?.title || "Permit Documentation"}
         progress={progress}
@@ -206,11 +211,47 @@ export default function WizardPage() {
         showMenu
       />
       
-      {/* Main Content - 65vh */}
-      <div className="flex-1 h-[65vh] overflow-hidden">
-        <div className="h-full flex flex-col md:flex-row gap-3 p-3">
-          {/* Chat Panel */}
-          <div className="flex-1 min-h-0 md:w-1/2">
+      {/* Mobile Tab Switcher */}
+      <div className="px-3 py-2 bg-card border-b border-border md:hidden">
+        <div className="tab-switcher">
+          <button 
+            className={`tab-button ${activeTab === "chat" ? "active" : ""}`}
+            onClick={() => setActiveTab("chat")}
+          >
+            💬 Chat
+          </button>
+          <button 
+            className={`tab-button ${activeTab === "checklist" ? "active" : ""}`}
+            onClick={() => setActiveTab("checklist")}
+          >
+            ✓ Checklist ({checklistItems.filter(i => i.status === "COMPLETE").length}/{checklistItems.length})
+          </button>
+        </div>
+      </div>
+      
+      {/* Main Content - Flex grow with overflow hidden */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {/* Mobile: Show active tab only */}
+        <div className="h-full md:hidden">
+          {activeTab === "chat" ? (
+            <ChatPanel
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              onQuickReply={handleQuickReplySelect}
+              quickReplies={quickReplies}
+              isLoading={isAiLoading}
+            />
+          ) : (
+            <ChecklistPanel
+              items={checklistItems}
+              onItemClick={handleChecklistClick}
+            />
+          )}
+        </div>
+        
+        {/* Desktop: Show both panels side by side */}
+        <div className="hidden md:flex h-full gap-3 p-3">
+          <div className="flex-1 min-h-0">
             <ChatPanel
               messages={messages}
               onSendMessage={handleSendMessage}
@@ -219,9 +260,7 @@ export default function WizardPage() {
               isLoading={isAiLoading}
             />
           </div>
-          
-          {/* Checklist Panel */}
-          <div className="flex-1 min-h-0 md:w-1/2">
+          <div className="flex-1 min-h-0">
             <ChecklistPanel
               items={checklistItems}
               onItemClick={handleChecklistClick}
@@ -230,22 +269,27 @@ export default function WizardPage() {
         </div>
       </div>
       
-      {/* Bottom Section - 25vh */}
-      <div className="h-[25vh] min-h-[150px] bg-card border-t border-border flex flex-col">
-        {/* Action Bar */}
+      {/* Bottom Section - Compact with collapsible photos */}
+      <div className="bg-card border-t border-border flex flex-col">
+        {/* Collapsible Photo Gallery */}
+        {photos.length > 0 && (
+          <div className={`overflow-hidden transition-all duration-300 ${photosExpanded ? "max-h-24" : "max-h-0"}`}>
+            <PhotoGallery
+              photos={photos}
+              onDeletePhoto={handleDeletePhoto}
+            />
+          </div>
+        )}
+        
+        {/* Action Bar with photo count */}
         <ActionBar
           onAddPhoto={handleAddPhoto}
           onPreview={handlePreview}
           canPreview={canPreview}
+          photoCount={photos.length}
+          photosExpanded={photosExpanded}
+          onTogglePhotos={() => setPhotosExpanded(!photosExpanded)}
         />
-        
-        {/* Photo Gallery */}
-        <div className="flex-1 overflow-hidden">
-          <PhotoGallery
-            photos={photos}
-            onDeletePhoto={handleDeletePhoto}
-          />
-        </div>
       </div>
     </PageWrapper>
   );

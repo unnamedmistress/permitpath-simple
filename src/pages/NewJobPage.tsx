@@ -9,14 +9,14 @@ import { JobType, Jurisdiction } from "@/types";
 
 const JOB_TYPES: { type: JobType; label: string; icon: typeof Zap; description: string }[] = [
   { type: "SMALL_BATH_REMODEL", label: "Bath Remodel", icon: Bath, description: "Small bathroom renovation" },
-  { type: "AC_HVAC_CHANGEOUT", label: "AC/HVAC Changeout", icon: Sun, description: "Like-for-like system replacement" },
-  { type: "WATER_HEATER", label: "Water Heater", icon: Droplet, description: "Tank or tankless installation" },
-  { type: "RE_ROOFING", label: "Re-Roofing", icon: SquareStack, description: "Shingle, tile, or metal roofing" },
-  { type: "ELECTRICAL_PANEL", label: "Electrical Panel", icon: Zap, description: "Panel upgrades and replacements" },
-  { type: "WINDOW_DOOR_REPLACEMENT", label: "Window/Door", icon: SquareStack, description: "Impact windows and entry doors" },
+  { type: "AC_HVAC_CHANGEOUT", label: "AC/HVAC", icon: Sun, description: "Like-for-like replacement" },
+  { type: "WATER_HEATER", label: "Water Heater", icon: Droplet, description: "Tank or tankless install" },
+  { type: "RE_ROOFING", label: "Re-Roofing", icon: SquareStack, description: "Shingle, tile, or metal" },
+  { type: "ELECTRICAL_PANEL", label: "Electrical Panel", icon: Zap, description: "Panel upgrades" },
+  { type: "WINDOW_DOOR_REPLACEMENT", label: "Window/Door", icon: SquareStack, description: "Impact windows & doors" },
   { type: "POOL_BARRIER", label: "Pool Barrier", icon: Fence, description: "Safety fence or enclosure" },
-  { type: "GENERATOR_INSTALL", label: "Generator", icon: BatteryCharging, description: "Standby generator installation" },
-  { type: "EV_CHARGER", label: "EV Charger", icon: Car, description: "Level 2 charging station" },
+  { type: "GENERATOR_INSTALL", label: "Generator", icon: BatteryCharging, description: "Standby generator" },
+  { type: "EV_CHARGER", label: "EV Charger", icon: Car, description: "Level 2 charging" },
 ];
 
 const JURISDICTIONS: { code: Jurisdiction; label: string }[] = [
@@ -48,7 +48,6 @@ export default function NewJobPage() {
     
     try {
       const job = await createJob(selectedType, selectedJurisdiction, address || undefined);
-      // Initialize checklist with a temporary hook - in real app would use job.id
       navigate(`/wizard/${job.id}`);
     } catch (error) {
       console.error("Failed to create job:", error);
@@ -63,17 +62,17 @@ export default function NewJobPage() {
 
   return (
     <PageWrapper hasBottomNav={false}>
-      {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4 flex items-center gap-3 safe-area-inset-top">
+      {/* Compact Header */}
+      <header className="compact-header flex items-center gap-2">
         <button
           onClick={handleBack}
-          className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
+          className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted transition-colors tap-target flex items-center justify-center"
         >
-          <ArrowLeft size={24} className="text-foreground" />
+          <ArrowLeft size={20} className="text-foreground" />
         </button>
-        <div>
-          <h1 className="font-semibold text-foreground">New Job</h1>
-          <p className="text-xs text-muted-foreground">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-sm font-semibold text-foreground">New Job</h1>
+          <p className="text-[10px] text-muted-foreground">
             {step === "type" && "Step 1: Select job type"}
             {step === "jurisdiction" && "Step 2: Select jurisdiction"}
             {step === "address" && "Step 3: Enter address (optional)"}
@@ -82,38 +81,38 @@ export default function NewJobPage() {
       </header>
 
       {/* Progress indicator */}
-      <div className="px-4 py-3 flex gap-2">
+      <div className="px-3 py-2 flex gap-1.5">
         <div className={`h-1 flex-1 rounded-full ${step === "type" || step === "jurisdiction" || step === "address" ? "bg-primary" : "bg-muted"}`} />
         <div className={`h-1 flex-1 rounded-full ${step === "jurisdiction" || step === "address" ? "bg-primary" : "bg-muted"}`} />
         <div className={`h-1 flex-1 rounded-full ${step === "address" ? "bg-primary" : "bg-muted"}`} />
       </div>
 
       {/* Content */}
-      <div className="px-4 py-6">
+      <div className="px-3 py-3 pb-20">
         {step === "type" && (
           <>
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+            <h2 className="text-sm font-semibold text-foreground mb-3">
               What type of permit job?
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {JOB_TYPES.map(({ type, label, icon: Icon, description }) => (
                 <button
                   key={type}
                   onClick={() => handleTypeSelect(type)}
-                  className={`w-full p-4 rounded-xl border-2 text-left flex items-center gap-4 transition-all ${
+                  className={`w-full p-3 rounded-xl border-2 text-left flex items-center gap-3 transition-all ${
                     selectedType === type
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     selectedType === type ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   }`}>
-                    <Icon size={24} />
+                    <Icon size={20} />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-foreground">{label}</h3>
-                    <p className="text-sm text-muted-foreground">{description}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-foreground">{label}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{description}</p>
                   </div>
                 </button>
               ))}
@@ -123,27 +122,27 @@ export default function NewJobPage() {
 
         {step === "jurisdiction" && (
           <>
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+            <h2 className="text-sm font-semibold text-foreground mb-3">
               Which jurisdiction?
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {JURISDICTIONS.map(({ code, label }) => (
                 <button
                   key={code}
                   onClick={() => handleJurisdictionSelect(code)}
-                  className={`w-full p-4 rounded-xl border-2 text-left flex items-center gap-4 transition-all ${
+                  className={`w-full p-3 rounded-xl border-2 text-left flex items-center gap-3 transition-all ${
                     selectedJurisdiction === code
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     selectedJurisdiction === code ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   }`}>
-                    <MapPin size={24} />
+                    <MapPin size={20} />
                   </div>
                   <div>
-                    <h3 className="font-medium text-foreground">{label}</h3>
+                    <h3 className="text-sm font-medium text-foreground">{label}</h3>
                   </div>
                 </button>
               ))}
@@ -153,12 +152,12 @@ export default function NewJobPage() {
 
         {step === "address" && (
           <>
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+            <h2 className="text-sm font-semibold text-foreground mb-3">
               Job address (optional)
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label htmlFor="address" className="block text-sm font-medium text-muted-foreground mb-2">
+                <label htmlFor="address" className="block text-xs font-medium text-muted-foreground mb-1.5">
                   Street Address
                 </label>
                 <input
@@ -167,7 +166,7 @@ export default function NewJobPage() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="123 Main Street, City, FL 33701"
-                  className="w-full px-4 py-3 bg-muted rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2.5 bg-muted rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               
@@ -184,7 +183,7 @@ export default function NewJobPage() {
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="w-full text-center text-sm text-muted-foreground hover:text-foreground"
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
               >
                 Skip for now
               </button>

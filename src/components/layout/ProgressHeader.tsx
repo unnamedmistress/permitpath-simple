@@ -25,29 +25,29 @@ export default function ProgressHeader({
   };
 
   return (
-    <header className="h-[10vh] min-h-[70px] bg-card border-b border-border px-4 flex flex-col justify-center safe-area-inset-top">
-      <div className="flex items-center justify-between mb-2">
+    <header className="compact-header">
+      <div className="flex items-center justify-between mb-1.5">
         <button
           onClick={handleBack}
-          className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
+          className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted transition-colors tap-target flex items-center justify-center"
           aria-label="Go back"
         >
-          <ArrowLeft size={24} className="text-foreground" />
+          <ArrowLeft size={20} className="text-foreground" />
         </button>
         
-        <h1 className="text-lg font-semibold text-foreground flex-1 text-center">
+        <h1 className="text-sm font-semibold text-foreground flex-1 text-center truncate px-2">
           {title}
         </h1>
         
         {showMenu ? (
           <button
-            className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
+            className="p-1.5 -mr-1.5 rounded-lg hover:bg-muted transition-colors tap-target flex items-center justify-center"
             aria-label="More options"
           >
-            <MoreVertical size={24} className="text-foreground" />
+            <MoreVertical size={20} className="text-foreground" />
           </button>
         ) : (
-          <div className="w-10" /> // Spacer for alignment
+          <div className="w-8" /> // Spacer for alignment
         )}
       </div>
       
