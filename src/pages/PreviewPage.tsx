@@ -61,12 +61,12 @@ const PERMIT_REQUIREMENTS: Record<JobType, { permits: string[]; inspections: str
   }
 };
 
-// Relevant legal sources by job type
+// Relevant legal sources by job type (using Florida Residential Code references)
 const JOB_LEGAL_SOURCES: Record<JobType, string[]> = {
-  SMALL_BATH_REMODEL: ["FBC_105_2", "FBC_R303", "NEC_210_8", "FBC_PLUMBING", "PINELLAS_PERMIT_GUIDE", "PINELLAS_NOC"],
+  SMALL_BATH_REMODEL: ["FRC_105_2", "FBC_R303", "NEC_210_8", "FBC_PLUMBING", "PINELLAS_PERMIT_GUIDE", "PINELLAS_NOC"],
   AC_HVAC_CHANGEOUT: ["FBC_MECHANICAL", "PINELLAS_HVAC", "PINELLAS_EXPRESS", "PINELLAS_INSPECTIONS"],
   WATER_HEATER: ["FBC_PLUMBING", "NEC_422", "PINELLAS_TANKLESS", "PINELLAS_EXPRESS"],
-  RE_ROOFING: ["FBC_ROOFING", "PINELLAS_REROOFING", "PINELLAS_NOC", "PINELLAS_INSPECTIONS"],
+  RE_ROOFING: ["FRC_ROOFING", "PINELLAS_REROOFING", "PINELLAS_NOC", "PINELLAS_INSPECTIONS"],
   ELECTRICAL_PANEL: ["NEC_210_52", "NEC_210_8", "PINELLAS_PERMIT_GUIDE", "PINELLAS_INSPECTIONS"],
   WINDOW_DOOR_REPLACEMENT: ["PINELLAS_WINDOW_DOOR", "FL_PRODUCT_APPROVAL", "PINELLAS_PERMIT_GUIDE"],
   POOL_BARRIER: ["PINELLAS_POOL_BARRIER", "FL_POOL_SAFETY", "PINELLAS_PERMIT_GUIDE"],
@@ -304,6 +304,14 @@ export default function PreviewPage() {
             <BookOpen size={16} className="text-primary" />
             Official Sources & Citations
           </h3>
+          <div className="bg-primary/5 border border-primary/20 rounded-lg px-3 py-2 mb-3">
+            <p className="text-xs text-primary font-medium">
+              🏠 Residential Code References
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              All code references are from the 2023 Florida Residential Code (8th Edition) for single-family and two-family dwellings.
+            </p>
+          </div>
           <p className="text-xs text-muted-foreground mb-3">
             Tap any source below to read the official requirements.
           </p>

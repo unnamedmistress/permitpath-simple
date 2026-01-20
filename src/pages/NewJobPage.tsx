@@ -91,6 +91,16 @@ export default function NewJobPage() {
       <div className="px-3 py-3 pb-20">
         {step === "type" && (
           <>
+            {/* Residential Only Notice */}
+            <div className="bg-primary/5 border border-primary/20 rounded-lg px-3 py-2 mb-4">
+              <p className="text-xs text-primary font-medium">
+                🏠 Residential Permits Only
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                This tool supports single-family and two-family dwellings in Pinellas County. For commercial projects, contact Pinellas County Building Services directly.
+              </p>
+            </div>
+            
             <h2 className="text-sm font-semibold text-foreground mb-3">
               What type of permit job?
             </h2>

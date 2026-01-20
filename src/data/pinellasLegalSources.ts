@@ -1,12 +1,29 @@
 import { LegalSource } from "@/types";
 
-// Pinellas County Legal Sources - Official permit and code references
+// ============================================================================
+// PINELLAS COUNTY LEGAL SOURCES - RESIDENTIAL PERMITS ONLY
+// This application supports single-family and two-family dwellings per the
+// 2023 Florida Residential Code (8th Edition) - NOT commercial construction.
+// ============================================================================
+
 export const LEGAL_SOURCES: Record<string, LegalSource> = {
-  // Florida Building Code References
-  FBC_105_2: {
-    label: "FBC Section 105.2 - Work Exempt from Permit",
-    url: "https://codes.iccsafe.org/content/FLBC2023P1/chapter-1-scope-and-administration#FLBC2023P1_Ch01_Sec105.2",
-    description: "Lists work that is exempt from building permits, including minor repairs and cosmetic changes.",
+  // Florida Residential Code References (FLRC2023P1)
+  FRC_105_2: {
+    label: "Florida Residential Code R105.2 - Work Exempt from Permit",
+    url: "https://codes.iccsafe.org/content/FLRC2023P1/chapter-1-scope-and-administration#FLRC2023P1_Ch01_SecR105.2",
+    description: "Lists residential work exempt from building permits, including minor repairs and cosmetic changes.",
+    lastUpdated: "2023-12-31"
+  },
+  FRC_R301: {
+    label: "Florida Residential Code R301 - Design Criteria",
+    url: "https://codes.iccsafe.org/content/FLRC2023P1/chapter-3-building-planning#FLRC2023P1_Ch03_SecR301",
+    description: "Wind speed, exposure category, and structural design requirements for Florida residential construction.",
+    lastUpdated: "2023-12-31"
+  },
+  FRC_R302: {
+    label: "Florida Residential Code R302 - Fire-Resistant Construction",
+    url: "https://codes.iccsafe.org/content/FLRC2023P1/chapter-3-building-planning#FLRC2023P1_Ch03_SecR302",
+    description: "Fire separation requirements between dwelling units and garages.",
     lastUpdated: "2023-12-31"
   },
   FBC_R303: {
@@ -27,10 +44,16 @@ export const LEGAL_SOURCES: Record<string, LegalSource> = {
     description: "HVAC installation requirements, ductwork, and equipment specifications.",
     lastUpdated: "2023-12-31"
   },
-  FBC_ROOFING: {
-    label: "FBC Chapter 15 - Roof Assemblies",
-    url: "https://codes.iccsafe.org/content/FLBC2023P1/chapter-15-roof-assemblies-and-rooftop-structures",
-    description: "Requirements for roof coverings, deck attachment, and secondary water barriers.",
+  FRC_ROOFING: {
+    label: "Florida Residential Code R903-R908 - Roof Assemblies",
+    url: "https://codes.iccsafe.org/content/FLRC2023P1/chapter-9-roof-assemblies",
+    description: "Residential roof covering, deck attachment, and Florida secondary water barrier requirements.",
+    lastUpdated: "2023-12-31"
+  },
+  FRC_R401: {
+    label: "Florida Residential Code R401 - Foundations",
+    url: "https://codes.iccsafe.org/content/FLRC2023P1/chapter-4-foundations#FLRC2023P1_Ch04_SecR401",
+    description: "Foundation design and construction requirements for residential buildings.",
     lastUpdated: "2023-12-31"
   },
   
