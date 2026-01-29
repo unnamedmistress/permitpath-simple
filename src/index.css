@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AI Permit Assistant Design System */
+
+@layer base {
+  :root {
+    /* Background & Foreground */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+
+    /* Cards & Surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Primary - Deep Professional Blue */
+    --primary: 217 91% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Light Blue Tint */
+    --secondary: 210 40% 94%;
+    --secondary-foreground: 217 91% 30%;
+
+    /* Muted - Subtle Grays */
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 15% 45%;
+
+    /* Accent - Construction Amber */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Success - Green */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - Orange */
+    --warning: 25 95% 53%;
+    --warning-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & Inputs */
+    --border: 214 32% 88%;
+    --input: 214 32% 88%;
+    --ring: 217 91% 40%;
+
+    --radius: 0.75rem;
+
+    /* Progress Bar */
+    --progress-bg: 210 20% 90%;
+    --progress-fill: 217 91% 40%;
+
+    /* Chat Bubbles */
+    --chat-user: 217 91% 40%;
+    --chat-user-foreground: 0 0% 100%;
+    --chat-ai: 210 20% 94%;
+    --chat-ai-foreground: 215 25% 15%;
+
+    /* Checklist */
+    --checklist-complete: 142 71% 45%;
+    --checklist-pending: 38 92% 50%;
+    --checklist-active: 217 91% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+@layer components {
+  /* Compact action button styles for mobile */
+  .btn-action {
+    @apply flex-1 py-2 px-3 rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 transition-all active:scale-95;
+  }
+  
+  .btn-photo {
+    @apply btn-action bg-primary text-primary-foreground;
+  }
+  
+  .btn-preview {
+    @apply btn-action bg-accent text-accent-foreground;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    @apply h-1.5 rounded-full;
+    background: hsl(var(--progress-bg));
+  }
+  
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500;
+    background: hsl(var(--progress-fill));
+  }
+
+  /* Chat bubbles - compact */
+  .chat-bubble-user {
+    @apply rounded-2xl rounded-br-md px-3 py-2 max-w-[85%] ml-auto;
+    background: hsl(var(--chat-user));
+    color: hsl(var(--chat-user-foreground));
+  }
+  
+  .chat-bubble-ai {
+    @apply rounded-2xl rounded-bl-md px-3 py-2 max-w-[85%];
+    background: hsl(var(--chat-ai));
+    color: hsl(var(--chat-ai-foreground));
+  }
+
+  /* Checklist items - compact */
+  .checklist-item {
+    @apply flex items-start gap-2 p-2 rounded-lg border transition-all;
+  }
+  
+  .checklist-complete {
+    @apply border-transparent;
+    background: hsl(var(--checklist-complete) / 0.1);
+  }
+  
+  .checklist-active {
+    @apply border-primary shadow-sm;
+    background: hsl(var(--checklist-active) / 0.05);
+  }
+  
+  .checklist-pending {
+    @apply border-border bg-card;
+  }
+
+  /* Job cards */
+  .job-card {
+    @apply bg-card rounded-xl p-3 shadow-sm border border-border transition-all hover:shadow-md active:scale-[0.98];
+  }
+
+  /* Photo thumbnail - smaller for mobile */
+  .photo-thumb {
+    @apply w-14 h-14 rounded-lg object-cover border-2 border-border flex-shrink-0;
+  }
+
+  /* Bottom navigation - compact */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1 flex justify-around items-center;
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+  
+  .bottom-nav-item {
+    @apply flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-colors;
+  }
+  
+  .bottom-nav-item.active {
+    @apply text-primary;
+  }
+  
+  .bottom-nav-item:not(.active) {
+    @apply text-muted-foreground;
+  }
+
+  /* Tab switcher for mobile */
+  .tab-switcher {
+    @apply flex bg-muted rounded-lg p-0.5;
+  }
+
+  .tab-button {
+    @apply flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-all;
+  }
+
+  .tab-button.active {
+    @apply bg-card text-foreground shadow-sm;
+  }
+
+  .tab-button:not(.active) {
+    @apply text-muted-foreground;
+  }
+
+  /* Compact header */
+  .compact-header {
+    @apply bg-card border-b border-border px-3 py-2 safe-area-inset-top;
+  }
+}
+
+@layer utilities {
+  .safe-area-inset-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-inset-top {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+
+  /* Dynamic viewport height for mobile browsers */
+  .h-screen-safe {
+    height: 100dvh;
+    height: -webkit-fill-available;
+  }
+
+  /* Minimum touch target */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
