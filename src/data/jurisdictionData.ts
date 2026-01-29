@@ -43,8 +43,8 @@ export const PINELLAS_COUNTY_BUILDING: BuildingDepartment = {
   phone: "(727) 464-3207",
   fax: "(727) 464-3448",
   email: "building@pinellas.gov",
-  website: "https://pinellas.gov/building/",
-  onlinePortal: "https://pinellas.gov/building/",
+  website: "https://pinellas.gov/topic/building-development/permits/",
+  onlinePortal: "https://aca-prod.accela.com/pinellas/Default.aspx",
   hours: "Monday - Friday: 8:00 AM - 5:00 PM",
   walkInAvailable: true,
   notes: "TTY: (727) 464-4062"
@@ -57,7 +57,8 @@ export const CLEARWATER_BUILDING_DEPT: BuildingDepartment = {
   city: "Clearwater",
   zipCode: "33756",
   phone: "(727) 562-4980",
-  website: "https://www.myclearwater.com/government/departments/building-services",
+  website: "https://www.myclearwater.com/Business-Development/Permits-and-Inspections",
+  onlinePortal: "https://www.myclearwater.com/Business-Development/Permits-and-Inspections/02-Get-A-Building-Permit-Apply-Online",
   hours: "Monday - Friday: 8:00 AM - 5:00 PM",
   walkInAvailable: true
 };

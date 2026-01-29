@@ -96,25 +96,32 @@ export default function SubmissionGuide({ department, address }: SubmissionGuide
           </div>
         </div>
 
-        {/* Online Portal */}
-        {department.onlinePortal && (
-          <div className="pt-2 border-t border-border">
+        {/* Action Buttons */}
+        <div className="space-y-2 pt-2 border-t border-border">
+          {/* Apply Online Button */}
+          {department.onlinePortal && (
             <a
               href={department.onlinePortal}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-3 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors group"
+              className="flex items-center justify-center gap-2 w-full p-3 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors"
             >
-              <div>
-                <p className="font-medium text-sm text-primary">Apply Online</p>
-                <p className="text-xs text-muted-foreground">
-                  Submit your permit application digitally
-                </p>
-              </div>
-              <ExternalLink size={18} className="text-primary group-hover:translate-x-0.5 transition-transform" />
+              📋 Apply for Permit Online
             </a>
-          </div>
-        )}
+          )}
+          
+          {/* Forms & Documents Button */}
+          {department.website && (
+            <a
+              href={department.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full p-3 bg-card border-2 border-primary text-primary rounded-lg font-medium text-sm hover:bg-primary/5 transition-colors"
+            >
+              📄 Forms & Documents
+            </a>
+          )}
+        </div>
 
         {/* Walk-In Info */}
         {department.walkInAvailable && (
