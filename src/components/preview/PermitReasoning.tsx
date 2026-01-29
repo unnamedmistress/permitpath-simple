@@ -37,21 +37,23 @@ export default function PermitReasoning({ permitReq }: PermitReasoningProps) {
                 <BookOpen size={12} />
                 Legal Basis
               </p>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {permitReq.codeCitations.map((citation, idx) => (
-                  <div key={idx} className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">
-                      {citation.code} {citation.section}:
-                    </strong>{" "}
-                    {citation.description}
+                  <div key={idx} className="text-xs">
+                    <div className="text-muted-foreground">
+                      <strong className="text-foreground">
+                        {citation.code} {citation.section}:
+                      </strong>{" "}
+                      {citation.description}
+                    </div>
                     {citation.url && (
                       <a
                         href={citation.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline ml-1"
+                        className="text-primary hover:underline inline-block mt-1"
                       >
-                        (view code)
+                        → View code section
                       </a>
                     )}
                   </div>
@@ -129,22 +131,21 @@ export default function PermitReasoning({ permitReq }: PermitReasoningProps) {
             </p>
             <div className="space-y-2">
               {permitReq.codeCitations.map((citation, idx) => (
-                <div
-                  key={idx}
-                  className="bg-card rounded p-2 text-xs text-muted-foreground"
-                >
-                  <strong className="text-foreground">
-                    {citation.code} {citation.section}:
-                  </strong>{" "}
-                  {citation.description}
+                <div key={idx} className="bg-card rounded p-3 text-xs">
+                  <div className="text-muted-foreground">
+                    <strong className="text-foreground">
+                      {citation.code} {citation.section}:
+                    </strong>{" "}
+                    {citation.description}
+                  </div>
                   {citation.url && (
                     <a
                       href={citation.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline ml-1"
+                      className="text-primary hover:underline inline-block mt-2"
                     >
-                      (view code)
+                      → View code section
                     </a>
                   )}
                 </div>

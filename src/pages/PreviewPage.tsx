@@ -121,6 +121,9 @@ export default function PreviewPage() {
   const jobType = currentJob.jobType;
   const detailedScope = currentJob.detailedScope || {};
   
+  // Check if bathroom remodel needs details
+  const needsDetails = jobType === "SMALL_BATH_REMODEL" && Object.keys(detailedScope).length === 0;
+  
   // Intelligent permit determination
   const permitReq = determinePermitRequirements(jobType, detailedScope);
   const inspections = permitReq.required ? getRequiredInspections(permitReq.permitTypes) : [];
@@ -176,6 +179,25 @@ export default function PreviewPage() {
             </div>
           </div>
         </div>
+
+        {/* Needs Details Prompt */}
+        {needsDetails && (
+          <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
+            <h3 className="font-semibold text-sm text-warning mb-2">
+              📋 Additional Details Needed
+            </h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              To accurately determine if you need a permit, please complete a few clarifying questions about your project.
+            </p>
+            <Button
+              onClick={handleBackToDetails}
+              variant="primary"
+              size="sm"
+            >
+              Complete Project Details
+            </Button>
+          </div>
+        )}
 
         {/* INTELLIGENT PERMIT REASONING */}
         <PermitReasoning permitReq={permitReq} />

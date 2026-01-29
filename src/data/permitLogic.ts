@@ -89,58 +89,80 @@ function determineBathroomPermitRequirements(scope: DetailedScope): PermitRequir
   const permitTypes: string[] = [];
   const codeCitations: CodeCitation[] = [];
   
-  // Check if it's purely cosmetic
-  if (scope.cosmeticOnly) {
+  // If no scope details provided yet, show that analysis is incomplete
+  if (Object.keys(scope).length === 0) {
+    return {
+      required: false,
+      permitTypes: [],
+      reasons: [],
+      codeCitations: [],
+      exemptionReason: "Please complete the project details questionnaire to determine if a permit is required."
+    };
+  }
+  
+  // Check if it's purely cosmetic (explicitly marked OR all modification flags are false)
+  const cosmeticOnly = scope.cosmeticOnly === true || (
+    scope.movingPlumbingFixtures === false &&
+    scope.addingWaterLines === false &&
+    scope.changingDrainage === false &&
+    scope.addingCircuits === false &&
+    scope.relocatingOutlets === false &&
+    scope.removingWalls === false &&
+    scope.changingLayout === false
+  );
+  
+  if (cosmeticOnly) {
     return {
       required: false,
       permitTypes: [],
       reasons: [],
       codeCitations: [CODE_CITATIONS.FRC_R105_2_EXEMPTION],
-      exemptionReason: "This is cosmetic work covered under the maintenance exemption"
+      exemptionReason: "You are only replacing fixtures in the same location without moving plumbing connections or adding electrical circuits. This is cosmetic work covered under the maintenance exemption."
     };
   }
   
-  // Check plumbing changes
-  if (scope.movingPlumbingFixtures || scope.addingWaterLines || scope.changingDrainage) {
+  // Check plumbing changes (ONLY if explicitly true - not just truthy)
+  if (scope.movingPlumbingFixtures === true || scope.addingWaterLines === true || scope.changingDrainage === true) {
     permitTypes.push("Plumbing Permit");
     
-    if (scope.movingPlumbingFixtures) {
-      reasons.push("You are MOVING plumbing fixtures (sink, toilet, or shower) to a new location");
+    if (scope.movingPlumbingFixtures === true) {
+      const fixtures = scope.plumbingDetails || "plumbing fixtures";
+      reasons.push(`You are MOVING ${fixtures} to a NEW LOCATION (changing the plumbing layout)`);
     }
-    if (scope.addingWaterLines) {
-      reasons.push("You are adding or extending water supply lines");
+    if (scope.addingWaterLines === true) {
+      reasons.push("You are adding or extending water supply lines beyond existing connections");
     }
-    if (scope.changingDrainage) {
-      reasons.push("You are modifying drainage or waste systems");
+    if (scope.changingDrainage === true) {
+      reasons.push("You are modifying the drainage system or waste line locations");
     }
     
     codeCitations.push(CODE_CITATIONS.FRC_P105_2);
   }
   
-  // Check electrical changes
-  if (scope.addingCircuits || scope.relocatingOutlets) {
+  // Check electrical changes (ONLY if explicitly true)
+  if (scope.addingCircuits === true || scope.relocatingOutlets === true) {
     permitTypes.push("Electrical Permit");
     
-    if (scope.addingCircuits) {
-      reasons.push("You are adding NEW electrical circuits to the panel");
+    if (scope.addingCircuits === true) {
+      reasons.push("You are adding NEW electrical circuits from the panel (not just replacing existing fixtures)");
     }
-    if (scope.relocatingOutlets) {
-      reasons.push("You are relocating electrical outlets or switches");
+    if (scope.relocatingOutlets === true) {
+      reasons.push("You are relocating electrical outlets or switches to new wall locations");
     }
     
     codeCitations.push(CODE_CITATIONS.FRC_E3801_2);
     codeCitations.push(CODE_CITATIONS.NEC_210_8);
   }
   
-  // Check structural changes
-  if (scope.removingWalls || scope.changingLayout) {
+  // Check structural changes (ONLY if explicitly true)
+  if (scope.removingWalls === true || scope.changingLayout === true) {
     permitTypes.push("Building Permit");
     
-    if (scope.removingWalls) {
+    if (scope.removingWalls === true) {
       reasons.push("You are removing or altering walls (structural modification)");
     }
-    if (scope.changingLayout) {
-      reasons.push("You are changing the bathroom layout or footprint");
+    if (scope.changingLayout === true) {
+      reasons.push("You are changing the bathroom layout or expanding the footprint");
     }
     
     codeCitations.push(CODE_CITATIONS.FRC_R105_2);
