@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, FileText, ExternalLink, RotateCcw, CheckCircle2, AlertCircle, BookOpen, Scale, MapPin } from "lucide-react";
+import { ArrowLeft, FileText, RotateCcw, CheckCircle2, MapPin, ExternalLink, BookOpen } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import Button from "@/components/shared/Button";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -9,69 +9,12 @@ import { useJob } from "@/hooks/useJob";
 import { useChecklist } from "@/hooks/useChecklist";
 import { usePhotos } from "@/context/PhotoContext";
 import { LEGAL_SOURCES } from "@/data/pinellasLegalSources";
+import { determinePermitRequirements, getRequiredInspections } from "@/data/permitLogic";
+import { getBuildingDepartment } from "@/data/jurisdictionData";
+import PermitReasoning from "@/components/preview/PermitReasoning";
+import SubmissionGuide from "@/components/preview/SubmissionGuide";
+import ApplicationGuide from "@/components/preview/ApplicationGuide";
 import { JobType } from "@/types";
-
-// Permit requirements by job type
-const PERMIT_REQUIREMENTS: Record<JobType, { permits: string[]; inspections: string[]; forms: string[] }> = {
-  SMALL_BATH_REMODEL: {
-    permits: ["Building Permit (if structural)", "Plumbing Permit (if moving fixtures)", "Electrical Permit (if adding circuits)"],
-    inspections: ["Rough Plumbing", "Rough Electrical", "Final Building"],
-    forms: ["Permit Application", "Notice of Commencement (if over $5,000)"]
-  },
-  AC_HVAC_CHANGEOUT: {
-    permits: ["Mechanical Permit"],
-    inspections: ["Mechanical Final"],
-    forms: ["Express Permit Application", "Equipment Specifications"]
-  },
-  WATER_HEATER: {
-    permits: ["Plumbing Permit", "Electrical Permit (if electric)"],
-    inspections: ["Plumbing Final", "Electrical Final (if applicable)"],
-    forms: ["Express Permit Application", "Tankless Worksheet (if tankless)"]
-  },
-  RE_ROOFING: {
-    permits: ["Roofing Permit"],
-    inspections: ["Dry-In Inspection", "Final Roofing"],
-    forms: ["Re-Roofing Application", "Mitigation Affidavit", "Notice of Commencement"]
-  },
-  ELECTRICAL_PANEL: {
-    permits: ["Electrical Permit"],
-    inspections: ["Rough Electrical", "Final Electrical"],
-    forms: ["Electrical Permit Application", "Load Calculation"]
-  },
-  WINDOW_DOOR_REPLACEMENT: {
-    permits: ["Building Permit"],
-    inspections: ["Final Building"],
-    forms: ["Window/Door Replacement Form", "Product Approval Documentation"]
-  },
-  POOL_BARRIER: {
-    permits: ["Building Permit"],
-    inspections: ["Final Pool Barrier"],
-    forms: ["Pool Barrier Application", "Gate/Alarm Specifications"]
-  },
-  GENERATOR_INSTALL: {
-    permits: ["Electrical Permit", "Fuel Gas Permit (if applicable)"],
-    inspections: ["Electrical Final", "Mechanical Final"],
-    forms: ["Generator Application", "Load Calculation", "Site Plan"]
-  },
-  EV_CHARGER: {
-    permits: ["Electrical Permit"],
-    inspections: ["Electrical Final"],
-    forms: ["Express Permit Application", "Circuit Specifications"]
-  }
-};
-
-// Relevant legal sources by job type (using Florida Residential Code references)
-const JOB_LEGAL_SOURCES: Record<JobType, string[]> = {
-  SMALL_BATH_REMODEL: ["FRC_105_2", "FBC_R303", "NEC_210_8", "FBC_PLUMBING", "PINELLAS_PERMIT_GUIDE", "PINELLAS_NOC"],
-  AC_HVAC_CHANGEOUT: ["FBC_MECHANICAL", "PINELLAS_HVAC", "PINELLAS_EXPRESS", "PINELLAS_INSPECTIONS"],
-  WATER_HEATER: ["FBC_PLUMBING", "NEC_422", "PINELLAS_TANKLESS", "PINELLAS_EXPRESS"],
-  RE_ROOFING: ["FRC_ROOFING", "PINELLAS_REROOFING", "PINELLAS_NOC", "PINELLAS_INSPECTIONS"],
-  ELECTRICAL_PANEL: ["NEC_210_52", "NEC_210_8", "PINELLAS_PERMIT_GUIDE", "PINELLAS_INSPECTIONS"],
-  WINDOW_DOOR_REPLACEMENT: ["PINELLAS_WINDOW_DOOR", "FL_PRODUCT_APPROVAL", "PINELLAS_PERMIT_GUIDE"],
-  POOL_BARRIER: ["PINELLAS_POOL_BARRIER", "FL_POOL_SAFETY", "PINELLAS_PERMIT_GUIDE"],
-  GENERATOR_INSTALL: ["FBC_GENERATOR", "NEC_422", "PINELLAS_PERMIT_GUIDE", "PINELLAS_INSPECTIONS"],
-  EV_CHARGER: ["NEC_625", "PINELLAS_EXPRESS", "PINELLAS_PERMIT_GUIDE"]
-};
 
 const JOB_TYPE_LABELS: Record<JobType, string> = {
   SMALL_BATH_REMODEL: "Small Bathroom Remodel",
@@ -83,6 +26,19 @@ const JOB_TYPE_LABELS: Record<JobType, string> = {
   POOL_BARRIER: "Pool Barrier Installation",
   GENERATOR_INSTALL: "Generator Installation",
   EV_CHARGER: "EV Charger Installation"
+};
+
+// Relevant legal sources by job type
+const JOB_LEGAL_SOURCES: Record<JobType, string[]> = {
+  SMALL_BATH_REMODEL: ["FRC_105_2", "FBC_R303", "NEC_210_8", "FBC_PLUMBING", "PINELLAS_PERMIT_GUIDE", "PINELLAS_NOC"],
+  AC_HVAC_CHANGEOUT: ["FBC_MECHANICAL", "PINELLAS_HVAC", "PINELLAS_EXPRESS", "PINELLAS_INSPECTIONS"],
+  WATER_HEATER: ["FBC_PLUMBING", "NEC_422", "PINELLAS_TANKLESS", "PINELLAS_EXPRESS"],
+  RE_ROOFING: ["FRC_ROOFING", "PINELLAS_REROOFING", "PINELLAS_NOC", "PINELLAS_INSPECTIONS"],
+  ELECTRICAL_PANEL: ["NEC_210_52", "NEC_210_8", "PINELLAS_PERMIT_GUIDE", "PINELLAS_INSPECTIONS"],
+  WINDOW_DOOR_REPLACEMENT: ["PINELLAS_WINDOW_DOOR", "FL_PRODUCT_APPROVAL", "PINELLAS_PERMIT_GUIDE"],
+  POOL_BARRIER: ["PINELLAS_POOL_BARRIER", "FL_POOL_SAFETY", "PINELLAS_PERMIT_GUIDE"],
+  GENERATOR_INSTALL: ["FBC_GENERATOR", "NEC_422", "PINELLAS_PERMIT_GUIDE", "PINELLAS_INSPECTIONS"],
+  EV_CHARGER: ["NEC_625", "PINELLAS_EXPRESS", "PINELLAS_PERMIT_GUIDE"]
 };
 
 export default function PreviewPage() {
@@ -120,6 +76,10 @@ export default function PreviewPage() {
     navigate("/new");
   };
 
+  const handleBackToDetails = () => {
+    navigate(`/details/${jobId}`);
+  };
+
   const completedItems = checklistItems.filter(i => i.status === "COMPLETE");
   const pendingItems = checklistItems.filter(i => i.status !== "COMPLETE");
 
@@ -148,7 +108,7 @@ export default function PreviewPage() {
     );
   }
 
-  if (!initialized || jobLoading) {
+  if (!initialized || jobLoading || !currentJob) {
     return (
       <PageWrapper hasBottomNav={false}>
         <div className="flex items-center justify-center h-screen" aria-busy="true">
@@ -158,10 +118,21 @@ export default function PreviewPage() {
     );
   }
 
-  const jobType = currentJob?.jobType || "SMALL_BATH_REMODEL";
-  const permitInfo = PERMIT_REQUIREMENTS[jobType];
+  const jobType = currentJob.jobType;
+  const detailedScope = currentJob.detailedScope || {};
+  
+  // Intelligent permit determination
+  const permitReq = determinePermitRequirements(jobType, detailedScope);
+  const inspections = permitReq.required ? getRequiredInspections(permitReq.permitTypes) : [];
+  
+  // Jurisdiction determination
+  const buildingDept = getBuildingDepartment(currentJob.address);
+  
+  // Legal sources
   const relevantSourceKeys = JOB_LEGAL_SOURCES[jobType];
-  const relevantSources = relevantSourceKeys.map(key => ({ key, ...LEGAL_SOURCES[key] })).filter(s => s.label);
+  const relevantSources = relevantSourceKeys
+    .map(key => ({ key, ...LEGAL_SOURCES[key] }))
+    .filter(s => s.label);
 
   return (
     <PageWrapper hasBottomNav={false}>
@@ -199,66 +170,50 @@ export default function PreviewPage() {
                 <MapPin size={12} className="text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">Pinellas County</p>
               </div>
-              {currentJob?.address && (
+              {currentJob.address && (
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">{currentJob.address}</p>
               )}
             </div>
           </div>
         </div>
 
-        {/* Permits You May Need */}
-        <section>
-          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
-            <Scale size={16} className="text-primary" />
-            Permits You May Need
-          </h3>
-          <div className="bg-card rounded-lg border border-border divide-y divide-border">
-            {permitInfo.permits.map((permit, idx) => (
-              <div key={idx} className="p-3 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <FileText size={14} className="text-primary" />
-                </div>
-                <span className="text-sm text-foreground">{permit}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* INTELLIGENT PERMIT REASONING */}
+        <PermitReasoning permitReq={permitReq} />
 
-        {/* Required Inspections */}
-        <section>
-          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
-            <CheckCircle2 size={16} className="text-success" />
-            Required Inspections
-          </h3>
-          <div className="bg-card rounded-lg border border-border divide-y divide-border">
-            {permitInfo.inspections.map((inspection, idx) => (
-              <div key={idx} className="p-3 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-success font-semibold text-xs">{idx + 1}</span>
-                </div>
-                <span className="text-sm text-foreground">{inspection}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* SUBMISSION GUIDE - Only show if permit required */}
+        {permitReq.required && (
+          <SubmissionGuide department={buildingDept} address={currentJob.address} />
+        )}
 
-        {/* Forms Needed */}
-        <section>
-          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
-            <AlertCircle size={16} className="text-warning" />
-            Forms You'll Need
-          </h3>
-          <div className="bg-card rounded-lg border border-border divide-y divide-border">
-            {permitInfo.forms.map((form, idx) => (
-              <div key={idx} className="p-3 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
-                  <FileText size={14} className="text-warning" />
+        {/* REQUIRED INSPECTIONS - Only if permit required */}
+        {permitReq.required && inspections.length > 0 && (
+          <section>
+            <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
+              <CheckCircle2 size={16} className="text-success" />
+              Required Inspections
+            </h3>
+            <div className="bg-card rounded-lg border border-border divide-y divide-border">
+              {inspections.map((inspection, idx) => (
+                <div key={idx} className="p-3 flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-success font-semibold text-xs">{idx + 1}</span>
+                  </div>
+                  <span className="text-sm text-foreground">{inspection}</span>
                 </div>
-                <span className="text-sm text-foreground">{form}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* APPLICATION GUIDE - Only if permit required */}
+        {permitReq.required && (
+          <ApplicationGuide 
+            department={buildingDept}
+            permitTypes={permitReq.permitTypes}
+            inspections={inspections}
+            job={currentJob}
+          />
+        )}
 
         {/* Your Answers Summary */}
         {completedItems.length > 0 && (
@@ -279,27 +234,6 @@ export default function PreviewPage() {
                       {item.value}
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Pending Items */}
-        {pendingItems.length > 0 && (
-          <section>
-            <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-1.5">
-              <AlertCircle size={16} className="text-warning" />
-              Still Needed ({pendingItems.length})
-            </h3>
-            <div className="space-y-2">
-              {pendingItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-warning/5 border border-warning/20 rounded-lg p-3"
-                >
-                  <h4 className="font-medium text-sm text-foreground">{item.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
                 </div>
               ))}
             </div>
@@ -376,13 +310,24 @@ export default function PreviewPage() {
 
         {/* Action Buttons */}
         <div className="pt-3 space-y-2">
+          {jobType === "SMALL_BATH_REMODEL" && (
+            <Button
+              onClick={handleBackToDetails}
+              variant="outline"
+              size="md"
+              className="w-full"
+            >
+              ← Modify Project Details
+            </Button>
+          )}
+          
           <Button
             onClick={() => navigate(`/wizard/${jobId}`)}
             variant="primary"
             size="md"
             className="w-full"
           >
-            Continue Editing
+            Continue Editing Checklist
           </Button>
           
           <Button
@@ -392,15 +337,15 @@ export default function PreviewPage() {
             className="w-full"
             icon={<RotateCcw size={16} />}
           >
-            Start Over
+            Start New Project
           </Button>
         </div>
 
         {/* Disclaimer */}
         <div className="bg-muted/50 rounded-lg p-3 mt-4">
           <p className="text-xs text-muted-foreground text-center leading-relaxed">
-            <strong>Disclaimer:</strong> This summary is for informational purposes only. 
-            Verify requirements with Pinellas County Building Services before submitting.
+            <strong>Disclaimer:</strong> This analysis is for informational purposes only. 
+            Always verify requirements with {buildingDept.name} before starting work.
           </p>
         </div>
       </div>

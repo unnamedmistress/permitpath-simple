@@ -35,6 +35,31 @@ export interface FlowchartNode {
   pinellasSpecific?: boolean;
 }
 
+// Detailed Scope Types for Permit Reasoning
+export interface DetailedScope {
+  // Plumbing
+  movingPlumbingFixtures?: boolean;
+  plumbingDetails?: string;
+  addingWaterLines?: boolean;
+  changingDrainage?: boolean;
+  
+  // Electrical
+  addingCircuits?: boolean;
+  electricalDetails?: string;
+  relocatingOutlets?: boolean;
+  
+  // Structural
+  removingWalls?: boolean;
+  structuralDetails?: string;
+  changingLayout?: boolean;
+  
+  // Cosmetic flags
+  cosmeticOnly?: boolean;
+  
+  // Value estimation
+  estimatedValue?: number;
+}
+
 export interface Job {
   id: string;
   sessionId: string;
@@ -47,6 +72,7 @@ export interface Job {
   answers: Record<string, unknown>;
   title?: string;
   address?: string;
+  detailedScope?: DetailedScope; // New field for intelligent permit determination
 }
 
 // Photo Types

@@ -10,6 +10,7 @@ import OfflineIndicator from "./components/shared/OfflineIndicator";
 import HomePage from "./pages/HomePage";
 import NewJobPage from "./pages/NewJobPage";
 import WizardPage from "./pages/WizardPage";
+import DetailsPage from "./pages/DetailsPage";
 import PreviewPage from "./pages/PreviewPage";
 import DemoPage from "./pages/DemoPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -40,6 +41,7 @@ const App = () => (
                   <Route path="/" element={<HomePage />} />
                   <Route path="/new" element={<NewJobPage />} />
                   <Route path="/wizard/:jobId" element={<WizardPage />} />
+                  <Route path="/details/:jobId" element={<DetailsPage />} />
                   <Route path="/preview/:jobId" element={<PreviewPage />} />
                   <Route path="/demo" element={<DemoPage />} />
                   <Route path="/settings" element={<SettingsPage />} />

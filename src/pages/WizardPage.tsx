@@ -239,7 +239,13 @@ export default function WizardPage() {
   };
 
   const handlePreview = () => {
-    navigate(`/preview/${jobId}`);
+    // For bathroom remodels, go to details page first for permit determination
+    // For other job types, go directly to preview
+    if (currentJob?.jobType === "SMALL_BATH_REMODEL") {
+      navigate(`/details/${jobId}`);
+    } else {
+      navigate(`/preview/${jobId}`);
+    }
   };
 
   const canPreview = checklistItems.some(i => i.status === "COMPLETE");
