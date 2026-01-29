@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PermitPath - Easy Permit Help</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Home Page -->
+        <div id="home-page" class="page active">
+            <!-- Beautiful Hero Section -->
+            <div class="hero-gradient">
+                <div class="container hero-section">
+                    <div class="hero-content">
+                        <div class="hero-badge">
+                            <span>⚡ Easy Permit Help</span>
+                        </div>
+                        <h1 class="hero-title">Do I Need a Permit?</h1>
+                        <p class="hero-subtitle">
+                            Find out in 60 seconds! Take a photo or tell us what you're fixing.
+                        </p>
+                        <button class="btn btn-large btn-white" onclick="showPage('start')">
+                            <span>Get Started</span>
+                            <span>→</span>
+                        </button>
+                    </div>
+                    <div class="hero-image">
+                        <div class="phone-mockup">
+                            <div class="phone-screen">
+                                <div class="demo-badge">📸 Take a Photo</div>
+                                <div class="demo-badge">💬 Ask Questions</div>
+                                <div class="demo-badge">✅ Get Your Answer</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How It Works -->
+            <div class="section">
+                <div class="container">
+                    <div class="text-center">
+                        <h2>How It Works</h2>
+                        <p class="subtitle">Super easy! Just 3 simple steps.</p>
+                    </div>
+                    
+                    <div class="steps-grid">
+                        <div class="step-card">
+                            <div class="step-icon step-icon-blue">
+                                <span style="font-size: 2rem;">📸</span>
+                            </div>
+                            <h3>1. Show Us</h3>
+                            <p>Take a photo of what you want to fix or build.</p>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-icon step-icon-orange">
+                                <span style="font-size: 2rem;">💬</span>
+                            </div>
+                            <h3>2. We Help</h3>
+                            <p>Tell us about your project. We'll ask simple questions.</p>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-icon step-icon-green">
+                                <span style="font-size: 2rem;">✅</span>
+                            </div>
+                            <h3>3. Get Answers</h3>
+                            <p>Know exactly what permits you need and how much they cost.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Why People Love Us -->
+            <div class="section section-gray">
+                <div class="container">
+                    <div class="text-center">
+                        <h2>Why People Love PermitPath</h2>
+                        <p class="subtitle">We make permits easy to understand.</p>
+                    </div>
+                    
+                    <div class="benefits-grid">
+                        <div class="benefit-card">
+                            <div class="benefit-emoji">⚡</div>
+                            <h3>Super Fast</h3>
+                            <p>Get answers in 60 seconds, not hours on hold.</p>
+                        </div>
+                        
+                        <div class="benefit-card">
+                            <div class="benefit-emoji">💰</div>
+                            <h3>Save Money</h3>
+                            <p>Know the exact cost before you start your project.</p>
+                        </div>
+                        
+                        <div class="benefit-card">
+                            <div class="benefit-emoji">😊</div>
+                            <h3>Easy Words</h3>
+                            <p>No confusing legal stuff. Simple answers you can understand.</p>
+                        </div>
+                        
+                        <div class="benefit-card">
+                            <div class="benefit-emoji">📱</div>
+                            <h3>Works on Phone</h3>
+                            <p>Use it right at the work site. No computer needed.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="section">
+                <div class="container">
+                    <div class="cta-box">
+                        <h2>Ready to Find Out?</h2>
+                        <p>See if you need a permit in just 60 seconds!</p>
+                        <button class="btn btn-primary btn-large" onclick="showPage('start')">
+                            <span>Start Now - It's Free!</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Project Page -->
+        <div id="start-page" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <button class="btn-back" onclick="showPage('home')">← Back</button>
+                    <h1>Tell Us About Your Project</h1>
+                    <p>What are you planning to do?</p>
+                </div>
+            </div>
+
+            <div class="container section">
+                <div class="form-card">
+                    <div class="form-group">
+                        <label>Give Your Project a Name</label>
+                        <input 
+                            type="text" 
+                            id="project-name"
+                            placeholder="Like: New Kitchen Sink or Fix Broken Fence"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Add Photos (Optional but Helpful!)</label>
+                        <div class="photo-upload-area" id="photo-area">
+                            <label class="photo-upload-label">
+                                <span style="font-size: 3rem;">📸</span>
+                                <span>Take or Upload a Photo</span>
+                                <small>Help us see what you're working on</small>
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    style="display: none;"
+                                    onchange="handlePhoto(event)"
+                                    id="photo-input"
+                                />
+                            </label>
+                        </div>
+                        <div id="photos-preview" class="photos-grid" style="display: none;"></div>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" id="next-btn" onclick="showPage('chat')" disabled>
+                        <span>Next: Chat With Us</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Page -->
+        <div id="chat-page" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <button class="btn-back" onclick="showPage('start')">← Back</button>
+                    <h1 id="chat-title">Let's Chat About Your Project</h1>
+                    <p>Ask me anything about permits!</p>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message message-ai">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-bubble">
+                            <p><strong>Hi! I'm your permit helper!</strong></p>
+                            <p>Tell me what you want to do. I'll help figure out if you need a permit.</p>
+                            <p>Some ideas: "I want to replace my water heater" or "Can I build a fence?"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="container">
+                        <div class="chat-input-wrapper">
+                            <input 
+                                type="text"
+                                id="chat-input"
+                                placeholder="Type your question here..."
+                                onkeypress="handleChatEnter(event)"
+                            />
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                Send
+                            </button>
+                        </div>
+                        
+                        <div class="quick-actions">
+                            <button class="quick-btn" onclick="sendQuickMessage('cost')">
+                                How much does it cost? 💰
+                            </button>
+                            <button class="quick-btn" onclick="sendQuickMessage('time')">
+                                How long will it take? ⏰
+                            </button>
+                        </div>
+
+                        <button class="btn btn-primary btn-large" onclick="showPage('report')" id="see-report-btn" style="margin-top: 1rem; display: none;">
+                            <span>See My Report</span>
+                            <span>📄</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Page -->
+        <div id="report-page" class="page">
+            <div class="page-header">
+                <div class="container">
+                    <button class="btn-back" onclick="showPage('chat')">← Back to Chat</button>
+                    <h1>Your Permit Report</h1>
+                    <p>Here's what you need to know!</p>
+                </div>
+            </div>
+
+            <div class="container section">
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">✅</div>
+                        <h2>Good News!</h2>
+                        <p>We found what you need for: <strong id="report-project-name">Your Project</strong></p>
+                    </div>
+
+                    <div class="report-section">
+                        <h3>📋 What You Need</h3>
+                        <div class="info-box">
+                            <p><strong>Permit Type:</strong> Plumbing Permit</p>
+                            <p><strong>Location:</strong> Pinellas County, Florida</p>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <h3>💰 How Much It Costs</h3>
+                        <div class="cost-breakdown">
+                            <div class="cost-row">
+                                <span>Permit Fee</span>
+                                <span class="cost-amount">$125.00</span>
+                            </div>
+                            <div class="cost-row">
+                                <span>Inspection Fee (2 visits)</span>
+                                <span class="cost-amount">$60.00</span>
+                            </div>
+                            <div class="cost-row cost-total">
+                                <span>Total Cost</span>
+                                <span class="cost-amount">$185.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <h3>⏰ How Long It Takes</h3>
+                        <div class="timeline">
+                            <div class="timeline-step">
+                                <div class="timeline-dot">1</div>
+                                <div class="timeline-content">
+                                    <strong>Submit Papers</strong>
+                                    <p>Takes 1 day</p>
+                                </div>
+                            </div>
+                            <div class="timeline-step">
+                                <div class="timeline-dot">2</div>
+                                <div class="timeline-content">
+                                    <strong>Wait for Review</strong>
+                                    <p>Takes 3-5 days</p>
+                                </div>
+                            </div>
+                            <div class="timeline-step">
+                                <div class="timeline-dot">3</div>
+                                <div class="timeline-content">
+                                    <strong>Get Approved!</strong>
+                                    <p>Same day</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-section">
+                        <h3>📝 What to Bring</h3>
+                        <div class="checklist">
+                            <div class="checklist-item">
+                                <span class="check-icon">✅</span>
+                                <span>Filled out permit form</span>
+                            </div>
+                            <div class="checklist-item">
+                                <span class="check-icon">✅</span>
+                                <span>Your contractor license</span>
+                            </div>
+                            <div class="checklist-item">
+                                <span class="check-icon">✅</span>
+                                <span>Proof of insurance</span>
+                            </div>
+                            <div class="checklist-item">
+                                <span class="check-icon">✅</span>
+                                <span>Equipment information</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-actions">
+                        <button class="btn btn-primary btn-large" onclick="window.print()">
+                            Print This Report
+                        </button>
+                        <button class="btn btn-secondary btn-large" onclick="emailReport()">
+                            Email Me a Copy
+                        </button>
+                    </div>
+
+                    <div class="help-box">
+                        <h4>Need More Help?</h4>
+                        <p>Have questions? Our friendly team is here to help!</p>
+                        <button class="btn btn-secondary" onclick="showPage('chat')">
+                            Ask More Questions
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
