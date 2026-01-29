@@ -45,9 +45,24 @@ module.exports = async (req, res) => {
     });
   } catch (error) {
     console.error('[Location] Error:', error);
+    
+    // Provide specific guidance for common Google API errors
+    let details = 'Failed to lookup location';
+    if (error.message.includes('403')) {
+      details = 'Google API returned 403. Please ensure:\n' +
+                '1. Geocoding API is enabled in Google Cloud Console\n' +
+                '2. Places API (New) is enabled\n' +
+                '3. API key has no IP/referrer restrictions blocking Vercel\n' +
+                '4. Billing is enabled on the Google Cloud project';
+    } else if (error.message.includes('429')) {
+      details = 'Google API rate limit exceeded. Please check your quota.';
+    } else if (error.message.includes('401')) {
+      details = 'Invalid Google API key. Please check the key in Vercel settings.';
+    }
+    
     res.status(500).json({ 
       error: error.message,
-      details: 'Failed to lookup location'
+      details: details
     });
   }
 };

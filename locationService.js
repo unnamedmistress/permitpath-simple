@@ -17,12 +17,19 @@ class LocationService {
   async getLocationDetails(address) {
     try {
       // Step 1: Geocode the address
+      console.log('[LocationService] Geocoding address:', address);
       const geocodeResponse = await this.client.geocode({
         params: {
           address: address,
           key: this.apiKey
         }
       });
+
+      console.log('[LocationService] Geocode status:', geocodeResponse.data.status);
+
+      if (geocodeResponse.data.status === 'REQUEST_DENIED') {
+        throw new Error(`Google API request denied: ${geocodeResponse.data.error_message || 'Check API key and enabled APIs'}`);
+      }
 
       if (geocodeResponse.data.results.length === 0) {
         throw new Error('Address not found');
