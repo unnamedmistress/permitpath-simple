@@ -5,6 +5,7 @@
 class QuestionRenderer {
   constructor(containerId) {
     this.container = document.getElementById(containerId);
+    this.currentQuestion = null;
   }
 
   /**
@@ -17,6 +18,7 @@ class QuestionRenderer {
     }
 
     const { question, questionNumber, totalQuestions, progress } = questionData;
+    this.currentQuestion = question;
 
     const html = `
       <div class="question-card" data-question-id="${question.id}">
@@ -41,10 +43,10 @@ class QuestionRenderer {
         <div class="question-error" id="error-${question.id}" style="display: none;"></div>
         
         <div class="question-actions">
-          <button class="btn" onclick="questionRenderer.goBack()" ${questionNumber === 1 ? 'disabled' : ''}>
+          <button class="btn btn-back" data-action="back" ${questionNumber === 1 ? 'disabled' : ''}>
             ← Back
           </button>
-          <button class="btn btn-primary" onclick="questionRenderer.submitAnswer('${question.id}', '${question.type}')">
+          <button class="btn btn-primary btn-submit" data-action="submit" data-question-id="${question.id}" data-question-type="${question.type}">
             ${questionNumber < totalQuestions ? 'Next →' : 'Get My Answer →'}
           </button>
         </div>
@@ -52,6 +54,44 @@ class QuestionRenderer {
     `;
 
     this.container.innerHTML = html;
+    
+    // Attach event listeners after rendering
+    this.attachEventListeners();
+  }
+
+  /**
+   * Attach event listeners to buttons
+   */
+  attachEventListeners() {
+    // Submit button
+    const submitBtn = this.container.querySelector('.btn-submit');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const questionId = e.target.dataset.questionId;
+        const questionType = e.target.dataset.questionType;
+        this.submitAnswer(questionId, questionType);
+      });
+    }
+
+    // Back button
+    const backBtn = this.container.querySelector('.btn-back');
+    if (backBtn) {
+      backBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.goBack();
+      });
+    }
+
+    // Yes/No buttons
+    const yesNoButtons = this.container.querySelectorAll('.choice-btn');
+    yesNoButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const value = e.target.dataset.value;
+        this.selectYesNo(e.target, value);
+      });
+    });
   }
 
   /**
@@ -80,14 +120,14 @@ class QuestionRenderer {
   renderYesNo(question) {
     return `
       <div class="yes-no-buttons">
-        <button class="choice-btn" data-value="yes" onclick="questionRenderer.selectYesNo(this, 'yes')">
+        <button class="choice-btn" data-value="yes" type="button">
           ✓ Yes
         </button>
-        <button class="choice-btn" data-value="no" onclick="questionRenderer.selectYesNo(this, 'no')">
+        <button class="choice-btn" data-value="no" type="button">
           ✗ No
         </button>
       </div>
-      <input type="hidden" id="answer-${question.id}" name="${question.id}" required="${question.required}">
+      <input type="hidden" id="answer-${question.id}" name="${question.id}" ${question.required ? 'required' : ''}>
     `;
   }
 
@@ -133,8 +173,8 @@ class QuestionRenderer {
           name="${question.id}" 
           class="input" 
           placeholder="${question.placeholder || ''}"
-          ${question.validation?.min ? `min="${question.validation.min}"` : ''}
-          ${question.validation?.max ? `max="${question.validation.max}"` : ''}
+          ${question.validation?.min !== undefined ? `min="${question.validation.min}"` : ''}
+          ${question.validation?.max !== undefined ? `max="${question.validation.max}"` : ''}
           ${question.required ? 'required' : ''}
         >
         ${question.unit ? `<span class="input-unit">${question.unit}</span>` : ''}
@@ -182,7 +222,7 @@ class QuestionRenderer {
   async submitAnswer(questionId, questionType) {
     const answer = this.getAnswerValue(questionId, questionType);
     
-    if (answer === null || answer === undefined || answer === '') {
+    if (answer === null || answer === undefined || answer === '' || (Array.isArray(answer) && answer.length === 0)) {
       this.showError(questionId, 'This question is required');
       return;
     }
@@ -230,15 +270,16 @@ class QuestionRenderer {
    * Get answer value based on question type
    */
   getAnswerValue(questionId, questionType) {
-    const input = document.getElementById(`answer-${questionId}`);
-    
     if (questionType === 'multi-select') {
-      const checkboxes = document.querySelectorAll(`input[name="${questionId}"]:checked`);
+      const checkboxes = this.container.querySelectorAll(`input[name="${questionId}"]:checked`);
       return Array.from(checkboxes).map(cb => cb.value);
     }
     
+    const input = document.getElementById(`answer-${questionId}`);
+    if (!input) return null;
+    
     if (questionType === 'number') {
-      return parseFloat(input.value);
+      return input.value ? parseFloat(input.value) : null;
     }
     
     return input.value;
@@ -248,8 +289,8 @@ class QuestionRenderer {
    * Go back to previous question
    */
   async goBack() {
-    // Implementation would require tracking question history
     console.log('Back functionality - to be implemented');
+    // TODO: Implement back navigation
   }
 
   /**
@@ -260,6 +301,9 @@ class QuestionRenderer {
     if (errorEl) {
       errorEl.textContent = message;
       errorEl.style.display = 'block';
+      
+      // Scroll to error
+      errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 
@@ -277,16 +321,22 @@ class QuestionRenderer {
    * Show loading state
    */
   showLoading() {
-    document.getElementById('loading')?.style.setProperty('display', 'block');
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) {
+      loadingEl.style.display = 'block';
+    }
   }
 
   /**
    * Hide loading state
    */
   hideLoading() {
-    document.getElementById('loading')?.style.setProperty('display', 'none');
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) {
+      loadingEl.style.display = 'none';
+    }
   }
 }
 
-// Global instance
-let questionRenderer;
+// Make it globally accessible
+window.QuestionRenderer = QuestionRenderer;

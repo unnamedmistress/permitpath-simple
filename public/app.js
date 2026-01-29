@@ -205,6 +205,43 @@ async function startGuidedQuestions(projectType) {
 }
 
 /**
+ * Select "Other" project type - show custom input
+ */
+function selectOtherProject() {
+  document.querySelector('.project-types').style.display = 'none';
+  document.getElementById('custom-project-input').style.display = 'block';
+  document.getElementById('custom-project-text').focus();
+}
+
+/**
+ * Cancel custom project input
+ */
+function cancelCustomProject() {
+  document.querySelector('.project-types').style.display = 'grid';
+  document.getElementById('custom-project-input').style.display = 'none';
+  document.getElementById('custom-project-text').value = '';
+}
+
+/**
+ * Submit custom project - use bathroom-remodel as fallback template
+ */
+function submitCustomProject() {
+  const customProject = document.getElementById('custom-project-text').value.trim();
+  
+  if (!customProject) {
+    showError('Please enter your project type');
+    return;
+  }
+  
+  // Store custom project name
+  appState.customProjectName = customProject;
+  
+  // Use bathroom-remodel as the template (most flexible)
+  // The AI will use the custom project name in the final answer
+  startGuidedQuestions('bathroom-remodel');
+}
+
+/**
  * Edit address - start over
  */
 function editAddress() {

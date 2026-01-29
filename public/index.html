@@ -82,6 +82,27 @@
                     <button class="project-type-btn" onclick="startGuidedQuestions('hvac-replacement')">
                         ❄️<br>HVAC<br>Replacement
                     </button>
+                    <button class="project-type-btn" onclick="selectOtherProject()">
+                        📦<br>Other<br>Project
+                    </button>
+                </div>
+                
+                <!-- Custom project input (hidden by default) -->
+                <div id="custom-project-input" style="display: none; margin-top: 2rem;">
+                    <label for="custom-project-text" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">
+                        What type of project is it?
+                    </label>
+                    <input 
+                        type="text" 
+                        id="custom-project-text" 
+                        class="input" 
+                        placeholder="e.g., Pool, Addition, Solar Panels, etc."
+                        style="margin-bottom: 1rem;"
+                    >
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn" onclick="cancelCustomProject()">Cancel</button>
+                        <button class="btn btn-primary" onclick="submitCustomProject()">Continue</button>
+                    </div>
                 </div>
             </div>
 
