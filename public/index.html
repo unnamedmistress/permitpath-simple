@@ -16,16 +16,23 @@
         .location-info h3 {
             margin: 0 0 10px 0;
             font-size: 1.2rem;
+            color: white;
+            font-weight: 600;
         }
         .location-details {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.95);
             padding: 15px;
             border-radius: 8px;
             margin: 10px 0;
+            color: #1f2937;
         }
         .location-details p {
             margin: 5px 0;
             font-size: 0.95rem;
+            color: #1f2937;
+        }
+        .location-details strong {
+            color: #111827;
         }
         .special-district {
             background: #ffd93d;
@@ -225,6 +232,17 @@
                             style="font-size: 1.1rem; padding: 15px; resize: vertical;"></textarea>
                     </div>
                     
+                    <!-- Optional: Upload Photo -->
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px dashed #0B5FB5;">
+                        <h3 style="margin: 0 0 10px 0; font-size: 1rem; color: #0B5FB5;">📸 Optional: Upload a Photo</h3>
+                        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #64748B;">Add a photo of your project for more accurate guidance</p>
+                        <input type="file" id="image-upload" accept="image/*" style="margin-bottom: 10px;" onchange="handleImageUpload(event)">
+                        <div id="image-preview" style="display: none; margin-top: 10px;">
+                            <img id="preview-img" style="max-width: 100%; border-radius: 8px; max-height: 300px;">
+                            <button class="btn" onclick="clearImage()" style="margin-top: 10px;">❌ Remove Photo</button>
+                        </div>
+                    </div>
+                    
                     <button class="btn btn-primary btn-large" onclick="getPermitAnswer()" style="width: 100%;">
                         🔍 Get My Answer
                     </button>
@@ -407,6 +425,28 @@
             document.getElementById('question-input').value = `Do I need a permit for a ${projectName}? What will it cost and how long will it take?`;
         }
 
+        // Handle image upload
+        let uploadedImageData = null;
+        
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImageData = e.target.result;
+                document.getElementById('preview-img').src = uploadedImageData;
+                document.getElementById('image-preview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function clearImage() {
+            uploadedImageData = null;
+            document.getElementById('image-upload').value = '';
+            document.getElementById('image-preview').style.display = 'none';
+        }
+
         // Get permit answer
         async function getPermitAnswer() {
             const question = document.getElementById('question-input').value.trim();
@@ -424,24 +464,46 @@
                     ? appState.customProject 
                     : appState.selectedProject;
 
-                const response = await fetch(`${API_BASE}/api/permit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        question,
-                        projectType,
-                        location: appState.location,
-                        permitOffice: appState.permitOffice,
-                        specialDistricts: appState.specialDistricts
-                    })
-                });
+                // Check if image was uploaded
+                if (uploadedImageData) {
+                    // Use image analysis API
+                    const response = await fetch(`${API_BASE}/api/permit-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            imageUrl: uploadedImageData,
+                            question,
+                            location: appState.location
+                        })
+                    });
 
-                if (!response.ok) {
-                    throw new Error('Failed to get permit answer');
+                    if (!response.ok) {
+                        throw new Error('Failed to analyze image');
+                    }
+
+                    const data = await response.json();
+                    displayAnswer(data);
+                } else {
+                    // Use regular text-based API
+                    const response = await fetch(`${API_BASE}/api/permit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            question,
+                            projectType,
+                            location: appState.location,
+                            permitOffice: appState.permitOffice,
+                            specialDistricts: appState.specialDistricts
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to get permit answer');
+                    }
+
+                    const data = await response.json();
+                    displayAnswer(data);
                 }
-
-                const data = await response.json();
-                displayAnswer(data);
             } catch (error) {
                 showError('Could not get answer. Please try again.');
                 console.error(error);

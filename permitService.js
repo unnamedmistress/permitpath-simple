@@ -62,14 +62,13 @@ ANSWER FORMAT:
 
 ${permitOffice ? `Permit Office Information:\n${permitOffice.name}\n${permitOffice.address}\n${permitOffice.phone}\n${permitOffice.website || ''}` : ''}`;
 
-      // Call GPT-4o-mini with web search
+      // Call GPT-4o-mini (web search removed - use regular completion)
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        tools: [{ type: 'web_search' }],
         temperature: 0.3, // Lower for consistency
         max_tokens: 1000
       });
@@ -117,6 +116,46 @@ ${permitOffice ? `Permit Office Information:\n${permitOffice.name}\n${permitOffi
       total: inputCost + outputCost + webSearchCost + searchContentCost,
       formatted: `$${(inputCost + outputCost + webSearchCost + searchContentCost).toFixed(4)}`
     };
+  }
+
+  /**
+   * Analyze project image with GPT-4 Vision
+   */
+  async analyzeProjectImage(imageUrl, question, location) {
+    try {
+      const systemPrompt = `You are a building permit expert. Analyze the image and answer the user's question about permit requirements for this location: ${location.fullAddress}, ${location.city}, ${location.state}.
+
+Be specific, use simple language, and format with emoji for easy scanning.`;
+
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          { 
+            role: 'user', 
+            content: [
+              { type: 'text', text: systemPrompt + '\n\n' + question },
+              { type: 'image_url', image_url: { url: imageUrl } }
+            ]
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.3
+      });
+
+      return {
+        answer: response.choices[0].message.content,
+        usage: {
+          promptTokens: response.usage.prompt_tokens,
+          completionTokens: response.usage.completion_tokens,
+          totalTokens: response.usage.total_tokens
+        },
+        model: 'gpt-4o',
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Image analysis error:', error);
+      throw new Error(`Failed to analyze image: ${error.message}`);
+    }
   }
 
   /**
