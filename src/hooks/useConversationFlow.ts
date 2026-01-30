@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { QuickReply, ChecklistItem, Message } from "@/types";
 import { getQuestionsForItem, getFirstIncompleteQuestions } from "@/data/checklistQuestions";
 import { formatPhotoRequirementsMessage, getPhotoRequirements } from "@/data/photoRequirements";
+import { getAiAssistantResponse } from "@/lib/aiAssistant";
 
 interface ConversationState {
   activeItemTitle: string | null;
@@ -59,9 +60,16 @@ export function useConversationFlow({
     
     if (firstIncompleteWithQuestions) {
       const { itemTitle } = firstIncompleteWithQuestions;
-      const welcomeMessage = `Hey! I'll help you get this permit ready. You have **${incompleteItems.length} items** to document.\n\nReady to start with "${itemTitle}"?`;
+      const fallbackMessage = `Hey! I'll help you get this permit ready. You have **${incompleteItems.length} items** to document.\n\nReady to start with "${itemTitle}"?`;
+
+      const aiMessage = await getAiAssistantResponse({
+        jobType,
+        jurisdiction,
+        checklistItems,
+        userPrompt: `Start the session. Mention the next item: ${itemTitle}.`,
+      });
       
-      await onAddMessage(welcomeMessage, "assistant");
+      await onAddMessage(aiMessage || fallbackMessage, "assistant");
       
       setState({
         activeItemTitle: null,
@@ -77,10 +85,15 @@ export function useConversationFlow({
     } else {
       // No questions defined for this job type yet - provide photo-based workflow
       const firstIncompleteTitle = incompleteItems[0].title;
-      await onAddMessage(
-        `Hey! I'll help you document this permit. You have **${incompleteItems.length} requirements** to complete.\n\nLet's start by taking photos of what you have. Tap '📷 Add Photo' below to document **${firstIncompleteTitle}**.`,
-        "assistant"
-      );
+      const fallbackMessage = `Hey! I'll help you document this permit. You have **${incompleteItems.length} requirements** to complete.\n\nLet's start by taking photos of what you have. Tap '📷 Add Photo' below to document **${firstIncompleteTitle}**.`;
+      const aiMessage = await getAiAssistantResponse({
+        jobType,
+        jurisdiction,
+        checklistItems,
+        userPrompt: `Start a photo-first workflow for ${firstIncompleteTitle}.`,
+      });
+
+      await onAddMessage(aiMessage || fallbackMessage, "assistant");
       
       setState({
         activeItemTitle: null,
@@ -312,10 +325,15 @@ export function useConversationFlow({
     if (reply.value === "explain") {
       const incompleteItems = checklistItems.filter(item => item.status !== "COMPLETE");
       if (incompleteItems.length > 0) {
-        await onAddMessage(
-          `Here's what we need to document:\n\n${incompleteItems.map((item, i) => `${i + 1}. **${item.title}**\n   ${item.description}`).join('\n\n')}\n\nThe easiest way is to take photos as we go. Ready to start?`,
-          "assistant"
-        );
+        const fallbackMessage = `Here's what we need to document:\n\n${incompleteItems.map((item, i) => `${i + 1}. **${item.title}**\n   ${item.description}`).join('\n\n')}\n\nThe easiest way is to take photos as we go. Ready to start?`;
+        const aiMessage = await getAiAssistantResponse({
+          jobType,
+          jurisdiction,
+          checklistItems,
+          userPrompt: "Explain the remaining checklist and suggest starting.",
+        });
+
+        await onAddMessage(aiMessage || fallbackMessage, "assistant");
         setState(prev => ({
           ...prev,
           quickReplies: [
@@ -489,8 +507,15 @@ export function useConversationFlow({
     }
     
     explanation += `Ready to document this requirement?`;
+
+    const aiMessage = await getAiAssistantResponse({
+      jobType,
+      jurisdiction,
+      checklistItems,
+      userPrompt: `Explain checklist item ${item.title}: ${item.description}.`,
+    });
     
-    await onAddMessage(explanation, "assistant");
+    await onAddMessage(aiMessage || explanation, "assistant");
     
     setState(prev => ({
       ...prev,
@@ -504,7 +529,7 @@ export function useConversationFlow({
       ],
       pendingCompletion: null
     }));
-  }, [jobType, jurisdiction, onAddMessage]);
+  }, [jobType, jurisdiction, onAddMessage, checklistItems]);
 
   // Handle continuing to the next item after a pause
   const handleContinueNext = useCallback(async () => {

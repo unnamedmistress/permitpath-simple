@@ -12,6 +12,9 @@ export const ENV = {
 
   // OpenAI Configuration
   OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || "",
+
+  // Functions base URL (optional override)
+  FUNCTIONS_BASE_URL: import.meta.env.VITE_FUNCTIONS_BASE_URL || "",
 };
 
 export const isFirebaseConfigured = (): boolean => {
