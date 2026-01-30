@@ -30,12 +30,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    let didTimeout = false;
+    const timeout = setTimeout(() => {
+      didTimeout = true;
+      setLoading(false);
+    }, 3000);
+
     const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
+      if (didTimeout) {
+        setUser(nextUser);
+        return;
+      }
+      clearTimeout(timeout);
       setUser(nextUser);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, [ready]);
 
   const value = useMemo<AuthContextValue>(
