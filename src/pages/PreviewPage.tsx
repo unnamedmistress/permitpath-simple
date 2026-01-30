@@ -52,7 +52,7 @@ export default function PreviewPage() {
   
   const { currentJob, getJob, isLoading: jobLoading } = useJob();
   const { items: checklistItems, fetchChecklist } = useChecklist(jobId || "");
-  const { photos } = usePhotos(jobId || "");
+  const { photos, loadPhotos } = usePhotos(jobId || "");
   
   const [initialized, setInitialized] = useState(false);
   const [jobNotFound, setJobNotFound] = useState(false);
@@ -71,11 +71,12 @@ export default function PreviewPage() {
       }
       
       await fetchChecklist();
+      await loadPhotos();
       setInitialized(true);
     };
     
     init();
-  }, [jobId]);
+  }, [jobId, loadPhotos, fetchChecklist, getJob]);
 
   const handleStartOver = () => {
     navigate("/new");

@@ -104,9 +104,11 @@ export interface Photo {
   jobId: string;
   url: string;
   thumbnailUrl?: string;
+  storagePath?: string;
   extractedData?: Record<string, unknown>;
   uploadedAt: Date;
   status: "UPLOADING" | "PROCESSING" | "COMPLETE" | "ERROR";
+  userId?: string;
 }
 
 // Checklist Types

@@ -11,6 +11,7 @@ import { useJob } from "@/hooks/useJob";
 import { JobType, Jurisdiction } from "@/types";
 import JobTemplates from "@/components/jobs/JobTemplates";
 import { JobTemplate } from "@/data/jobTemplates";
+import { FUNCTIONS_BASE_URL } from "@/config/functions";
 
 interface JobTypeOption {
   type: JobType;
@@ -232,6 +233,8 @@ export default function NewJobPage() {
   const [selectedType, setSelectedType] = useState<JobType | null>(null);
   const [selectedJurisdiction, setSelectedJurisdiction] = useState<Jurisdiction | null>(null);
   const [address, setAddress] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState<{ description: string; placeId: string }[]>([]);
+  const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<JobTemplate | null>(null);
@@ -261,6 +264,46 @@ export default function NewJobPage() {
     
     return grouped;
   }, [filteredJobTypes]);
+
+  useEffect(() => {
+    if (!FUNCTIONS_BASE_URL) return;
+    if (step !== "address") return;
+    if (address.trim().length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(async () => {
+      setIsAddressLoading(true);
+      try {
+        const response = await fetch(
+          `${FUNCTIONS_BASE_URL}/placesAutocomplete?input=${encodeURIComponent(address)}`,
+          { signal: controller.signal }
+        );
+        if (!response.ok) return;
+        const data = await response.json();
+        const predictions = Array.isArray(data?.predictions) ? data.predictions : [];
+        setAddressSuggestions(
+          predictions.map((item: any) => ({
+            description: item.description,
+            placeId: item.place_id,
+          }))
+        );
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          setAddressSuggestions([]);
+        }
+      } finally {
+        setIsAddressLoading(false);
+      }
+    }, 350);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [address, step]);
 
   const handleTemplateSelect = (template: JobTemplate) => {
     navigator.vibrate?.(10);
@@ -296,6 +339,29 @@ export default function NewJobPage() {
     navigator.vibrate?.(10);
     setSelectedJurisdiction(code);
     setStep("address");
+  };
+
+  const handleAddressSelect = async (suggestion: { description: string; placeId: string }) => {
+    if (!FUNCTIONS_BASE_URL) {
+      setAddress(suggestion.description);
+      setAddressSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${FUNCTIONS_BASE_URL}/placeDetails?placeId=${encodeURIComponent(suggestion.placeId)}`
+      );
+      if (!response.ok) {
+        setAddress(suggestion.description);
+        return;
+      }
+      const data = await response.json();
+      const formatted = data?.result?.formatted_address || suggestion.description;
+      setAddress(formatted);
+    } finally {
+      setAddressSuggestions([]);
+    }
   };
 
   const handleSubmit = async () => {
@@ -550,6 +616,23 @@ export default function NewJobPage() {
                   placeholder="123 Main Street, City, FL 33701"
                   className="w-full px-3 py-2.5 bg-muted rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+                {isAddressLoading && (
+                  <p className="text-xs text-muted-foreground mt-1">Looking up addresses...</p>
+                )}
+                {addressSuggestions.length > 0 && (
+                  <div className="mt-2 rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+                    {addressSuggestions.map((suggestion) => (
+                      <button
+                        key={suggestion.placeId}
+                        type="button"
+                        onClick={() => handleAddressSelect(suggestion)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                      >
+                        {suggestion.description}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <Button

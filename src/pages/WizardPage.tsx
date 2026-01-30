@@ -16,6 +16,11 @@ import { useConversationFlow } from "@/hooks/useConversationFlow";
 import { usePhotos } from "@/context/PhotoContext";
 import { Photo, ChecklistItem, QuickReply } from "@/types";
 import PhotoGuidelines from "@/components/permit/PhotoGuidelines";
+import { getAiAssistantResponse } from "@/lib/aiAssistant";
+import { db, storage, isFirebaseReady } from "@/config/firebase";
+import { useAuth } from "@/context/AuthContext";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp } from "firebase/firestore";
+import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 // Photo validation constants
 const MAX_PHOTO_SIZE_MB = 10;
@@ -30,7 +35,9 @@ export default function WizardPage() {
   const { currentJob, getJob, isLoading: jobLoading } = useJob();
   const { items: checklistItems, fetchChecklist, initializeChecklist, updateItem, getProgress } = useChecklist(jobId || "");
   const { messages, fetchMessages, addMessage } = useMessages(jobId || "");
-  const { photos, addPhoto, updatePhoto, deletePhoto } = usePhotos(jobId || "");
+  const { photos, loadPhotos, addPhoto, updatePhoto, deletePhoto } = usePhotos(jobId || "");
+  const { user } = useAuth();
+  const useFirebase = isFirebaseReady() && !!db && !!storage && !!user;
   
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -82,11 +89,12 @@ export default function WizardPage() {
       }
       
       await fetchMessages();
+      await loadPhotos();
       setInitialized(true);
     };
     
     init();
-  }, [jobId]);
+  }, [jobId, loadPhotos, fetchMessages, getJob, fetchChecklist, initializeChecklist]);
 
   // Start conversation flow after initialization
   useEffect(() => {
@@ -101,19 +109,24 @@ export default function WizardPage() {
     
     await addMessage(content, "user");
     setIsAiLoading(true);
-    
-    // Simulate AI response for free-form text (in production, this would call OpenAI)
-    setTimeout(async () => {
-      const responses = [
-        "I see! Let me help you with that. Can you take a photo so I can give you more specific guidance?",
-        "Good question! Based on what you've described, I'd recommend documenting that with a photo. Tap '📷 Add Photo' below.",
-        "That's helpful context! Let's continue with the checklist — I'll use this information when we get to the relevant section.",
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      await addMessage(randomResponse, "assistant");
-      setIsAiLoading(false);
-    }, 1500);
-  }, [jobId, addMessage]);
+
+    const fallbackResponses = [
+      "I see! Let me help you with that. Can you take a photo so I can give you more specific guidance?",
+      "Good question! Based on what you've described, I'd recommend documenting that with a photo. Tap '📷 Add Photo' below.",
+      "That's helpful context! Let's continue with the checklist — I'll use this information when we get to the relevant section.",
+    ];
+
+    const aiResponse = await getAiAssistantResponse({
+      jobType: currentJob?.jobType || "ELECTRICAL_PANEL",
+      jurisdiction: currentJob?.jurisdiction || "PINELLAS",
+      checklistItems,
+      userPrompt: content,
+    });
+
+    const reply = aiResponse || fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    await addMessage(reply, "assistant");
+    setIsAiLoading(false);
+  }, [jobId, addMessage, currentJob, checklistItems]);
 
   const handleQuickReplySelect = useCallback(async (reply: QuickReply) => {
     setIsAiLoading(true);
@@ -159,13 +172,13 @@ export default function WizardPage() {
     }
     
     // Create a preview URL
-    const url = URL.createObjectURL(file);
+    const localUrl = URL.createObjectURL(file);
     const photoId = `photo-${Date.now()}`;
     
     const newPhoto: Photo = {
       id: photoId,
       jobId,
-      url,
+      url: localUrl,
       uploadedAt: new Date(),
       status: "UPLOADING",
     };
@@ -173,52 +186,100 @@ export default function WizardPage() {
     addPhoto(newPhoto);
     setUploadProgress(prev => ({ ...prev, [photoId]: 0 }));
     setPhotosExpanded(true); // Show photos when a new one is added
-    
-    // Simulate upload progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        const current = prev[photoId] || 0;
-        if (current >= 90) {
-          clearInterval(progressInterval);
-          return prev;
+
+    // Upload to Firebase Storage if configured
+    if (useFirebase && user && storage && db) {
+      const storagePath = `users/${user.uid}/jobs/${jobId}/${photoId}`;
+      const storageRef = ref(storage, storagePath);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setUploadProgress(prev => ({ ...prev, [photoId]: progress }));
+        },
+        async () => {
+          updatePhoto(photoId, { status: "ERROR" });
+          toast.error("Photo upload failed", { description: "Please try again." });
+          setIsAiLoading(false);
+        },
+        async () => {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          const photoDoc = await addDoc(collection(db, "photos"), {
+            jobId,
+            userId: user.uid,
+            url: downloadUrl,
+            storagePath,
+            status: "COMPLETE",
+            uploadedAt: serverTimestamp(),
+          });
+
+          deletePhoto(photoId);
+          addPhoto({
+            id: photoDoc.id,
+            jobId,
+            url: downloadUrl,
+            storagePath,
+            uploadedAt: new Date(),
+            status: "COMPLETE",
+            userId: user.uid,
+          });
+
+          setUploadProgress(prev => {
+            const next = { ...prev };
+            delete next[photoId];
+            return next;
+          });
         }
-        return { ...prev, [photoId]: current + 10 };
-      });
-    }, 100);
-    
-    // Update status to processing
-    setTimeout(() => {
-      updatePhoto(photoId, { status: "PROCESSING" });
-      setUploadProgress(prev => ({ ...prev, [photoId]: 100 }));
-    }, 1000);
+      );
+    } else {
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const current = prev[photoId] || 0;
+          if (current >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return { ...prev, [photoId]: current + 10 };
+        });
+      }, 100);
+
+      setTimeout(() => {
+        updatePhoto(photoId, { status: "PROCESSING" });
+        setUploadProgress(prev => ({ ...prev, [photoId]: 100 }));
+      }, 1000);
+
+      setTimeout(async () => {
+        clearInterval(progressInterval);
+        updatePhoto(photoId, { status: "COMPLETE" });
+        setUploadProgress(prev => {
+          const next = { ...prev };
+          delete next[photoId];
+          return next;
+        });
+      }, 2000);
+    }
     
     // Add a message about the photo
     await addMessage("📷 I've uploaded a photo", "user");
     setIsAiLoading(true);
     setActiveTab("chat"); // Switch to chat to see AI response
-    
-    // Simulate AI vision analysis
-    setTimeout(async () => {
-      clearInterval(progressInterval);
-      
-      // Update photo status
-      updatePhoto(photoId, { status: "COMPLETE" });
-      setUploadProgress(prev => {
-        const next = { ...prev };
-        delete next[photoId];
-        return next;
-      });
-      
-      await addMessage(
-        "I can see the equipment in your photo! Here's what I found:\n\n" +
-        "• **Type**: Electrical panel\n" +
-        "• **Brand**: Looks like Square D\n" +
-        "• **Size**: Appears to be 200A main breaker\n\n" +
-        "Does this look right?",
-        "assistant"
-      );
-      setIsAiLoading(false);
-    }, 2000);
+
+    const aiResponse = await getAiAssistantResponse({
+      jobType: currentJob?.jobType || "ELECTRICAL_PANEL",
+      jurisdiction: currentJob?.jurisdiction || "PINELLAS",
+      checklistItems,
+      userPrompt: "A new job photo was uploaded. Ask for any missing details.",
+    });
+
+    await addMessage(
+      aiResponse ||
+        "I can see the equipment in your photo! If anything looks off, let me know or upload another angle.",
+      "assistant"
+    );
+    setIsAiLoading(false);
     
     // Reset input
     if (fileInputRef.current) {
@@ -234,6 +295,13 @@ export default function WizardPage() {
 
   const handleConfirmDeletePhoto = () => {
     if (photoToDelete) {
+      const photo = photos.find((item) => item.id === photoToDelete);
+      if (useFirebase && photo?.storagePath && db) {
+        deleteDoc(doc(db, "photos", photoToDelete));
+        if (storage) {
+          deleteObject(ref(storage, photo.storagePath));
+        }
+      }
       deletePhoto(photoToDelete);
       toast.success("Photo deleted");
       setPhotoToDelete(null);
