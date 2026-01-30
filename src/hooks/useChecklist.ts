@@ -78,6 +78,88 @@ const CHECKLIST_TEMPLATES: Record<JobType, Record<Jurisdiction, Omit<ChecklistIt
       { title: "Ventilation", description: "Confirm exhaust fan CFM and ducting to exterior", order: 5, status: "PENDING", isConfirmed: false },
       { title: "NOC Requirements", description: "Determine if Notice of Commencement is needed", order: 6, status: "PENDING", isConfirmed: false },
     ]
+  },
+  ROOF_REPAIR: {
+    PINELLAS: [
+      { title: "Damage Assessment", description: "Document extent and location of roof damage", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Repair Area Size", description: "Measure square footage of repair area", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Matching Materials", description: "Specify roofing material to match existing", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Permit Determination", description: "Confirm if permit required (typically >100 sq ft)", order: 4, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  ELECTRICAL_REWIRING: {
+    PINELLAS: [
+      { title: "Circuit Load Calculation", description: "Provide electrical load calculation for new/modified circuits", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Wiring Plan", description: "Submit wiring diagram showing circuit routes and device locations", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Panel Photos", description: "Photograph existing electrical panel showing available space", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "License Information", description: "Licensed electrician name, license number, and company info", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Permit Application", description: "Complete electrical permit application", order: 5, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  PLUMBING_MAIN_LINE: {
+    PINELLAS: [
+      { title: "Location & Depth", description: "Document main line location and burial depth", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Pipe Material & Size", description: "Specify replacement pipe material and diameter", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Connection Points", description: "Identify connection to street and building foundation", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Cleanout Access", description: "Verify cleanout locations meet code requirements", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Permit Application", description: "Complete plumbing permit application", order: 5, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  KITCHEN_REMODEL: {
+    PINELLAS: [
+      { title: "Scope of Work", description: "Define all work: cabinets, plumbing, electrical, structural", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Floor Plan", description: "Provide kitchen layout showing new fixture locations", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Plumbing Changes", description: "Document sink, dishwasher, and appliance connections", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Electrical Plan", description: "Show outlet/lighting changes and appliance circuits", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Ventilation", description: "Specify range hood CFM and venting configuration", order: 5, status: "PENDING", isConfirmed: false },
+      { title: "Structural Changes", description: "Document any wall removal or beam installation", order: 6, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  SIDING_EXTERIOR: {
+    PINELLAS: [
+      { title: "Material Selection", description: "Specify siding material and manufacturer specifications", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Coverage Area", description: "Document square footage and wall locations", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Water Barrier", description: "Confirm weather-resistant barrier installation", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Flashing Details", description: "Show window/door flashing and trim details", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Permit Application", description: "Complete building permit application", order: 5, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  DECK_INSTALLATION: {
+    PINELLAS: [
+      { title: "Deck Dimensions", description: "Provide deck size, height, and attachment method", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Foundation Plan", description: "Show footing locations, size, and depth", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Framing Details", description: "Submit joist sizing, spacing, and ledger attachment", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Railing System", description: "Specify railing height, spacing, and post attachment", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Site Plan", description: "Show deck location with setbacks from property lines", order: 5, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  FENCE_INSTALLATION: {
+    PINELLAS: [
+      { title: "Fence Height", description: "Specify fence height (typically 6ft max without permit)", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Material Type", description: "Document fence material: wood, vinyl, chain-link, etc.", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Property Line Survey", description: "Verify property boundaries and easements", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Permit Requirement", description: "Determine if permit needed (height, location, HOA)", order: 4, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  ROOM_ADDITION: {
+    PINELLAS: [
+      { title: "Site Plan", description: "Show addition footprint with property setbacks", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Architectural Plans", description: "Submit floor plan, elevations, and building sections", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Structural Engineering", description: "Provide structural plans for foundation, framing, and roof", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Electrical Plan", description: "Show all outlets, switches, lighting, and panel load calc", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Plumbing Plan", description: "Document any water supply or drain connections", order: 5, status: "PENDING", isConfirmed: false },
+      { title: "Mechanical Plan", description: "Show HVAC system modifications or new equipment", order: 6, status: "PENDING", isConfirmed: false },
+      { title: "Energy Compliance", description: "Florida Energy Code compliance documentation", order: 7, status: "PENDING", isConfirmed: false },
+    ]
+  },
+  FOUNDATION_REPAIR: {
+    PINELLAS: [
+      { title: "Structural Assessment", description: "Engineer's report documenting foundation issues", order: 1, status: "PENDING", isConfirmed: false },
+      { title: "Repair Method", description: "Specify repair technique: piers, underpinning, slab injection", order: 2, status: "PENDING", isConfirmed: false },
+      { title: "Engineered Plans", description: "Submit sealed structural repair plans from PE", order: 3, status: "PENDING", isConfirmed: false },
+      { title: "Soil Report", description: "Geotechnical report if required for major repairs", order: 4, status: "PENDING", isConfirmed: false },
+      { title: "Permit Application", description: "Complete building permit application with engineer seal", order: 5, status: "PENDING", isConfirmed: false },
+    ]
   }
 };
 

@@ -114,16 +114,38 @@ export function useJob() {
 
 function getJobTitle(jobType: JobType, address?: string): string {
   const typeLabels: Record<JobType, string> = {
+    // HVAC & Mechanical
     AC_HVAC_CHANGEOUT: "AC/HVAC Changeout",
     WATER_HEATER: "Water Heater",
-    RE_ROOFING: "Re-Roofing",
+    
+    // Roofing
+    RE_ROOFING: "Roof Replacement",
+    ROOF_REPAIR: "Roof Repair",
+    
+    // Electrical
     ELECTRICAL_PANEL: "Panel Upgrade",
-    WINDOW_DOOR_REPLACEMENT: "Window/Door",
-    POOL_BARRIER: "Pool Barrier",
-    GENERATOR_INSTALL: "Generator",
+    ELECTRICAL_REWIRING: "Electrical Rewiring",
     EV_CHARGER: "EV Charger",
-    SMALL_BATH_REMODEL: "Bath Remodel",
+    GENERATOR_INSTALL: "Generator Install",
+    
+    // Plumbing
+    PLUMBING_MAIN_LINE: "Plumbing Main Line",
+    
+    // Interior
+    SMALL_BATH_REMODEL: "Bathroom Remodel",
+    KITCHEN_REMODEL: "Kitchen Remodel",
+    
+    // Exterior
+    WINDOW_DOOR_REPLACEMENT: "Window/Door Replacement",
+    SIDING_EXTERIOR: "Siding/Exterior",
+    DECK_INSTALLATION: "Deck Installation",
+    FENCE_INSTALLATION: "Fence Installation",
+    POOL_BARRIER: "Pool Barrier",
+    
+    // Structural
+    ROOM_ADDITION: "Room Addition",
+    FOUNDATION_REPAIR: "Foundation Repair",
   };
-  const label = typeLabels[jobType];
+  const label = typeLabels[jobType] || jobType.replace(/_/g, " ");
   return address ? `${label} - ${address.split(",")[0]}` : label;
 }
