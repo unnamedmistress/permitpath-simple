@@ -279,9 +279,9 @@ export function useConversationFlow({
         quickReplies: nextQuestion.options
       }));
     } else {
-      await completeCurrentItem(state.answers);
+      await showCompletionConfirmation(state.answers);
     }
-  }, [state, jobType, jurisdiction, onAddMessage]);
+  }, [state, jobType, jurisdiction, onAddMessage, showCompletionConfirmation]);
 
   // Show confirmation before completing item
   const showCompletionConfirmation = useCallback(async (answers: Record<string, string>) => {
@@ -310,34 +310,8 @@ export function useConversationFlow({
     }));
   }, [state.activeItemTitle, onAddMessage]);
 
-  // Complete the current checklist item (after confirmation)
-  const completeCurrentItem = useCallback(async () => {
-    if (!state.pendingCompletion) return;
-
-    const { itemTitle, answers } = state.pendingCompletion;
-    const currentItem = checklistItems.find(item => item.title === itemTitle);
-    
-    if (currentItem) {
-      onCompleteItem(currentItem.id, answers);
-    }
-
-    const completedCount = checklistItems.filter(i => i.status === "COMPLETE").length + 1;
-    const totalCount = checklistItems.length;
-
-    await onAddMessage(
-      `✅ **${itemTitle}** — Complete! (${completedCount} of ${totalCount} done)\n\nI've saved all that info.`,
-      "assistant"
-    );
-
-    // Clear pending completion
-    setState(prev => ({ ...prev, pendingCompletion: null }));
-
-    // Move to next incomplete item
-    await moveToNextItem();
-  }, [state.pendingCompletion, checklistItems, onCompleteItem, onAddMessage]);
-
   // Move to the next incomplete checklist item
-  const moveToNextItem = useCallback(async () => {
+  const moveToNextItemImpl = useCallback(async () => {
     // Check actual completion status
     const remainingIncomplete = checklistItems.filter(
       item => item.status !== "COMPLETE" && item.title !== state.activeItemTitle
@@ -405,6 +379,99 @@ export function useConversationFlow({
       });
     }
   }, [jobType, jurisdiction, checklistItems, state.activeItemTitle, onAddMessage]);
+
+  // Complete the current checklist item (after confirmation)
+  const completeCurrentItem = useCallback(async () => {
+    if (!state.pendingCompletion) return;
+
+    const { itemTitle, answers } = state.pendingCompletion;
+    const currentItem = checklistItems.find(item => item.title === itemTitle);
+    
+    if (currentItem) {
+      onCompleteItem(currentItem.id, answers);
+    }
+
+    const completedCount = checklistItems.filter(i => i.status === "COMPLETE").length + 1;
+    const totalCount = checklistItems.length;
+
+    await onAddMessage(
+      `✅ **${itemTitle}** — Complete! (${completedCount} of ${totalCount} done)\n\nI've saved all that info.`,
+      "assistant"
+    );
+
+    // Clear pending completion
+    setState(prev => ({ ...prev, pendingCompletion: null }));
+
+    // Move to next incomplete item (inline to avoid circular dependency)
+    const remainingIncomplete = checklistItems.filter(
+      item => item.status !== "COMPLETE" && item.title !== itemTitle
+    );
+
+    if (remainingIncomplete.length === 0) {
+      await onAddMessage(
+        "🎉 **All done!** You've completed all the requirements. Tap 'Preview Package' to see your permit documents!",
+        "assistant"
+      );
+      
+      setState({
+        activeItemTitle: null,
+        questionIndex: 0,
+        answers: {},
+        quickReplies: [],
+        isComplete: true,
+        pendingCompletion: null
+      });
+      return;
+    }
+
+    // Try to find next item with questions
+    const nextIncompleteWithQuestions = getFirstIncompleteQuestions(
+      jobType, 
+      jurisdiction, 
+      remainingIncomplete
+    );
+
+    if (nextIncompleteWithQuestions) {
+      await onAddMessage(
+        `Great! **${remainingIncomplete.length} items** left. Let's move on to **${nextIncompleteWithQuestions.itemTitle}**. Ready?`,
+        "assistant"
+      );
+      
+      setState({
+        activeItemTitle: nextIncompleteWithQuestions.itemTitle,
+        questionIndex: 0,
+        answers: {},
+        quickReplies: [
+          { label: "Yes, continue! ✨", value: "continue_next" },
+          { label: "Take a break", value: "pause" }
+        ],
+        isComplete: false,
+        pendingCompletion: null
+      });
+    } else {
+      // No questions for remaining items - suggest photo approach
+      const nextTitle = remainingIncomplete[0].title;
+      await onAddMessage(
+        `Good progress! **${remainingIncomplete.length} items** left.\n\nFor **${nextTitle}**, let's document it with photos. Tap '📷 Add Photo' below.`,
+        "assistant"
+      );
+      
+      setState({
+        activeItemTitle: null,
+        questionIndex: 0,
+        answers: {},
+        quickReplies: [
+          { label: "📷 Add Photo", value: "photo" },
+          { label: "Skip for now", value: "pause" }
+        ],
+        isComplete: false,
+        pendingCompletion: null
+      });
+    }
+  }, [state.pendingCompletion, checklistItems, onCompleteItem, onAddMessage, jobType, jurisdiction]);
+
+  // Wrapper for external use
+  const moveToNextItem = moveToNextItemImpl;
 
   // Handle clicking on a checklist item
   const handleChecklistItemClick = useCallback(async (item: ChecklistItem) => {
