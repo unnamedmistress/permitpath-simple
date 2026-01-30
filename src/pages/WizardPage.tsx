@@ -42,6 +42,8 @@ export default function WizardPage() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [conversationStarted, setConversationStarted] = useState(false);
+  const [messagesLoaded, setMessagesLoaded] = useState(false);
+  const startConversationRef = useRef(false);
   const [activeTab, setActiveTab] = useState<"chat" | "checklist">("chat");
   const [photosExpanded, setPhotosExpanded] = useState(false);
   const [photoToDelete, setPhotoToDelete] = useState<string | null>(null);
@@ -89,6 +91,7 @@ export default function WizardPage() {
       }
       
       await fetchMessages();
+      setMessagesLoaded(true);
       await loadPhotos();
       setInitialized(true);
     };
@@ -98,11 +101,28 @@ export default function WizardPage() {
 
   // Start conversation flow after initialization
   useEffect(() => {
-    if (initialized && currentJob && checklistItems.length > 0 && !conversationStarted && messages.length === 0) {
+    if (
+      initialized &&
+      messagesLoaded &&
+      currentJob &&
+      checklistItems.length > 0 &&
+      !conversationStarted &&
+      messages.length === 0 &&
+      !startConversationRef.current
+    ) {
+      startConversationRef.current = true;
       setConversationStarted(true);
       startConversation();
     }
-  }, [initialized, currentJob, checklistItems, conversationStarted, messages.length, startConversation]);
+  }, [
+    initialized,
+    messagesLoaded,
+    currentJob,
+    checklistItems,
+    conversationStarted,
+    messages.length,
+    startConversation,
+  ]);
 
   const handleSendMessage = useCallback(async (content: string) => {
     if (!jobId) return;
