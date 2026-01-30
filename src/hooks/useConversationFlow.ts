@@ -287,6 +287,22 @@ export function useConversationFlow({
       const firstIncomplete = getFirstIncompleteQuestions(jobType, jurisdiction, checklistItems);
       if (firstIncomplete) {
         await startItemQuestions(firstIncomplete.itemTitle);
+      } else {
+        const fallbackItem = checklistItems.find((item) => item.status !== "COMPLETE");
+        if (fallbackItem) {
+          await onAddMessage(
+            `Let's start with **${fallbackItem.title}**. You can upload a photo to document it.`,
+            "assistant"
+          );
+          setState(prev => ({
+            ...prev,
+            activeItemTitle: fallbackItem.title,
+            quickReplies: [
+              { label: "📷 Add Photo", value: "photo" },
+              { label: "Skip for now", value: "pause" }
+            ]
+          }));
+        }
       }
       return;
     }
