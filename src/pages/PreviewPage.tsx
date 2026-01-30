@@ -14,6 +14,8 @@ import { getBuildingDepartment } from "@/data/jurisdictionData";
 import PermitReasoning from "@/components/preview/PermitReasoning";
 import SubmissionGuide from "@/components/preview/SubmissionGuide";
 import ApplicationGuide from "@/components/preview/ApplicationGuide";
+import FeeEstimate from "@/components/permit/FeeEstimate";
+import PhotoGuidelines from "@/components/permit/PhotoGuidelines";
 import { JobType } from "@/types";
 
 const JOB_TYPE_LABELS: Record<JobType, string> = {
@@ -201,6 +203,17 @@ export default function PreviewPage() {
 
         {/* INTELLIGENT PERMIT REASONING */}
         <PermitReasoning permitReq={permitReq} />
+
+        {/* FEE ESTIMATE - Only show if permit required */}
+        {permitReq.required && (
+          <FeeEstimate 
+            jobType={jobType}
+            jurisdictionId="pinellas-county"
+          />
+        )}
+
+        {/* PHOTO GUIDELINES */}
+        <PhotoGuidelines jobType={jobType} />
 
         {/* SUBMISSION GUIDE - Only show if permit required */}
         {permitReq.required && (

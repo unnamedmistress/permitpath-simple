@@ -190,6 +190,161 @@ export const PERMIT_FEES: PermitFee[] = [
     officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
     lastUpdated: "2026-01-30"
   },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "ELECTRICAL_REWIRING",
+    feeStructure: "flat",
+    baselineRange: {
+      min: 125,
+      max: 300,
+      notes: "Residential electrical work permit"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "EV_CHARGER",
+    feeStructure: "flat",
+    baselineRange: {
+      min: 75,
+      max: 150,
+      notes: "Level 2 EV charger installation"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "GENERATOR_INSTALL",
+    feeStructure: "flat",
+    baselineRange: {
+      min: 150,
+      max: 350,
+      notes: "Standby generator installation (electrical + fuel gas)"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "PLUMBING_MAIN_LINE",
+    feeStructure: "flat",
+    baselineRange: {
+      min: 200,
+      max: 400,
+      notes: "Main water/sewer line repair or replacement"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "KITCHEN_REMODEL",
+    feeStructure: "percentage",
+    baselineRange: {
+      min: 200,
+      max: 1000,
+      notes: "Varies by scope - multiple trades typically required"
+    },
+    calculator: {
+      formula: "project_value * 0.015",
+      description: "Approximately 1.5% of project value"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "WINDOW_DOOR_REPLACEMENT",
+    feeStructure: "flat",
+    baselineRange: {
+      min: 100,
+      max: 300,
+      notes: "Impact windows/doors - requires Florida Product Approval"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "SIDING_EXTERIOR",
+    feeStructure: "tiered",
+    baselineRange: {
+      min: 150,
+      max: 400,
+      notes: "Based on square footage of work area"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "ROOF_REPAIR",
+    feeStructure: "flat",
+    baselineRange: {
+      min: 75,
+      max: 200,
+      notes: "For repairs over 100 sq ft"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "FENCE_INSTALLATION",
+    feeStructure: "flat",
+    baselineRange: {
+      min: 50,
+      max: 150,
+      notes: "If permit required (typically for fences over 6ft)"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "ROOM_ADDITION",
+    feeStructure: "percentage",
+    baselineRange: {
+      min: 500,
+      max: 2500,
+      notes: "Major project - plan review, structural, all trades"
+    },
+    calculator: {
+      formula: "project_value * 0.02",
+      description: "Approximately 2% of project value"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
+  {
+    jurisdictionId: "pinellas-county",
+    jurisdictionName: "Pinellas County",
+    jobType: "FOUNDATION_REPAIR",
+    feeStructure: "percentage",
+    baselineRange: {
+      min: 300,
+      max: 1500,
+      notes: "Requires structural engineer review and sealed plans"
+    },
+    calculator: {
+      formula: "project_value * 0.018",
+      description: "Approximately 1.8% of project value"
+    },
+    officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
+    lastUpdated: "2026-01-30"
+  },
 ];
 
 /**

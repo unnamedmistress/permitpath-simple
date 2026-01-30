@@ -17,6 +17,7 @@ interface JobTypeOption {
   description: string;
   category: "hvac" | "roofing" | "electrical" | "plumbing" | "interior" | "exterior" | "structural";
   keywords: string[];
+  status: "ready" | "beta" | "coming-soon";
 }
 
 const JOB_TYPES: JobTypeOption[] = [
@@ -27,7 +28,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Sun, 
     description: "Like-for-like unit changeout",
     category: "hvac",
-    keywords: ["ac", "hvac", "air conditioning", "heat pump", "cooling", "heating"]
+    keywords: ["ac", "hvac", "air conditioning", "heat pump", "cooling", "heating"],
+    status: "ready"
   },
   { 
     type: "WATER_HEATER", 
@@ -35,7 +37,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Droplet, 
     description: "Tank or tankless install",
     category: "hvac",
-    keywords: ["water heater", "hot water", "tank", "tankless"]
+    keywords: ["water heater", "hot water", "tank", "tankless"],
+    status: "ready"
   },
   
   // Roofing (TOP PRIORITY)
@@ -45,7 +48,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: SquareStack, 
     description: "Full re-roof (shingle, tile, metal)",
     category: "roofing",
-    keywords: ["roof", "roofing", "reroof", "shingle", "tile", "metal roof"]
+    keywords: ["roof", "roofing", "reroof", "shingle", "tile", "metal roof"],
+    status: "ready"
   },
   { 
     type: "ROOF_REPAIR", 
@@ -53,7 +57,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: SquareStack, 
     description: "Patch, leak repair, minor work",
     category: "roofing",
-    keywords: ["roof repair", "leak", "patch", "roofing"]
+    keywords: ["roof repair", "leak", "patch", "roofing"],
+    status: "ready"
   },
   
   // Electrical
@@ -63,7 +68,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Zap, 
     description: "Panel upgrade or replacement",
     category: "electrical",
-    keywords: ["electrical", "panel", "breaker", "service upgrade", "200 amp"]
+    keywords: ["electrical", "panel", "breaker", "service upgrade", "200 amp"],
+    status: "ready"
   },
   { 
     type: "ELECTRICAL_REWIRING", 
@@ -71,7 +77,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Zap, 
     description: "Circuit additions, rewiring",
     category: "electrical",
-    keywords: ["rewiring", "electrical", "circuits", "wiring", "outlets"]
+    keywords: ["rewiring", "electrical", "circuits", "wiring", "outlets"],
+    status: "ready"
   },
   { 
     type: "EV_CHARGER", 
@@ -79,7 +86,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Car, 
     description: "Level 2 EV charging station",
     category: "electrical",
-    keywords: ["ev", "charger", "electric vehicle", "tesla", "charging"]
+    keywords: ["ev", "charger", "electric vehicle", "tesla", "charging"],
+    status: "ready"
   },
   { 
     type: "GENERATOR_INSTALL", 
@@ -87,7 +95,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: BatteryCharging, 
     description: "Standby generator install",
     category: "electrical",
-    keywords: ["generator", "standby", "backup power", "generac"]
+    keywords: ["generator", "standby", "backup power", "generac"],
+    status: "ready"
   },
   
   // Plumbing
@@ -97,7 +106,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Droplet, 
     description: "Main line repair/replacement",
     category: "plumbing",
-    keywords: ["plumbing", "main line", "sewer", "water line", "pipe"]
+    keywords: ["plumbing", "main line", "sewer", "water line", "pipe"],
+    status: "ready"
   },
   
   // Interior Remodeling
@@ -107,7 +117,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Bath, 
     description: "Bath renovation (any size)",
     category: "interior",
-    keywords: ["bathroom", "bath", "remodel", "renovation", "shower", "tub"]
+    keywords: ["bathroom", "bath", "remodel", "renovation", "shower", "tub"],
+    status: "ready"
   },
   { 
     type: "KITCHEN_REMODEL", 
@@ -115,7 +126,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Home, 
     description: "Kitchen renovation",
     category: "interior",
-    keywords: ["kitchen", "remodel", "renovation", "cabinets", "countertops"]
+    keywords: ["kitchen", "remodel", "renovation", "cabinets", "countertops"],
+    status: "ready"
   },
   
   // Exterior
@@ -125,7 +137,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: SquareStack, 
     description: "Impact windows & doors",
     category: "exterior",
-    keywords: ["window", "door", "impact", "replacement", "sliding door"]
+    keywords: ["window", "door", "impact", "replacement", "sliding door"],
+    status: "ready"
   },
   { 
     type: "SIDING_EXTERIOR", 
@@ -133,7 +146,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Home, 
     description: "Siding, soffit, fascia",
     category: "exterior",
-    keywords: ["siding", "exterior", "soffit", "fascia", "cladding"]
+    keywords: ["siding", "exterior", "soffit", "fascia", "cladding"],
+    status: "ready"
   },
   { 
     type: "DECK_INSTALLATION", 
@@ -141,7 +155,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: SquareStack, 
     description: "Deck construction or replacement",
     category: "exterior",
-    keywords: ["deck", "decking", "patio", "porch"]
+    keywords: ["deck", "decking", "patio", "porch"],
+    status: "ready"
   },
   { 
     type: "FENCE_INSTALLATION", 
@@ -149,7 +164,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Fence, 
     description: "Fence install (may not need permit)",
     category: "exterior",
-    keywords: ["fence", "fencing", "privacy fence", "chain link"]
+    keywords: ["fence", "fencing", "privacy fence", "chain link"],
+    status: "ready"
   },
   { 
     type: "POOL_BARRIER", 
@@ -157,7 +173,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Fence, 
     description: "Safety fence or enclosure",
     category: "exterior",
-    keywords: ["pool", "barrier", "safety fence", "pool cage", "screen enclosure"]
+    keywords: ["pool", "barrier", "safety fence", "pool cage", "screen enclosure"],
+    status: "ready"
   },
   
   // Structural
@@ -167,7 +184,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Home, 
     description: "Adding square footage",
     category: "structural",
-    keywords: ["addition", "room addition", "expansion", "sunroom", "florida room"]
+    keywords: ["addition", "room addition", "expansion", "sunroom", "florida room"],
+    status: "ready"
   },
   { 
     type: "FOUNDATION_REPAIR", 
@@ -175,7 +193,8 @@ const JOB_TYPES: JobTypeOption[] = [
     icon: Hammer, 
     description: "Structural foundation work",
     category: "structural",
-    keywords: ["foundation", "structural", "repair", "underpinning", "pier"]
+    keywords: ["foundation", "structural", "repair", "underpinning", "pier"],
+    status: "ready"
   },
 ];
 
@@ -405,7 +424,7 @@ export default function NewJobPage() {
                         {CATEGORY_LABELS[category]}
                       </h2>
                       <div className="space-y-2">
-                        {jobs.map(({ type, label, icon: Icon, description }) => (
+                        {jobs.map(({ type, label, icon: Icon, description, status }) => (
                           <button
                             key={type}
                             onClick={() => handleTypeSelect(type)}
@@ -421,7 +440,19 @@ export default function NewJobPage() {
                               <Icon size={20} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-medium text-foreground">{label}</h3>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-medium text-foreground">{label}</h3>
+                                {status === "ready" && (
+                                  <span className="px-1.5 py-0.5 bg-success/10 text-success text-xs font-medium rounded">
+                                    ✓ Ready
+                                  </span>
+                                )}
+                                {status === "beta" && (
+                                  <span className="px-1.5 py-0.5 bg-warning/10 text-warning text-xs font-medium rounded">
+                                    Beta
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground truncate">{description}</p>
                             </div>
                           </button>

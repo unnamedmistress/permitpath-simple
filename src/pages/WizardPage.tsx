@@ -15,6 +15,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { useConversationFlow } from "@/hooks/useConversationFlow";
 import { usePhotos } from "@/context/PhotoContext";
 import { Photo, ChecklistItem, QuickReply } from "@/types";
+import PhotoGuidelines from "@/components/permit/PhotoGuidelines";
 
 // Photo validation constants
 const MAX_PHOTO_SIZE_MB = 10;
