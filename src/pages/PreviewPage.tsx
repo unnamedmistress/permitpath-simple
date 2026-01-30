@@ -17,6 +17,8 @@ import ApplicationGuide from "@/components/preview/ApplicationGuide";
 import FeeEstimate from "@/components/permit/FeeEstimate";
 import PhotoGuidelines from "@/components/permit/PhotoGuidelines";
 import TimelineEstimate from "@/components/permit/TimelineEstimate";
+import LicensingInfo from "@/components/permit/LicensingInfo";
+import ProfessionalDirectory from "@/components/permit/ProfessionalDirectory";
 import { JobType } from "@/types";
 
 const JOB_TYPE_LABELS: Record<JobType, string> = {
@@ -220,6 +222,12 @@ export default function PreviewPage() {
             jurisdiction="Pinellas County"
           />
         )}
+
+        {/* LICENSING INFO */}
+        <LicensingInfo jobType={jobType} />
+
+        {/* PROFESSIONAL DIRECTORY */}
+        <ProfessionalDirectory jobType={jobType} />
 
         {/* PHOTO GUIDELINES */}
         <PhotoGuidelines jobType={jobType} />
