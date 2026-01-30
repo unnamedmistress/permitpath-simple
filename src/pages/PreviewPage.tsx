@@ -18,7 +18,6 @@ import FeeEstimate from "@/components/permit/FeeEstimate";
 import PhotoGuidelines from "@/components/permit/PhotoGuidelines";
 import TimelineEstimate from "@/components/permit/TimelineEstimate";
 import LicensingInfo from "@/components/permit/LicensingInfo";
-import ProfessionalDirectory from "@/components/permit/ProfessionalDirectory";
 import InspectionCheckpoints from "@/components/permit/InspectionCheckpoints";
 import { JobType } from "@/types";
 
@@ -287,9 +286,6 @@ export default function PreviewPage() {
 
         {/* LICENSING INFO */}
         <LicensingInfo jobType={jobType} />
-
-        {/* PROFESSIONAL DIRECTORY */}
-        <ProfessionalDirectory jobType={jobType} />
 
         {/* PHOTO GUIDELINES */}
         <PhotoGuidelines jobType={jobType} />
