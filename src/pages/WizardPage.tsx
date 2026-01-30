@@ -338,6 +338,16 @@ export default function WizardPage() {
     );
   }
 
+  if (!jobId) {
+    return (
+      <PageWrapper hasBottomNav={false}>
+        <div className="flex items-center justify-center h-screen-safe" aria-busy="true">
+          <LoadingSpinner size="lg" text="Loading job..." />
+        </div>
+      </PageWrapper>
+    );
+  }
+
   if (!initialized || jobLoading) {
     return (
       <PageWrapper hasBottomNav={false}>
