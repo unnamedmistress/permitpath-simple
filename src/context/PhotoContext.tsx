@@ -35,29 +35,34 @@ export function PhotoProvider({ children }: { children: ReactNode }) {
   const loadPhotos = useCallback(async (jobId: string) => {
     if (!useFirestore || !db || !user) return;
 
-    const photosQuery = query(
-      collection(db, "photos"),
-      where("jobId", "==", jobId),
-      where("userId", "==", user.uid),
-      orderBy("uploadedAt", "asc")
-    );
+    try {
+      const photosQuery = query(
+        collection(db, "photos"),
+        where("jobId", "==", jobId),
+        where("userId", "==", user.uid),
+        orderBy("uploadedAt", "asc")
+      );
 
-    const snapshot = await getDocs(photosQuery);
-    const fetched = snapshot.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        jobId: data.jobId,
-        url: data.url,
-        storagePath: data.storagePath,
-        extractedData: data.extractedData ?? {},
-        uploadedAt: data.uploadedAt?.toDate ? data.uploadedAt.toDate() : new Date(),
-        status: data.status ?? "COMPLETE",
-        userId: data.userId,
-      } as Photo;
-    });
+      const snapshot = await getDocs(photosQuery);
+      const fetched = snapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          jobId: data.jobId,
+          url: data.url,
+          storagePath: data.storagePath,
+          extractedData: data.extractedData ?? {},
+          uploadedAt: data.uploadedAt?.toDate ? data.uploadedAt.toDate() : new Date(),
+          status: data.status ?? "COMPLETE",
+          userId: data.userId,
+        } as Photo;
+      });
 
-    setPhotos((prev) => ({ ...prev, [jobId]: fetched }));
+      setPhotos((prev) => ({ ...prev, [jobId]: fetched }));
+    } catch (error) {
+      console.error("Failed to load photos", error);
+      setPhotos((prev) => ({ ...prev, [jobId]: prev[jobId] || [] }));
+    }
   }, [useFirestore, user]);
 
   const addPhoto = useCallback((jobId: string, photo: Photo) => {

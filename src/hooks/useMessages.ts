@@ -51,6 +51,11 @@ export function useMessages(jobId: string) {
       const existing = memoryMessages[jobId] || [];
       setMessages(existing);
       return existing;
+    } catch (error) {
+      console.error("Failed to fetch messages", error);
+      const existing = memoryMessages[jobId] || [];
+      setMessages(existing);
+      return existing;
     } finally {
       setIsLoading(false);
     }
