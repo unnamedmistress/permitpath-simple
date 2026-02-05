@@ -11,6 +11,11 @@ export default defineConfig({
       overlay: false,
     },
   },
+  esbuild: {
+    jsx: "transform",
+    jsxFactory: "React.createElement",
+    jsxFragment: "React.Fragment",
+  },
   plugins: [react()],
   resolve: {
     alias: {
