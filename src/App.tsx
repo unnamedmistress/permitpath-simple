@@ -17,7 +17,7 @@ import DetailsPage from "./pages/DetailsPage";
 import PreviewPage from "./pages/PreviewPage";
 import DemoPage from "./pages/DemoPage";
 import SettingsPage from "./pages/SettingsPage";
-import AuthPage from "./pages/AuthPage";
+import AuthPage from "./pages/SimpleAuthPage";
 import LegalPage from "./pages/LegalPage";
 import BottomNav from "./components/layout/BottomNav";
 import NotFound from "./pages/NotFound";
