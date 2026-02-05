@@ -7,7 +7,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { AppProvider } from "./context/AppContext";
 import { PhotoProvider } from "./context/PhotoContext";
 import { AuthProvider } from "./context/AuthContext";
-import ErrorBoundary from "./components/shared/ErrorBoundary";
 import OfflineIndicator from "./components/shared/OfflineIndicator";
 import RequireAuth from "./components/shared/RequireAuth";
 import HomePage from "./pages/HomePage";
@@ -25,8 +24,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppProvider>
           <PhotoProvider>
@@ -100,7 +98,6 @@ const App = () => (
         </AppProvider>
       </AuthProvider>
     </QueryClientProvider>
-  </ErrorBoundary>
 );
 
 export default App;
