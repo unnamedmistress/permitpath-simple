@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Circle, AlertCircle, FileText, Drawing, ClipboardCheck, BadgeCheck, Shield, DollarSign } from 'lucide-react';
+import { Check, Circle, AlertCircle, FileText, PenTool, ClipboardCheck, Award, Shield, DollarSign } from 'lucide-react';
 import { Requirement, RequirementCategory } from '@/types/permit';
 import { categorizeRequirements, calculateProgress } from '@/services/requirements';
 import Button from '@/components/shared/Button';
@@ -12,9 +12,9 @@ interface RequirementsDisplayProps {
 
 const categoryIcons: Record<RequirementCategory, typeof FileText> = {
   document: FileText,
-  drawing: Drawing,
+  drawing: PenTool,
   inspection: ClipboardCheck,
-  license: BadgeCheck,
+  license: Award,
   insurance: Shield,
   fee: DollarSign
 };
