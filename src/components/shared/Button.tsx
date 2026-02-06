@@ -43,9 +43,13 @@ export default function Button({
     lg: "text-lg px-6 py-4",
   };
 
-  const handleClick = () => {
-    // Add haptic feedback
-    navigator.vibrate?.(10);
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Add haptic feedback (safely)
+    try {
+      navigator.vibrate?.(10);
+    } catch {
+      // Ignore if not supported
+    }
     onClick?.();
   };
 
