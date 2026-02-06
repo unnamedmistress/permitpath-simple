@@ -1,381 +1,221 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import PageWrapper from "@/components/layout/PageWrapper";
-import ProgressHeader from "@/components/layout/ProgressHeader";
-import ChatPanel from "@/components/wizard/ChatPanel";
-// ChecklistPanel removed (chat-only UI)
-import ActionBar from "@/components/wizard/ActionBar";
-import PhotoGallery from "@/components/wizard/PhotoGallery";
-import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import { useJob } from "@/hooks/useJob";
-import { useChecklist } from "@/hooks/useChecklist";
-import { useMessages } from "@/hooks/useMessages";
-import { usePhotos } from "@/context/PhotoContext";
-import { Photo } from "@/types";
-import PhotoGuidelines from "@/components/permit/PhotoGuidelines";
-import { getAiAssistantResponse } from "@/lib/aiAssistant";
-// Auth/Firebase removed - app works without authentication
-const useFirebase = false;
-
-// Photo validation constants
-const MAX_PHOTO_SIZE_MB = 10;
-const MAX_PHOTO_SIZE_BYTES = MAX_PHOTO_SIZE_MB * 1024 * 1024;
-const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { ArrowLeft, FileText, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import PageWrapper from '@/components/layout/PageWrapper';
+import Button from '@/components/shared/Button';
+import RequirementsDisplay from '@/components/requirements/RequirementsDisplay';
+import { getJobFromMemory } from './NewJobPage';
+import { Job, Requirement } from '@/types/permit';
+import { calculateProgress } from '@/services/requirements';
 
 export default function WizardPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const { currentJob, getJob, isLoading: jobLoading } = useJob();
-  const { items: checklistItems, fetchChecklist, initializeChecklist, updateItem, getProgress } = useChecklist(jobId || "");
-  const { messages, fetchMessages, addMessage } = useMessages(jobId || "");
-  const { photos, loadPhotos, addPhoto, updatePhoto, deletePhoto } = usePhotos(jobId || "");
-  
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
-  const [messagesLoaded, setMessagesLoaded] = useState(false);
-  const startConversationRef = useRef(false);
-  // chat-only UI (no tabs)
-  const [photosExpanded, setPhotosExpanded] = useState(false);
-  const [photoToDelete, setPhotoToDelete] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
-  const [jobNotFound, setJobNotFound] = useState(false);
+  const [job, setJob] = useState<Job | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const sendAiReply = useCallback(
-    async (prompt: string) => {
-      setIsAiLoading(true);
-      const aiResponse = await getAiAssistantResponse({
-        jobType: currentJob?.jobType || "ELECTRICAL_PANEL",
-        jurisdiction: currentJob?.jurisdiction || "PINELLAS",
-        checklistItems,
-        userPrompt: prompt,
-      });
-      if (aiResponse) {
-        await addMessage(aiResponse, "assistant");
-      }
-      setIsAiLoading(false);
-    },
-    [addMessage, currentJob, checklistItems]
-  );
-
-  // Initialize job data
   useEffect(() => {
-    if (!jobId) return;
-    
-    const init = async () => {
-      const job = await getJob(jobId);
-      if (!job) {
-        setJobNotFound(true);
-        toast.error("Job not found", {
-          description: "This job may have been deleted or the link is invalid.",
-        });
-        return;
-      }
-      
-      let checklist = await fetchChecklist();
-      if (checklist.length === 0) {
-        checklist = await initializeChecklist(job.jobType, job.jurisdiction);
-      }
-      
-      await fetchMessages();
-      setMessagesLoaded(true);
-      await loadPhotos();
-      setInitialized(true);
-    };
-    
-    init();
-  }, [jobId, loadPhotos, fetchMessages, getJob, fetchChecklist, initializeChecklist]);
-
-  // Send AI greeting after initialization
-  useEffect(() => {
-    if (
-      initialized &&
-      messagesLoaded &&
-      currentJob &&
-      checklistItems.length > 0 &&
-      messages.length === 0 &&
-      !startConversationRef.current
-    ) {
-      startConversationRef.current = true;
-      sendAiReply("Start the job by welcoming the user and asking what they want to document first.");
-    }
-  }, [initialized, messagesLoaded, currentJob, checklistItems, messages.length, sendAiReply]);
-
-  const handleSendMessage = useCallback(async (content: string) => {
-    if (!jobId) return;
-    
-    await addMessage(content, "user");
-    setIsAiLoading(true);
-
-    const fallbackResponses = [
-      "I see! Let me help you with that. Can you take a photo so I can give you more specific guidance?",
-      "Good question! Based on what you've described, I'd recommend documenting that with a photo. Tap '📷 Add Photo' below.",
-      "That's helpful context! Let's continue with the checklist — I'll use this information when we get to the relevant section.",
-    ];
-
-    const aiResponse = await getAiAssistantResponse({
-      jobType: currentJob?.jobType || "ELECTRICAL_PANEL",
-      jurisdiction: currentJob?.jurisdiction || "PINELLAS",
-      checklistItems,
-      userPrompt: content,
-    });
-
-    const reply = aiResponse || fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
-    await addMessage(reply, "assistant");
-    setIsAiLoading(false);
-  }, [jobId, addMessage, currentJob, checklistItems]);
-
-  // Checklist click removed for chat-only UI
-
-  const handleAddPhoto = () => {
-    // Add haptic feedback
-    navigator.vibrate?.(10);
-    fileInputRef.current?.click();
-  };
-
-  const validatePhoto = (file: File): string | null => {
-    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
-      return "Please select a valid image file (JPEG, PNG, or WebP)";
-    }
-    if (file.size > MAX_PHOTO_SIZE_BYTES) {
-      return `Photo must be smaller than ${MAX_PHOTO_SIZE_MB}MB`;
-    }
-    return null;
-  };
-
-  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !jobId) return;
-    
-    // Validate the photo
-    const validationError = validatePhoto(file);
-    if (validationError) {
-      toast.error("Invalid photo", { description: validationError });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    if (!jobId) {
+      navigate('/new');
       return;
     }
-    
-    // Create a preview URL
-    const localUrl = URL.createObjectURL(file);
-    const photoId = `photo-${Date.now()}`;
-    
-    const newPhoto: Photo = {
-      id: photoId,
-      jobId,
-      url: localUrl,
-      uploadedAt: new Date(),
-      status: "UPLOADING",
-    };
-    
-    addPhoto(newPhoto);
-    setUploadProgress(prev => ({ ...prev, [photoId]: 0 }));
-    setPhotosExpanded(true); // Show photos when a new one is added
 
-    // Firebase upload disabled - app works without auth
-    // Simulate upload progress
-    {
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          const current = prev[photoId] || 0;
-          if (current >= 90) {
-            clearInterval(progressInterval);
-            return prev;
-          }
-          return { ...prev, [photoId]: current + 10 };
-        });
-      }, 100);
-
-      setTimeout(() => {
-        updatePhoto(photoId, { status: "PROCESSING" });
-        setUploadProgress(prev => ({ ...prev, [photoId]: 100 }));
-      }, 1000);
-
-      setTimeout(async () => {
-        clearInterval(progressInterval);
-        updatePhoto(photoId, { status: "COMPLETE" });
-        setUploadProgress(prev => {
-          const next = { ...prev };
-          delete next[photoId];
-          return next;
-        });
-      }, 2000);
-    }
-    
-    // Add a message about the photo
-    await addMessage("📷 I've uploaded a photo", "user");
-    setIsAiLoading(true);
-
-    const aiResponse = await getAiAssistantResponse({
-      jobType: currentJob?.jobType || "ELECTRICAL_PANEL",
-      jurisdiction: currentJob?.jurisdiction || "PINELLAS",
-      checklistItems,
-      userPrompt: "A new job photo was uploaded. Ask for any missing details.",
-    });
-
-    await addMessage(
-      aiResponse ||
-        "I can see the equipment in your photo! If anything looks off, let me know or upload another angle.",
-      "assistant"
-    );
-    setIsAiLoading(false);
-    
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleDeletePhotoClick = (photoId: string) => {
-    // Add haptic feedback
-    navigator.vibrate?.(10);
-    setPhotoToDelete(photoId);
-  };
-
-  const handleConfirmDeletePhoto = () => {
-    if (photoToDelete) {
-      const photo = photos.find((item) => item.id === photoToDelete);
-      if (useFirebase && photo?.storagePath && db) {
-        deleteDoc(doc(db, "photos", photoToDelete));
-        if (storage) {
-          deleteObject(ref(storage, photo.storagePath));
-        }
-      }
-      deletePhoto(photoToDelete);
-      toast.success("Photo deleted");
-      setPhotoToDelete(null);
-    }
-  };
-
-  const handlePreview = () => {
-    // For bathroom remodels, go to details page first for permit determination
-    // For other job types, go directly to preview
-    if (currentJob?.jobType === "SMALL_BATH_REMODEL") {
-      navigate(`/details/${jobId}`);
+    const foundJob = getJobFromMemory(jobId);
+    if (foundJob) {
+      setJob(foundJob);
     } else {
-      navigate(`/preview/${jobId}`);
+      toast.error('Job not found');
+      navigate('/new');
+    }
+    setLoading(false);
+  }, [jobId, navigate]);
+
+  const handleRequirementStatusChange = (reqId: string, status: Requirement['status']) => {
+    if (!job) return;
+    
+    const updatedRequirements = job.requirements.map(r =>
+      r.id === reqId ? { ...r, status } : r
+    );
+    
+    const updatedJob = { ...job, requirements: updatedRequirements };
+    setJob(updatedJob);
+    
+    // Update in memory storage
+    // Note: In a real app, this would be a proper update
+  };
+
+  const getStatusIcon = (status: Job['status']) => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle className="text-green-500" size={20} />;
+      case 'submitted':
+      case 'under_review':
+        return <Clock className="text-blue-500" size={20} />;
+      case 'rejected':
+        return <AlertCircle className="text-red-500" size={20} />;
+      default:
+        return <FileText className="text-muted-foreground" size={20} />;
     }
   };
 
-  const canPreview = checklistItems.some(i => i.status === "COMPLETE");
-  const progress = getProgress();
+  const getStatusLabel = (status: Job['status']) => {
+    const labels: Record<Job['status'], string> = {
+      draft: 'Draft',
+      requirements_pending: 'Requirements Pending',
+      documents_pending: 'Documents Pending',
+      ready_to_submit: 'Ready to Submit',
+      submitted: 'Submitted',
+      under_review: 'Under Review',
+      approved: 'Approved',
+      rejected: 'Rejected',
+      closed: 'Closed'
+    };
+    return labels[status];
+  };
 
-  // Job not found state
-  if (jobNotFound) {
+  if (loading) {
     return (
-      <PageWrapper hasBottomNav={false}>
-        <div className="flex flex-col items-center justify-center h-screen-safe px-4">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center">
-              <span className="text-3xl">🔍</span>
-            </div>
-            <h1 className="text-xl font-bold text-foreground">Job Not Found</h1>
-            <p className="text-sm text-muted-foreground">
-              This job may have been deleted or the link is invalid.
-            </p>
-            <button
-              onClick={() => navigate("/")}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              Go Home
-            </button>
-          </div>
+      <PageWrapper>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       </PageWrapper>
     );
   }
 
-  if (!jobId) {
-    return (
-      <PageWrapper hasBottomNav={false}>
-        <div className="flex items-center justify-center h-screen-safe" aria-busy="true">
-          <LoadingSpinner size="lg" text="Loading job..." />
-        </div>
-      </PageWrapper>
-    );
+  if (!job) {
+    return null;
   }
 
-  if (!initialized || jobLoading) {
-    return (
-      <PageWrapper hasBottomNav={false}>
-        <div className="flex items-center justify-center h-screen-safe" aria-busy="true">
-          <LoadingSpinner size="lg" text="Loading job..." />
-        </div>
-      </PageWrapper>
-    );
-  }
+  const progress = calculateProgress(job.requirements);
 
   return (
-    <PageWrapper hasBottomNav={false} className="flex flex-col h-screen-safe">
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handlePhotoSelected}
-        className="hidden"
-      />
-      
-      {/* Compact Progress Header */}
-      <ProgressHeader
-        title={currentJob?.title || "Permit Documentation"}
-        progress={progress}
-        onBack={() => navigate("/")}
-        showMenu
-      />
-      
-      {/* Main Content - Chat only */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full p-3">
-          <ChatPanel
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            isLoading={isAiLoading}
-          />
+    <PageWrapper hasBottomNav={false}>
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="container max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+            >
+              <ArrowLeft size={18} className="mr-2" />
+              Back
+            </Button>
+            
+            <div className="flex-1">
+              <h1 className="text-xl font-semibold">{job.jobType.replace(/_/g, ' ')}</h1>
+              <p className="text-sm text-muted-foreground">{job.address}</p>
+            </div>
+            
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted">
+              {getStatusIcon(job.status)}
+              <span className="text-sm font-medium">{getStatusLabel(job.status)}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container max-w-4xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Progress Card */}
+            <div className="p-6 rounded-xl border bg-card">
+              <h2 className="text-lg font-semibold mb-4">Requirements Checklist</h2>
+              <RequirementsDisplay
+                requirements={job.requirements}
+                onStatusChange={handleRequirementStatusChange}
+              />
+            </div>
+
+            {/* Action Card */}
+            <div className="p-6 rounded-xl border bg-card">
+              <h2 className="text-lg font-semibold mb-4">Next Steps</h2>
+              
+              {progress < 100 ? (
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">
+                    Complete all requirements before submitting your permit application.
+                  </p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <AlertCircle size={16} className="text-amber-500" />
+                    <span>{job.requirements.filter(r => r.status !== 'completed' && r.isRequired).length} required items remaining</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-green-600 flex items-center gap-2">
+                    <CheckCircle size={20} />
+                    All requirements completed! Ready to submit.
+                  </p>
+                  <Button className="w-full" size="lg">
+                    Submit Permit Application
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Job Info Card */}
+            <div className="p-4 rounded-xl border bg-card">
+              <h3 className="font-medium mb-3">Job Details</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Type</span>
+                  <span className="font-medium">{job.jobType.replace(/_/g, ' ')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Jurisdiction</span>
+                  <span className="font-medium">{job.jurisdiction.replace(/_/g, ' ')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created</span>
+                  <span className="font-medium">{job.createdAt.toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Documents Card */}
+            <div className="p-4 rounded-xl border bg-card">
+              <h3 className="font-medium mb-3">Documents</h3>
+              {job.documents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No documents uploaded yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {job.documents.map((doc) => (
+                    <div key={doc.id} className="flex items-center gap-2 text-sm">
+                      <FileText size={16} className="text-muted-foreground" />
+                      <span className="truncate">{doc.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Button variant="outline" size="sm" className="w-full mt-3">
+                Upload Document
+              </Button>
+            </div>
+
+            {/* Help Card */}
+            <div className="p-4 rounded-xl border bg-primary/5">
+              <h3 className="font-medium mb-2">Need Help?</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Contact Pinellas County Building for assistance
+              </p>
+              <a 
+                href="tel:+17274643199" 
+                className="text-sm text-primary hover:underline"
+              >
+                (727) 464-3199
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-      
-      {/* Bottom Section - Compact with collapsible photos */}
-      <div className="bg-card border-t border-border flex flex-col">
-        {/* Collapsible Photo Gallery */}
-        {photos.length > 0 && (
-          <div className={`overflow-hidden transition-all duration-300 ${photosExpanded ? "max-h-24" : "max-h-0"}`}>
-            <PhotoGallery
-              photos={photos}
-              onDeletePhoto={handleDeletePhotoClick}
-              uploadProgress={uploadProgress}
-            />
-          </div>
-        )}
-        
-        {/* Action Bar with photo count */}
-        <ActionBar
-          onAddPhoto={handleAddPhoto}
-          onPreview={handlePreview}
-          canPreview={canPreview}
-          photoCount={photos.length}
-          photosExpanded={photosExpanded}
-          onTogglePhotos={() => setPhotosExpanded(!photosExpanded)}
-        />
-      </div>
-
-      {/* Photo Delete Confirmation */}
-      <ConfirmDialog
-        isOpen={!!photoToDelete}
-        onClose={() => setPhotoToDelete(null)}
-        onConfirm={handleConfirmDeletePhoto}
-        title="Delete Photo?"
-        description="This photo will be permanently removed from this job."
-        confirmLabel="Delete"
-        cancelLabel="Keep"
-        variant="danger"
-      />
     </PageWrapper>
   );
 }

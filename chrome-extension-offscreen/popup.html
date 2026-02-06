@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 200px;
+      padding: 10px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    h1 {
+      font-size: 14px;
+      margin: 0 0 10px 0;
+    }
+    p {
+      font-size: 12px;
+      color: #666;
+      margin: 5px 0;
+    }
+    .status {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .connected {
+      background: #d4edda;
+      color: #155724;
+    }
+    .disconnected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <h1>OpenClaw Browser Relay</h1>
+  <div id="status" class="status disconnected">Disconnected</div>
+  <p>Click the extension icon to attach/detach from the current tab.</p>
+  <p>Badge shows "ON" when connected.</p>
+  <script src="popup.js"></script>
+</body>
+</html>
