@@ -676,14 +676,16 @@ export default function NewJobPage() {
                 Start New Job
               </Button>
               
-              <button
+              <Button
                 type="button"
                 onClick={() => handleSubmit()}
-                disabled={isSubmitting || isLoading}
-                className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+                variant="secondary"
+                size="sm"
+                loading={isSubmitting || isLoading}
+                className="w-full"
               >
                 Skip for now
-              </button>
+              </Button>
             </div>
           </>
         )}
