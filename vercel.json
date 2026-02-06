@@ -6,8 +6,5 @@
   "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "VITE_OPENAI_API_KEY": "@openai_api_key"
-  }
+  ]
 }
