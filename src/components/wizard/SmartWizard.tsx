@@ -47,6 +47,7 @@ const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
 ];
 
 export default function SmartWizard({ onComplete }: SmartWizardProps) {
+  console.log('SmartWizard mounting...');
   const [step, setStep] = useState(1);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [data, setData] = useState<Partial<WizardData>>({
@@ -56,6 +57,10 @@ export default function SmartWizard({ onComplete }: SmartWizardProps) {
     description: ''
   });
   const [requirements, setRequirements] = useState<Requirement[]>([]);
+  
+  useEffect(() => {
+    console.log('SmartWizard mounted, step:', step);
+  }, []);
 
   const totalSteps = 4;
 
