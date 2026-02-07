@@ -124,7 +124,7 @@ Permit Types You'll Need:
 
 **New Flow:**
 ```
-HomePage → NewJobPage → WizardPage (checklist)
+HomePage → WizardPage (checklist)
   → DetailsPage (questions) ← NEW!
   → PreviewPage (intelligent reasoning + guides) ← ENHANCED!
 ```

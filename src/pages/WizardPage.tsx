@@ -5,7 +5,7 @@ import { ArrowLeft, FileText, CheckCircle, Clock, AlertCircle } from 'lucide-rea
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import RequirementsDisplay from '@/components/requirements/RequirementsDisplay';
-import { getJobFromMemory } from './NewJobPage';
+import { getJobFromMemory } from '../lib';
 import { Job, Requirement } from '@/types/permit';
 import { calculateProgress } from '@/services/requirements';
 

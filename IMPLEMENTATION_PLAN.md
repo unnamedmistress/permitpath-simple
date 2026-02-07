@@ -77,7 +77,7 @@ Complete redesign of PermitPath based on VISION.md, PRD.md, and ARCHITECTURE.md
 
 ### Modified Files
 - src/App.tsx - New routing
-- src/pages/NewJobPage.tsx - Complete redesign
+- Removed src/pages/NewJobPage.tsx
 - src/pages/WizardPage.tsx - Enhanced with AI
 - src/hooks/useJob.ts - Extended functionality
 - src/types/index.ts - Updated types
