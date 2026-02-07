@@ -1,0 +1,8 @@
+pipelines:
+  - id: reinvent-design-build-qa-release
+    name: "Studio Beast: Full Product Cycle"
+    description: Complete cycle from concept to release with no human pauses.
+stages:
+  - stage_id: 01_reinvent_concept
+    stage_name: "Phase 1a: Concept Reinvention"
+    owner: product-strategist

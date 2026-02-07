@@ -1,0 +1,8 @@
+name: studio-beast
+version: 2.0.0
+type: orchestrator
+category: product-engineering
+description: Multi-agent studio orchestrator that takes any app concept and reinvents it into a friction-free, user-loved product. Handles full cycle: concept analysis → reinvention → UX/UI design → build planning → implementation via Codex CLI → browser QA iteration → accessibility baseline → production release. Zero pauses.
+author: "Studio Beast Team"
+license: MIT
+maintained_by: "OpenClaw Community"

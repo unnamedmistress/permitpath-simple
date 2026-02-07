@@ -1,0 +1,12 @@
+agents:
+  - id: orchestrator
+    name: "Studio Orchestrator"
+    role: "Product Orchestrator & Decision Maker"
+    mission: Coordinate all specialist agents through design → build → QA cycles.
+specialties:
+  - multi_agent_coordination
+  - decision_making
+  - timeline_enforcement
+  - blocker_escalation
+    constraints:
+    max_turns_per_discussion: 5
