@@ -64,13 +64,30 @@ export default function SmartWizard({ onComplete }: SmartWizardProps) {
 
   const totalSteps = 4;
 
-  const handleNext = async () => {
-    console.log('handleNext called, current step:', step);
-    if (step === 3) {
-      // Analyze requirements before completing
-      await analyzeRequirements();
-    } else {
-      setStep(step + 1);
+  const handleJobTypeSelection = async (jobType: JobType) => {
+    console.log('handleJobTypeSelection:', jobType);
+    try {
+      const reqs = await getRequirementsForJob(
+        jobType,
+        data.jurisdiction,
+        data.address,
+        data.description
+      );
+      onComplete({
+        jobType,
+        jurisdiction: data.jurisdiction!,
+        address: data.address,
+        description: data.description!,
+        requirements: reqs
+      });
+      toast.success('Job created successfully!', {
+        description: `Created ${jobType} job with ${reqs.length} requirements`
+      });
+    } catch (error) {
+      console.error('Failed to create job:', error);
+      toast.error('Failed to create job');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -162,7 +179,7 @@ export default function SmartWizard({ onComplete }: SmartWizardProps) {
             {JOB_TYPES.map((type) => (
               <button
                 key={type.value}
-                onClick={() => setData({ ...data, jobType: type.value })}
+                onClick={() => handleJobTypeSelection(type.value)}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   data.jobType === type.value
                     ? 'border-primary bg-primary/5'
