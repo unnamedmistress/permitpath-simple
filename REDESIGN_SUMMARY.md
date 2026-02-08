@@ -60,7 +60,7 @@
 - Category organization
 
 **Updated Pages**
-- `src/pages/NewJobPage.tsx` - Complete redesign with SmartWizard
+- Removed `src/pages/NewJobPage.tsx`
 - `src/pages/WizardPage.tsx` - Enhanced with requirements display
 
 **New Types** (`src/types/permit.ts`)

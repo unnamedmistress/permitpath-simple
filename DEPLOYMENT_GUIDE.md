@@ -19,7 +19,7 @@ The PermitPath redesign is **fully implemented** and pushed to the `redesign-mvp
 - ai.ts - OpenAI integration for smart requirements
 - requirements.ts - Requirements engine with caching
 - permit.ts - Complete TypeScript definitions
-- NewJobPage.tsx - Redesigned with SmartWizard
+- Removed NewJobPage.tsx
 - WizardPage.tsx - Enhanced with requirements display
 
 **Infrastructure:**

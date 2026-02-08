@@ -1,0 +1,28 @@
+name: audience-empathy
+version: 1.0.0
+type: orchestrator
+category: user-experience
+
+description: |
+  Simulates multiple real user mindsets interacting with your app concept.
+  Spawns internal personas who 'use' the app and surface friction, delight, and conflicts.
+
+configuration:
+  iteration:
+    max_cycles: 3
+    max_turns_per_persona: 4
+  conflict_detection: true
+  
+inputs:
+  - concept: 'app/feature description'
+  - context: 'target audience, constraints (optional)'
+
+outputs:
+  - EMPATHY_REPORT.md: 'Consolidated findings with persona conflicts highlighted'
+  - PERSONA_LOGS/: 'Individual persona session transcripts'
+
+tags:
+  - ux
+  - personas
+  - user-research
+  - testing

@@ -1,0 +1,46 @@
+agents:
+  - id: orchestrator
+    role: 'Coordinates persona simulation and synthesizes conflicts'
+    max_turns: 2
+    output: 'EMPATHY_REPORT.md'
+    
+  - id: skeptic
+    role: 'Questions assumptions, finds edge cases, challenges design'
+    max_turns: 4
+    output: 'PERSONA_LOGS/skeptic.md'
+    personality:
+      - critical
+      - detail-oriented
+      - contrarian
+    
+  - id: power-user
+    role: 'Seeks efficiency, keyboard shortcuts, advanced features'
+    max_turns: 4
+    output: 'PERSONA_LOGS/power_user.md'
+    personality:
+      - impatient
+      - productivity-focused
+      - expert
+    
+  - id: anxious-beginner
+    role: 'Fears mistakes, needs reassurance, reads everything'
+    max_turns: 4
+    output: 'PERSONA_LOGS/anxious_beginner.md'
+    personality:
+      - cautious
+      - needs-guidance
+      - risk-averse
+    
+  - id: speed-runner
+    role: 'Wants fastest path, skips instructions, trial-and-error'
+    max_turns: 4
+    output: 'PERSONA_LOGS/speed_runner.md'
+    personality:
+      - rushed
+      - skips-reading
+      - goal-oriented
+
+conflict_matrix:
+  - skeptic_vs_speed_runner: 'Skeptic wants validation, speed-runner wants to skip it'
+  - power_user_vs_beginner: 'Power user wants complexity, beginner needs simplicity'
+  - beginner_vs_speed_runner: 'Beginner reads everything, speed-runner skips all'

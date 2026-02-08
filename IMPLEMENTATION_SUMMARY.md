@@ -139,7 +139,7 @@ I've successfully enhanced PermitPath with intelligent permit determination and 
 
 **New Flow:**
 ```
-HomePage → NewJobPage → WizardPage (checklist + chat)
+HomePage → WizardPage (checklist)
   → DetailsPage (clarifying questions) 
   → PreviewPage (reasoning + jurisdiction + application guide)
 ```
