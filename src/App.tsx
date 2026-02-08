@@ -7,7 +7,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { AppProvider } from "./context/AppContext";
 import { PhotoProvider } from "./context/PhotoContext";
 import HomePage from "./pages/HomePage";
-import NewJobPage from "./pages/NewJobPage";
 import WizardPage from "./pages/WizardPage";
 import DetailsPage from "./pages/DetailsPage";
 import PreviewPage from "./pages/PreviewPage";
@@ -36,7 +35,7 @@ const App = () => (
             <main id="main-content">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/new" element={<NewJobPage />} />
+                <Route path="/new" element={<Navigate to="/wizard" replace />} />
                 <Route path="/wizard/:jobId" element={<WizardPage />} />
                 <Route path="/wizard" element={<Navigate to="/new" replace />} />
                 <Route path="/details/:jobId" element={<DetailsPage />} />
