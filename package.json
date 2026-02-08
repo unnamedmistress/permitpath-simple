@@ -1,0 +1,13 @@
+{
+  "name": "workspace-autonomous-dev-loop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Building the project...'",
+    "start": "echo 'Starting the project...'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
