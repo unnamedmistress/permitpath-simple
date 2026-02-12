@@ -25,3 +25,31 @@ You are operating inside the OpenClaw gateway container. Prioritize safe, revers
 ## Safety
 - Do not install untrusted packages.
 - Avoid destructive commands (rm -rf) unless explicitly necessary.
+
+## Communication Artifacts (GitHub-only)
+
+Non-negotiable:
+- Do NOT store plans, agent-to-agent communication, meeting notes, drafts, or reports as local-only files.
+- If anything must be saved, save it in the git repo under: communication/.
+- After saving, ALWAYS git add, git commit, and git push to GitHub (new branch unless the user explicitly says otherwise).
+- At the end of a run, show the user direct GitHub links to every file created/updated in communication/.
+
+What goes in communication/
+- Routing decisions, plans, design notes, execution logs meant for humans
+- Agent handoffs (conductor -> builder -> QA), summaries, status reports
+- Any final writeup that should persist beyond the current chat
+
+How to name files
+- Use ISO timestamps and a short slug:
+  - communication/YYYY-MM-DD_HHMMZ_<slug>.md
+
+How to produce GitHub links
+- Get repo + branch:
+  - git remote get-url origin
+  - git rev-parse --abbrev-ref HEAD
+- Link format:
+  - https://github.com/<owner>/<repo>/blob/<branch>/communication/<file>
+
+Completion requirement
+- When done, include an Artifacts section with the GitHub URLs.
+
