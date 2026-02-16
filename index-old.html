@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PermitPath - Location-Smart Permit Help</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .location-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .location-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: white;
+            font-weight: 600;
+        }
+        .location-details {
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            color: #1f2937;
+        }
+        .location-details p {
+            margin: 5px 0;
+            font-size: 0.95rem;
+            color: #1f2937;
+        }
+        .location-details strong {
+            color: #111827;
+        }
+        .special-district {
+            background: #ffd93d;
+            color: #333;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #f7b731;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .loading.active {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .permit-answer {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 20px 0;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+        .cost-estimate {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        .project-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .project-type-btn {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .project-type-btn:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+        .project-type-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Main Page -->
+        <div class="page active">
+            <div class="hero-gradient">
+                <div class="container">
+                    <div class="text-center">
+                        <div class="hero-badge">
+                            <span>🎯 Location-Smart Permit Help</span>
+                        </div>
+                        <h1 class="hero-title">Do I Need a Permit?</h1>
+                        <p class="hero-subtitle">
+                            Get accurate permit info for YOUR exact location
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container" style="max-width: 800px; margin: 40px auto; padding: 20px;">
+                <!-- Step 1: Address Input -->
+                <div class="card" id="address-step">
+                    <h2>📍 Step 1: Your Location</h2>
+                    <p>Enter your project address for accurate local requirements:</p>
+                    
+                    <div class="form-group">
+                        <input 
+                            type="text" 
+                            id="address-input" 
+                            class="input" 
+                            placeholder="123 Main St, Austin, TX 78701"
+                            style="font-size: 1.1rem; padding: 15px;">
+                    </div>
+                    
+                    <button class="btn btn-large" onclick="lookupLocation()" style="width: 100%;">
+                        🔍 Find My Location
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Looking up your location...</p>
+                </div>
+
+                <!-- Error Display -->
+                <div class="error" id="error" style="display: none;"></div>
+
+                <!-- Step 2: Location Confirmation -->
+                <div class="card" id="location-step" style="display: none;">
+                    <h2>✅ Location Confirmed</h2>
+                    <div class="location-info" id="location-info"></div>
+                    
+                    <div id="special-districts"></div>
+                    
+                    <button class="btn" onclick="editAddress()">📝 Edit Address</button>
+                    <button class="btn btn-primary" onclick="showProjectTypes()">Next: Project Type →</button>
+                </div>
+
+                <!-- Step 3: Project Type -->
+                <div class="card" id="project-step" style="display: none;">
+                    <h2>🏗️ Step 2: Project Type</h2>
+                    <p>What are you building or fixing?</p>
+                    
+                    <div class="project-types">
+                        <button class="project-type-btn" onclick="selectProjectType('fence')">
+                            🏡 Fence
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('deck')">
+                            🪵 Deck
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('shed')">
+                            🏠 Shed
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('driveway')">
+                            🚗 Driveway
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('bathroom remodel')">
+                            🚿 Bathroom
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('kitchen remodel')">
+                            🍳 Kitchen
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('roof')">
+                            🏚️ Roof
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('pool')">
+                            🏊 Pool
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('solar panels')">
+                            ☀️ Solar
+                        </button>
+                        <button class="project-type-btn" onclick="selectProjectType('other')">
+                            📦 Other
+                        </button>
+                    </div>
+                    
+                    <div id="custom-project" style="display: none; margin-top: 20px;">
+                        <input type="text" id="custom-project-input" class="input" placeholder="Describe your project...">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="showQuestionStep()" style="width: 100%; margin-top: 20px;">
+                        Next: Ask Question →
+                    </button>
+                </div>
+
+                <!-- Step 4: Question -->
+                <div class="card" id="question-step" style="display: none;">
+                    <h2>💬 Step 3: Your Question</h2>
+                    <p>What do you want to know?</p>
+                    
+                    <div class="form-group">
+                        <textarea 
+                            id="question-input" 
+                            class="input" 
+                            rows="4" 
+                            placeholder="Do I need a permit for this? How much will it cost? What documents do I need?"
+                            style="font-size: 1.1rem; padding: 15px; resize: vertical;"></textarea>
+                    </div>
+                    
+                    <!-- Optional: Upload Photo -->
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px dashed #0B5FB5;">
+                        <h3 style="margin: 0 0 10px 0; font-size: 1rem; color: #0B5FB5;">📸 Optional: Upload a Photo</h3>
+                        <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #64748B;">Add a photo of your project for more accurate guidance</p>
+                        <input type="file" id="image-upload" accept="image/*" style="margin-bottom: 10px;" onchange="handleImageUpload(event)">
+                        <div id="image-preview" style="display: none; margin-top: 10px;">
+                            <img id="preview-img" style="max-width: 100%; border-radius: 8px; max-height: 300px;">
+                            <button class="btn" onclick="clearImage()" style="margin-top: 10px;">❌ Remove Photo</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-large" onclick="getPermitAnswer()" style="width: 100%;">
+                        🔍 Get My Answer
+                    </button>
+                </div>
+
+                <!-- Step 5: Answer Display -->
+                <div class="card" id="answer-step" style="display: none;">
+                    <h2>📋 Your Permit Answer</h2>
+                    
+                    <div class="permit-answer" id="permit-answer"></div>
+                    
+                    <div class="cost-estimate" id="cost-estimate"></div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn" onclick="startOver()">🔄 Start Over</button>
+                        <button class="btn btn-primary" onclick="askAnotherQuestion()">Ask Another Question</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let appState = {
+            location: null,
+            permitOffice: null,
+            specialDistricts: null,
+            selectedProject: null,
+            customProject: null
+        };
+
+        // API Base URL
+        const API_BASE = window.location.origin;
+
+        // Lookup location
+        async function lookupLocation() {
+            const address = document.getElementById('address-input').value.trim();
+            
+            if (!address) {
+                showError('Please enter an address');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/location`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to lookup address');
+                }
+
+                const data = await response.json();
+                appState.location = data.location;
+                appState.permitOffice = data.permitOffice;
+                appState.specialDistricts = data.specialDistricts;
+
+                showLocationConfirmation(data);
+            } catch (error) {
+                showError('Could not find that address. Please check and try again.');
+                console.error(error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display location confirmation
+        function showLocationConfirmation(data) {
+            const { location, permitOffice, specialDistricts } = data;
+            
+            const jurisdiction = location.likelyCityLimits 
+                ? `${location.city} (city limits)` 
+                : `${location.county} (county)`;
+
+            let html = `
+                <h3>📍 ${location.fullAddress}</h3>
+                <div class="location-details">
+                    <p><strong>Jurisdiction:</strong> ${jurisdiction}</p>
+                    ${location.neighborhood ? `<p><strong>Neighborhood:</strong> ${location.neighborhood}</p>` : ''}
+                    <p><strong>ZIP Code:</strong> ${location.zipCode}</p>
+                </div>
+            `;
+
+            if (permitOffice) {
+                html += `
+                    <div class="location-details">
+                        <p><strong>🏛️ Permit Office:</strong></p>
+                        <p>${permitOffice.name}</p>
+                        <p>${permitOffice.address}</p>
+                        <p>📞 ${permitOffice.phone}</p>
+                        ${permitOffice.website ? `<p>🌐 <a href="${permitOffice.website}" target="_blank" style="color: white;">Visit Website</a></p>` : ''}
+                    </div>
+                `;
+            }
+
+            document.getElementById('location-info').innerHTML = html;
+
+            // Show special districts if any
+            if (specialDistricts && specialDistricts.length > 0) {
+                let districtsHtml = '';
+                specialDistricts.forEach(district => {
+                    districtsHtml += `
+                        <div class="special-district">
+                            <strong>⚠️ ${district.name}</strong>
+                            <p>${district.note}</p>
+                        </div>
+                    `;
+                });
+                document.getElementById('special-districts').innerHTML = districtsHtml;
+            }
+
+            document.getElementById('address-step').style.display = 'none';
+            document.getElementById('location-step').style.display = 'block';
+        }
+
+        // Edit address
+        function editAddress() {
+            document.getElementById('location-step').style.display = 'none';
+            document.getElementById('project-step').style.display = 'none';
+            document.getElementById('question-step').style.display = 'none';
+            document.getElementById('answer-step').style.display = 'none';
+            document.getElementById('address-step').style.display = 'block';
+        }
+
+        // Show project types
+        function showProjectTypes() {
+            document.getElementById('location-step').style.display = 'none';
+            document.getElementById('project-step').style.display = 'block';
+        }
+
+        // Select project type
+        function selectProjectType(type) {
+            // Remove selection from all buttons
+            document.querySelectorAll('.project-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Select clicked button
+            event.target.closest('.project-type-btn').classList.add('selected');
+            
+            appState.selectedProject = type;
+            
+            // Show custom input if "other"
+            if (type === 'other') {
+                document.getElementById('custom-project').style.display = 'block';
+            } else {
+                document.getElementById('custom-project').style.display = 'none';
+            }
+        }
+
+        // Show question step
+        function showQuestionStep() {
+            if (!appState.selectedProject) {
+                showError('Please select a project type');
+                return;
+            }
+
+            if (appState.selectedProject === 'other') {
+                appState.customProject = document.getElementById('custom-project-input').value.trim();
+                if (!appState.customProject) {
+                    showError('Please describe your project');
+                    return;
+                }
+            }
+
+            hideError();
+            document.getElementById('project-step').style.display = 'none';
+            document.getElementById('question-step').style.display = 'block';
+            
+            // Pre-fill common question
+            const projectName = appState.selectedProject === 'other' 
+                ? appState.customProject 
+                : appState.selectedProject;
+            document.getElementById('question-input').value = `Do I need a permit for a ${projectName}? What will it cost and how long will it take?`;
+        }
+
+        // Handle image upload
+        let uploadedImageData = null;
+        
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImageData = e.target.result;
+                document.getElementById('preview-img').src = uploadedImageData;
+                document.getElementById('image-preview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function clearImage() {
+            uploadedImageData = null;
+            document.getElementById('image-upload').value = '';
+            document.getElementById('image-preview').style.display = 'none';
+        }
+
+        // Get permit answer
+        async function getPermitAnswer() {
+            const question = document.getElementById('question-input').value.trim();
+            
+            if (!question) {
+                showError('Please enter a question');
+                return;
+            }
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const projectType = appState.selectedProject === 'other' 
+                    ? appState.customProject 
+                    : appState.selectedProject;
+
+                // Check if image was uploaded
+                if (uploadedImageData) {
+                    // Use image analysis API
+                    const response = await fetch(`${API_BASE}/api/permit-image`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            imageUrl: uploadedImageData,
+                            question,
+                            location: appState.location
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to analyze image');
+                    }
+
+                    const data = await response.json();
+                    displayAnswer(data);
+                } else {
+                    // Use regular text-based API
+                    const response = await fetch(`${API_BASE}/api/permit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            question,
+                            projectType,
+                            location: appState.location,
+                            permitOffice: appState.permitOffice,
+                            specialDistricts: appState.specialDistricts
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to get permit answer');
+                    }
+
+                    const data = await response.json();
+                    displayAnswer(data);
+                }
+            } catch (error) {
+                showError('Could not get answer. Please try again.');
+                console.error(error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display answer
+        function displayAnswer(data) {
+            document.getElementById('permit-answer').textContent = data.answer;
+            document.getElementById('cost-estimate').textContent = 
+                `API Cost: ${data.usage.estimatedCost.formatted} | Tokens: ${data.usage.totalTokens}`;
+            
+            document.getElementById('question-step').style.display = 'none';
+            document.getElementById('answer-step').style.display = 'block';
+            
+            // Scroll to answer
+            document.getElementById('answer-step').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Ask another question
+        function askAnotherQuestion() {
+            document.getElementById('answer-step').style.display = 'none';
+            document.getElementById('question-step').style.display = 'block';
+            document.getElementById('question-input').value = '';
+        }
+
+        // Start over
+        function startOver() {
+            appState = {
+                location: null,
+                permitOffice: null,
+                specialDistricts: null,
+                selectedProject: null,
+                customProject: null
+            };
+            
+            document.getElementById('address-input').value = '';
+            document.getElementById('question-input').value = '';
+            
+            document.getElementById('location-step').style.display = 'none';
+            document.getElementById('project-step').style.display = 'none';
+            document.getElementById('question-step').style.display = 'none';
+            document.getElementById('answer-step').style.display = 'none';
+            document.getElementById('address-step').style.display = 'block';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Helper functions
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Check server status on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                console.log('Server status:', data);
+                
+                if (!data.services.location || !data.services.permit) {
+                    showError('⚠️ API keys not configured. Server is running in demo mode.');
+                }
+            } catch (error) {
+                showError('⚠️ Backend server is not running. Please start the server with: npm start');
+            }
+        });
+    </script>
+</body>
+</html>
