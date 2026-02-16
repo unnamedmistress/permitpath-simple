@@ -1,0 +1,253 @@
+{
+  "version": "1.0",
+  "created_at": "2026-02-16T02:50:00Z",
+  "description": "AI Capability Atlas Taxonomy v1 - Revised based on adversarial critique, consolidated domains, user-goal categories",
+  "revision_summary": "Addresses Round 1 critique: eliminated weak domains, consolidated to 3 domains, rebuilt categories around user goals, added cognitive skill hierarchy",
+  "domains": [
+    {
+      "id": "knowledge_learning",
+      "name": "Knowledge & Learning",
+      "description": "Understanding, explaining, and acquiring new information",
+      "categories": [
+        {
+          "id": "learn_new_things",
+          "name": "Learn New Things",
+          "description": "Explaining, understanding, and answering questions about unfamiliar topics",
+          "capabilities": [
+            {
+              "id": "explain_complex_concepts",
+              "name": "Explain complex concepts",
+              "what_it_is": "Breaking down complicated topics into understandable parts using analogies and simple language",
+              "when_to_use": "When learning something new, teaching others, or encountering unfamiliar terminology",
+              "cognitive_skills": [
+                {
+                  "level": "foundational",
+                  "skills": ["Pattern recognition", "Information retrieval"]
+                },
+                {
+                  "level": "intermediate", 
+                  "skills": ["Abstraction", "Analogy formation", "Simplification"]
+                }
+              ],
+              "use_cases": [
+                {
+                  "id": "explain_academic_concept",
+                  "name": "Explain academic concept",
+                  "description": "Understanding school or university topics",
+                  "example_prompts": [
+                    "Explain photosynthesis to a 5th grader",
+                    "What is the theory of relativity in simple terms?",
+                    "Break down how blockchain technology works"
+                  ]
+                },
+                {
+                  "id": "explain_technical_term",
+                  "name": "Explain technical term",
+                  "description": "Understanding specialized or industry terminology",
+                  "example_prompts": [
+                    "What does 'machine learning' mean for non-technical people?",
+                    "Explain 'supply chain management' simply",
+                    "What is 'quantum computing' and why does it matter?"
+                  ]
+                },
+                {
+                  "id": "explain_current_event",
+                  "name": "Explain current event",
+                  "description": "Understanding complex news or social issues",
+                  "example_prompts": [
+                    "Explain the conflict in [region] for someone who hasn't followed the news",
+                    "What are the key arguments in the climate change debate?",
+                    "Break down the economic implications of recent policy changes"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "answer_factual_questions",
+              "name": "Answer factual questions",
+              "what_it_is": "Providing accurate information on specific topics",
+              "when_to_use": "When you need quick facts, definitions, or specific information",
+              "cognitive_skills": [
+                {
+                  "level": "foundational",
+                  "skills": ["Information retrieval", "Verification"]
+                },
+                {
+                  "level": "intermediate",
+                  "skills": ["Contextual understanding", "Source evaluation"]
+                }
+              ],
+              "use_cases": [
+                {
+                  "id": "fact_checking",
+                  "name": "Fact checking",
+                  "description": "Verifying information or getting accurate data",
+                  "example_prompts": [
+                    "What's the population of Tokyo?",
+                    "When was the Magna Carta signed?",
+                    "What are the symptoms of Lyme disease?"
+                  ]
+                },
+                {
+                  "id": "definition_lookup",
+                  "name": "Definition lookup",
+                  "description": "Understanding the meaning of terms or concepts",
+                  "example_prompts": [
+                    "What does 'cognitive dissonance' mean?",
+                    "Define 'sustainable development'",
+                    "What is the difference between 'weather' and 'climate'?"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "research_analyze",
+          "name": "Research & Analyze",
+          "description": "Finding, analyzing, and synthesizing information",
+          "capabilities": [
+            {
+              "id": "summarize_long_texts",
+              "name": "Summarize long texts",
+              "what_it_is": "Condensing lengthy articles, reports, or documents into key points",
+              "when_to_use": "When you're short on time or need to extract essential information",
+              "cognitive_skills": [
+                {
+                  "level": "intermediate",
+                  "skills": ["Distillation", "Prioritization", "Synthesis"]
+                }
+              ],
+              "use_cases": [
+                {
+                  "id": "summarize_articles",
+                  "name": "Summarize articles",
+                  "description": "Getting the gist of news articles or research papers",
+                  "example_prompts": [
+                    "Summarize this 10-page article in 3 bullet points",
+                    "What are the key takeaways from this research paper?",
+                    "Give me a brief summary of this news story"
+                  ]
+                },
+                {
+                  "id": "summarize_meeting_notes",
+                  "name": "Summarize meeting notes",
+                  "description": "Extracting decisions and action items from lengthy notes",
+                  "example_prompts": [
+                    "Summarize these meeting minutes into key decisions",
+                    "What were the main action items from this meeting?",
+                    "Extract the important points from these conference notes"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "creativity_content",
+      "name": "Creativity & Content",
+      "description": "Generating, refining, and enhancing creative work",
+      "categories": [
+        {
+          "id": "create_things",
+          "name": "Create Things",
+          "description": "Generating new content, ideas, and creative works",
+          "capabilities": [
+            {
+              "id": "brainstorm_ideas",
+              "name": "Brainstorm ideas",
+              "what_it_is": "Generating creative concepts, angles, or approaches",
+              "when_to_use": "When starting a project, overcoming writer's block, or exploring possibilities",
+              "cognitive_skills": [
+                {
+                  "level": "foundational",
+                  "skills": ["Association", "Idea generation"]
+                },
+                {
+                  "level": "intermediate",
+                  "skills": ["Divergent thinking", "Creative problem solving"]
+                }
+              ],
+              "use_cases": [
+                {
+                  "id": "blog_post_ideas",
+                  "name": "Blog post ideas",
+                  "description": "Coming up with topics for articles or posts",
+                  "example_prompts": [
+                    "Give me 10 ideas for a blog post about sustainable living",
+                    "Brainstorm topics for a technology newsletter",
+                    "Suggest angles for writing about work-life balance"
+                  ]
+                },
+                {
+                  "id": "project_names",
+                  "name": "Project names",
+                  "description": "Generating creative names for projects or products",
+                  "example_prompts": [
+                    "Suggest names for a meditation app",
+                    "Brainstorm creative titles for my photography portfolio",
+                    "Generate catchy names for a coffee shop"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "create_outlines",
+              "name": "Create outlines",
+              "what_it_is": "Developing structured frameworks for projects, documents, or presentations",
+              "when_to_use": "When starting a complex task that needs organization",
+              "cognitive_skills": [
+                {
+                  "level": "intermediate",
+                  "skills": ["Hierarchical thinking", "Sequencing", "Structure design"]
+                }
+              ],
+              "use_cases": [
+                {
+                  "id": "presentation_outline",
+                  "name": "Presentation outline",
+                  "description": "Planning the structure of a talk or slideshow",
+                  "example_prompts": [
+                    "Create an outline for a 30-minute presentation on climate change",
+                    "Outline the structure for a workshop on time management",
+                    "Plan a 5-part webinar series on digital marketing"
+                  ]
+                },
+                {
+                  "id": "essay_structure",
+                  "name": "Essay structure",
+                  "description": "Organizing thoughts and arguments for written work",
+                  "example_prompts": [
+                    "Outline a persuasive essay about renewable energy",
+                    "Create a structure for a research paper on AI ethics",
+                    "Plan the sections for a business proposal"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "improve_work",
+          "name": "Improve Work",
+          "description": "Refining, editing, and optimizing existing content",
+          "capabilities": [
+            {
+              "id": "improve_clarity",
+              "name": "Improve clarity",
+              "what_it_is": "Making text more understandable and direct",
+              "when_to_use": "When your writing feels confusing, wordy, or unclear",
+              "cognitive_skills": [
+                {
+                  "level": "intermediate",
+                  "skills": ["Precision", "Conciseness", "Audience awareness"]
+                }
+              ],
+              "use_cases": [
+                {
+                  "id": "simplify_language",
+                  "name": "Simplify language",
+                  "description": "Making complex or technical writing more accessible",
+                  "example_prompts":
