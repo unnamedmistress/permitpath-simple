@@ -148,6 +148,49 @@ const CATEGORY_STYLES: Record<string, string> = {
   Structural: 'bg-slate-500/10 text-slate-700 border-slate-500/20'
 };
 
+// Guided questions by job type
+const guidedQuestions: Record<string, { question: string; field: string; options?: string[] }[]> = {
+  'WATER_HEATER': [
+    { question: 'What brand is your current water heater?', field: 'brand' },
+    { question: 'How many gallons?', field: 'gallons', options: ['30 gallons', '40 gallons', '50 gallons', '80 gallons'] },
+    { question: 'Is it gas or electric?', field: 'fuelType', options: ['Gas', 'Electric'] },
+    { question: 'Where is it located?', field: 'location', options: ['Garage', 'Attic', 'Closet', 'Basement'] }
+  ],
+  'RE_ROOFING': [
+    { question: 'How many squares (roof size)?', field: 'squares', options: ['Under 20', '20-30', '30-50', 'Over 50'] },
+    { question: 'What material?', field: 'material', options: ['Asphalt shingles', 'Metal', 'Tile', 'Flat roof'] },
+    { question: 'Single story or multi-story?', field: 'stories', options: ['1 story', '2 stories', '3+ stories'] },
+    { question: 'Is the roof leaking now?', field: 'leaking', options: ['Yes', 'No', 'Not sure'] }
+  ],
+  'ELECTRICAL_PANEL': [
+    { question: 'What amp service do you need?', field: 'amps', options: ['100 amp', '150 amp', '200 amp', '400 amp'] },
+    { question: 'Why are you upgrading?', field: 'reason', options: ['Adding AC', 'Home renovation', 'Old panel unsafe', 'Not enough power'] },
+    { question: 'Where is the panel located?', field: 'location', options: ['Garage', 'Outside', 'Basement', 'Closet'] }
+  ],
+  'AC_HVAC_CHANGEOUT': [
+    { question: 'What type of system?', field: 'systemType', options: ['Central AC', 'Heat pump', 'Mini-split', 'Package unit'] },
+    { question: 'What ton size?', field: 'tons', options: ['1.5 tons', '2 tons', '2.5 tons', '3 tons', '4 tons', '5 tons'] },
+    { question: 'Is this a replacement or new install?', field: 'installType', options: ['Replacement', 'New install', 'Not sure'] }
+  ],
+  'WINDOW_DOOR_REPLACEMENT': [
+    { question: 'How many windows/doors?', field: 'count', options: ['1-2', '3-5', '6-10', 'More than 10'] },
+    { question: 'Impact resistant?', field: 'impact', options: ['Yes', 'No', 'Not sure'] },
+    { question: 'What floor?', field: 'floor', options: ['First floor', 'Second floor', 'Both'] }
+  ],
+  'SMALL_BATH_REMODEL': [
+    { question: 'What are you changing?', field: 'changes', options: ['Vanity only', 'Shower/tub', 'Toilet', 'Full remodel'] },
+    { question: 'Moving any plumbing?', field: 'movingPlumbing', options: ['Yes', 'No', 'Not sure'] }
+  ],
+  'POOL_BARRIER': [
+    { question: 'Type of barrier?', field: 'barrierType', options: ['Fence', 'Pool cover', 'Safety net', 'Door alarm'] },
+    { question: 'Pool height?', field: 'poolHeight', options: ['Above ground', 'In-ground'] }
+  ],
+  'GENERATOR_INSTALL': [
+    { question: 'Generator size?', field: 'size', options: ['Portable', 'Whole house (22kW+)', 'Partial house (10-20kW)'] },
+    { question: 'Fuel type?', field: 'fuel', options: ['Natural gas', 'Propane', 'Diesel'] }
+  ]
+};
+
 const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
   { value: 'PINELLAS_COUNTY', label: 'Pinellas County - areas outside cities' },
   { value: 'ST_PETERSBURG', label: 'City of St. Petersburg' },
@@ -180,6 +223,7 @@ export default function SmartWizard({
     description: initialData?.description || ''
   });
   const [requirements, setRequirements] = useState<Requirement[]>(initialData?.requirements || []);
+  const [guidedAnswers, setGuidedAnswers] = useState<Record<string, string>>({});
   const selectedJobType = JOB_TYPE_OPTIONS.find((option) => option.value === data.jobType);
   const totalSteps = 4;
 
@@ -444,8 +488,80 @@ export default function SmartWizard({
             </p>
           </div>
 
+          {/* Guided Questions for selected job type */}
+          {data.jobType && guidedQuestions[data.jobType] && (
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">?</span>
+                  Quick Questions
+                </h3>
+                <p className="text-sm text-blue-700 mb-4">
+                  Answer a few quick questions. We'll write the description for you.
+                </p>
+                
+                <div className="space-y-4">
+                  {guidedQuestions[data.jobType].map((q, index) => (
+                    <div key={q.field}>
+                      <label className="block text-sm font-medium text-blue-900 mb-2">
+                        {index + 1}. {q.question}
+                      </label>
+                      {q.options ? (
+                        <div className="flex flex-wrap gap-2">
+                          {q.options.map((option) => (
+                            <button
+                              key={option}
+                              onClick={() => {
+                                const newAnswers = { ...guidedAnswers, [q.field]: option };
+                                setGuidedAnswers(newAnswers);
+                                // Auto-build description from answers
+                                const answeredQuestions = guidedQuestions[data.jobType!]
+                                  .filter(gq => newAnswers[gq.field])
+                                  .map(gq => `${gq.field}: ${newAnswers[gq.field]}`)
+                                  .join(', ');
+                                setData({ ...data, description: answeredQuestions });
+                              }}
+                              className={`px-3 py-2 rounded-lg text-sm border transition-all ${
+                                guidedAnswers[q.field] === option
+                                  ? 'bg-blue-500 text-white border-blue-500'
+                                  : 'bg-white text-blue-700 border-blue-200 hover:border-blue-400'
+                              }`}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          value={guidedAnswers[q.field] || ''}
+                          onChange={(e) => {
+                            const newAnswers = { ...guidedAnswers, [q.field]: e.target.value };
+                            setGuidedAnswers(newAnswers);
+                            // Auto-build description from answers
+                            const answeredQuestions = guidedQuestions[data.jobType!]
+                              .filter(gq => newAnswers[gq.field])
+                              .map(gq => `${gq.field}: ${newAnswers[gq.field]}`)
+                              .join(', ');
+                            setData({ ...data, description: answeredQuestions });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white text-sm"
+                          placeholder="Type your answer..."
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div>
-            <label className="block text-sm font-medium mb-2">What work are you doing? (Optional)</label>
+            <label className="block text-sm font-medium mb-2">
+              {data.jobType && guidedQuestions[data.jobType] 
+                ? 'Or write your own description:' 
+                : 'What work are you doing? (Optional)'}
+            </label>
             <textarea
               value={data.description}
               onChange={(e) => setData({ ...data, description: e.target.value })}

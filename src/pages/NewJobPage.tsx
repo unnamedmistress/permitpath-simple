@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock } from 'lucide-react';
 import PageWrapper from '@/components/layout/PageWrapper';
+import Button from '@/components/shared/Button';
 import SmartWizard, { CreateJobState, WizardData } from '@/components/wizard/SmartWizard';
 import { Job } from '@/types/permit';
 
@@ -47,6 +49,138 @@ export function getJobFromMemory(id: string): Job | undefined {
   return memoryJobs.get(id);
 }
 
+// Success Modal Component
+function SuccessModal({ 
+  job, 
+  onContinue, 
+  onViewTutorial 
+}: { 
+  job: Job; 
+  onContinue: () => void;
+  onViewTutorial: () => void;
+}) {
+  const requiredCount = job.requirements.filter(r => r.isRequired).length;
+  const optionalCount = job.requirements.length - requiredCount;
+  
+  return (
+    <div className="fixed inset-0 bg-background/95 flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-md bg-card rounded-2xl border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+        {/* Header */}
+        <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 text-white text-center">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle size={32} className="text-green-600" />
+          </div>
+          <h2 className="text-2xl font-bold">Job Created!</h2>
+          <p className="text-green-100 mt-1">
+            {job.jobType.replace(/_/g, ' ')}
+          </p>
+        </div>
+        
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Job Details */}
+          <div className="flex items-start gap-3 p-4 bg-muted rounded-xl">
+            <MapPin size={20} className="text-primary shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">{job.address}</p>
+              <p className="text-sm text-muted-foreground">{job.jurisdiction.replace(/_/g, ' ')}</p>
+            </div>
+          </div>
+          
+          {/* What's Next */}
+          <div>
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Clock size={18} className="text-primary" />
+              What's Next?
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Pick one to get started:
+            </p>
+            
+            <div className="space-y-2">
+              <button 
+                onClick={onViewTutorial}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border hover:border-primary hover:bg-primary/5 transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0 group-hover:bg-blue-200 transition-colors">
+                  <Video size={20} className="text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">Watch 3-min tutorial</p>
+                  <p className="text-xs text-muted-foreground">Learn how to use your checklist</p>
+                </div>
+                <ChevronRight size={18} className="text-muted-foreground" />
+              </button>
+              
+              <button 
+                onClick={onContinue}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border border-primary bg-primary/5 hover:bg-primary/10 transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+                  <FileText size={20} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-primary">Review requirements</p>
+                  <p className="text-xs text-muted-foreground">See what documents you need</p>
+                </div>
+                <ChevronRight size={18} className="text-primary" />
+              </button>
+              
+              <a 
+                href="tel:727-464-3199"
+                className="w-full flex items-center gap-3 p-4 rounded-xl border hover:border-green-500 hover:bg-green-50 transition-all text-left group"
+              >
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0 group-hover:bg-green-200 transition-colors">
+                  <Phone size={20} className="text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">Call for help</p>
+                  <p className="text-xs text-muted-foreground">(727) 464-3199</p>
+                </div>
+                <ChevronRight size={18} className="text-muted-foreground" />
+              </a>
+            </div>
+          </div>
+          
+          {/* Document Summary */}
+          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <p className="text-sm font-medium text-blue-900 mb-2">
+              {job.requirements.length} documents needed:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {requiredCount > 0 && (
+                <span className="text-xs px-2 py-1 rounded-full bg-white text-blue-700 border border-blue-200">
+                  {requiredCount} required
+                </span>
+              )}
+              {optionalCount > 0 && (
+                <span className="text-xs px-2 py-1 rounded-full bg-white text-blue-600 border border-blue-200">
+                  {optionalCount} optional
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-blue-600 mt-2">
+              Typical timeline: 2-4 weeks from submission to approval
+            </p>
+          </div>
+        </div>
+        
+        {/* Footer */}
+        <div className="p-4 border-t bg-muted/30">
+          <Button 
+            className="w-full" 
+            size="lg"
+            onClick={onContinue}
+          >
+            Go to My Checklist
+            <ChevronRight size={18} className="ml-1" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NewJobPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,6 +188,8 @@ export default function NewJobPage() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [lastAttemptData, setLastAttemptData] = useState<WizardData | null>(null);
+  const [createdJob, setCreatedJob] = useState<Job | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const timeoutRef = useRef<number | null>(null);
   const prefill = location.state?.prefill as Partial<WizardData> | undefined;
 
@@ -76,22 +212,39 @@ export default function NewJobPage() {
 
     try {
       const job = createJobInMemory(data);
+      setCreatedJob(job);
       setCreateState('created');
+      
+      // Show success modal instead of immediate navigation
+      setShowSuccessModal(true);
+      
+      // Still show toast for accessibility/screen readers
       toast.success('Job created successfully!', {
         description: `Created ${data.jobType} job with ${data.requirements.length} requirements`
       });
-      navigate(`/wizard/${job.id}`);
-
-      timeoutRef.current = window.setTimeout(() => {
-        setCreateState('failed');
-        setCreateError('Navigation took too long. Your job was created. Please retry to open it.');
-      }, 10000);
     } catch (error) {
       console.error('Failed to create job:', error);
       setCreateState('failed');
       setCreateError('Could not create your job. Please try again.');
       toast.error('Failed to create job');
     }
+  };
+
+  const handleContinueToChecklist = () => {
+    if (createdJob) {
+      navigate(`/wizard/${createdJob.id}`);
+    }
+  };
+
+  const handleViewTutorial = () => {
+    // Open tutorial in new tab or modal (placeholder for now)
+    toast.info('Tutorial coming soon!', {
+      description: 'We are working on video tutorials for each job type.'
+    });
+    // Still navigate to checklist after showing message
+    setTimeout(() => {
+      handleContinueToChecklist();
+    }, 2000);
   };
 
   const handleRetryCreate = () => {
@@ -148,6 +301,14 @@ export default function NewJobPage() {
               <p className="text-muted-foreground">Creating your job and opening checklist...</p>
             </div>
           </div>
+        )}
+
+        {showSuccessModal && createdJob && (
+          <SuccessModal
+            job={createdJob}
+            onContinue={handleContinueToChecklist}
+            onViewTutorial={handleViewTutorial}
+          />
         )}
       </div>
     </PageWrapper>
