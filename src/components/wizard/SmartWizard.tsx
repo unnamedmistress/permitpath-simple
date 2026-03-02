@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { JobType, Jurisdiction, Requirement } from '@/types/permit';
 import { getRequirementsForJob } from '@/services/requirements';
 import Button from '@/components/shared/Button';
+import JobTypeDropdown from '@/components/jobs/JobTypeDropdown';
 
 interface SmartWizardProps {
   onComplete: (data: WizardData) => void;
@@ -158,22 +159,10 @@ export default function SmartWizard({ onComplete }: SmartWizardProps) {
           <h2 className="text-xl font-semibold">What type of job?</h2>
           <p className="text-muted-foreground">Select the type of work you're doing</p>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
-            {JOB_TYPES.map((type) => (
-              <button
-                key={type.value}
-                onClick={() => setData({ ...data, jobType: type.value })}
-                className={`p-4 rounded-xl border-2 text-left transition-all ${
-                  data.jobType === type.value
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <div className="font-medium">{type.label}</div>
-                <div className="text-sm text-muted-foreground">{type.description}</div>
-              </button>
-            ))}
-          </div>
+          <JobTypeDropdown
+            value={data.jobType}
+            onChange={(jobType) => setData({ ...data, jobType })}
+          />
         </div>
       )}
 
