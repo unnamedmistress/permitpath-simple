@@ -45,7 +45,7 @@ export async function getRequirementsForJob(
   }
 }
 
-function getDefaultRequirements(jobType: JobType): Requirement[] {
+export function getDefaultRequirements(jobType: JobType): Requirement[] {
   // Default requirements by job type
   const defaults: Record<string, Requirement[]> = {
     RE_ROOFING: [

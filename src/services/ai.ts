@@ -68,7 +68,9 @@ ${request.yearBuilt ? `Year Built: ${request.yearBuilt}` : ''}`;
       })),
       estimatedTimeline: result.estimatedTimeline || '5-10 business days',
       estimatedCost: result.estimatedCost || '$150-500',
-      confidenceScore: result.confidenceScore || 0.8
+      confidenceScore: result.confidenceScore || 0.8,
+      fallback: false,
+      usage: response.usage
     };
   } catch (error) {
     console.error('AI analysis failed:', error);
@@ -115,7 +117,8 @@ function getFallbackRequirements(jobType: string): JobAnalysisResponse {
     requirements: baseRequirements,
     estimatedTimeline: '5-10 business days',
     estimatedCost: '$150-500',
-    confidenceScore: 0.6
+    confidenceScore: 0.6,
+    fallback: true
   };
 }
 

@@ -151,4 +151,10 @@ export interface JobAnalysisResponse {
   estimatedTimeline: string;
   estimatedCost: string;
   confidenceScore: number;
+  fallback?: boolean;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }

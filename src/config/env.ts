@@ -17,6 +17,23 @@ export const ENV = {
   FUNCTIONS_BASE_URL: import.meta.env.VITE_FUNCTIONS_BASE_URL || "",
 };
 
+export const validateEnv = (): void => {
+  const requiredEnvVars = [
+    { key: "VITE_OPENAI_API_KEY", value: ENV.OPENAI_API_KEY },
+    { key: "VITE_FIREBASE_API_KEY", value: ENV.FIREBASE_API_KEY },
+  ];
+
+  const missingEnvVars = requiredEnvVars
+    .filter((entry) => !entry.value)
+    .map((entry) => entry.key);
+
+  if (missingEnvVars.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missingEnvVars.join(", ")}. Add them to your .env file and restart the app.`
+    );
+  }
+};
+
 export const isFirebaseConfigured = (): boolean => {
   return !!(
     ENV.FIREBASE_API_KEY &&
