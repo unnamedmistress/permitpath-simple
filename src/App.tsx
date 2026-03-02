@@ -9,6 +9,7 @@ import { PhotoProvider } from "./context/PhotoContext";
 import HomePage from "./pages/HomePage";
 import NewJobPage from "./pages/NewJobPage";
 import WizardPage from "./pages/WizardPage";
+import AiPermitAssistantPage from "./pages/AiPermitAssistantPage";
 import DetailsPage from "./pages/DetailsPage";
 import PreviewPage from "./pages/PreviewPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -37,6 +38,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/new" element={<NewJobPage />} />
+                <Route path="/ai-assistant" element={<AiPermitAssistantPage />} />
                 <Route path="/wizard/:jobId" element={<WizardPage />} />
                 <Route path="/wizard" element={<Navigate to="/new" replace />} />
                 <Route path="/details/:jobId" element={<DetailsPage />} />

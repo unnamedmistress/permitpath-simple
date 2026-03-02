@@ -72,6 +72,14 @@ export interface Requirement {
   confidence: number; // AI confidence score
   status: RequirementStatus;
   notes?: string;
+  actionType?: string;
+  sourceUrl?: string;
+  minimumCriteria?: string;
+  whoCanHelp?: string;
+  plainLanguageWhy?: string;
+  acceptedFormats?: string[];
+  allowsMultipleUploads?: boolean;
+  goodUploadExample?: string;
 }
 
 export type RequirementCategory =
@@ -153,8 +161,8 @@ export interface JobAnalysisResponse {
   confidenceScore: number;
   fallback?: boolean;
   usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
   };
 }

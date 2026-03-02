@@ -1,28 +1,52 @@
 import OpenAI from 'openai';
 import { JobAnalysisRequest, JobAnalysisResponse, Requirement } from '@/types/permit';
 
-// Check if API key exists
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-console.log('OpenAI API Key exists:', !!apiKey);
+function getOpenAIClient(): OpenAI | null {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  if (!apiKey) return null;
 
-const openai = apiKey ? new OpenAI({
-  apiKey,
-  dangerouslyAllowBrowser: true
-}) : null;
+  try {
+    const ctorOrFactory = (OpenAI as unknown as { default?: any }).default || OpenAI;
+    try {
+      return ctorOrFactory({
+        apiKey,
+        dangerouslyAllowBrowser: true
+      });
+    } catch {
+      return new ctorOrFactory({
+        apiKey,
+        dangerouslyAllowBrowser: true
+      });
+    }
+  } catch (error) {
+    console.error('OpenAI init failed:', error);
+    return null;
+  }
+}
 
-export async function analyzeJobRequirements(
-  request: JobAnalysisRequest
-): Promise<JobAnalysisResponse> {
-  const systemPrompt = `You are a permit requirements expert for Pinellas County, Florida. 
+function enrichRequirement(requirement: Requirement): Requirement {
+  return {
+    ...requirement,
+    actionType: requirement.actionType || 'Fill out and upload',
+    sourceUrl: requirement.sourceUrl || 'https://pinellas.gov/topic/building-development/permits/',
+    minimumCriteria: requirement.minimumCriteria || 'Clear address, names, and signatures',
+    whoCanHelp: requirement.whoCanHelp || 'County permit desk',
+    plainLanguageWhy: requirement.plainLanguageWhy || 'The county needs this to review your job.',
+    acceptedFormats: requirement.acceptedFormats || ['PDF', 'JPG', 'PNG'],
+    allowsMultipleUploads: requirement.allowsMultipleUploads ?? false,
+    goodUploadExample: requirement.goodUploadExample || 'Clear full-page image or PDF'
+  };
+}
+
+export async function analyzeJobRequirements(request: JobAnalysisRequest): Promise<JobAnalysisResponse> {
+  const systemPrompt = `You are a permit requirements expert for Pinellas County, Florida.
 Given a job description, determine the specific permit requirements.
 
-Respond with a JSON object containing:
-- requirements: array of requirement objects with category, title, description, isRequired
-- estimatedTimeline: typical processing time
-- estimatedCost: permit fee estimate
-- confidenceScore: 0-1 confidence in the analysis
-
-Categories: document, drawing, inspection, fee, license, insurance`;
+Respond with JSON:
+- requirements: [{ category, title, description, isRequired, actionType, sourceUrl, minimumCriteria, whoCanHelp, plainLanguageWhy, acceptedFormats, allowsMultipleUploads, goodUploadExample }]
+- estimatedTimeline
+- estimatedCost
+- confidenceScore`;
 
   const userPrompt = `Job Type: ${request.jobType}
 Jurisdiction: ${request.jurisdiction}
@@ -31,9 +55,8 @@ Description: ${request.description}
 ${request.squareFootage ? `Square Footage: ${request.squareFootage}` : ''}
 ${request.yearBuilt ? `Year Built: ${request.yearBuilt}` : ''}`;
 
-  // If no API key, return fallback requirements immediately
+  const openai = getOpenAIClient();
   if (!openai) {
-    console.log('No OpenAI API key, using fallback requirements');
     return getFallbackRequirements(request.jobType);
   }
 
@@ -49,23 +72,34 @@ ${request.yearBuilt ? `Year Built: ${request.yearBuilt}` : ''}`;
     });
 
     const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('No response from AI');
-    }
-
+    if (!content) throw new Error('No response from AI');
     const result = JSON.parse(content);
-    
+
+    const requirements = Array.isArray(result.requirements)
+      ? result.requirements.map((r: any, index: number) =>
+          enrichRequirement({
+            id: `req-${Date.now()}-${index}`,
+            jobId: '',
+            category: r.category,
+            title: r.title,
+            description: r.description,
+            isRequired: r.isRequired,
+            confidence: result.confidenceScore || 0.8,
+            status: 'pending',
+            actionType: r.actionType,
+            sourceUrl: r.sourceUrl,
+            minimumCriteria: r.minimumCriteria,
+            whoCanHelp: r.whoCanHelp,
+            plainLanguageWhy: r.plainLanguageWhy,
+            acceptedFormats: r.acceptedFormats,
+            allowsMultipleUploads: r.allowsMultipleUploads,
+            goodUploadExample: r.goodUploadExample
+          })
+        )
+      : [];
+
     return {
-      requirements: result.requirements.map((r: any, index: number) => ({
-        id: `req-${Date.now()}-${index}`,
-        jobId: '', // Will be set by caller
-        category: r.category,
-        title: r.title,
-        description: r.description,
-        isRequired: r.isRequired,
-        confidence: result.confidenceScore || 0.8,
-        status: 'pending'
-      })),
+      requirements,
       estimatedTimeline: result.estimatedTimeline || '5-10 business days',
       estimatedCost: result.estimatedCost || '$150-500',
       confidenceScore: result.confidenceScore || 0.8,
@@ -74,7 +108,6 @@ ${request.yearBuilt ? `Year Built: ${request.yearBuilt}` : ''}`;
     };
   } catch (error) {
     console.error('AI analysis failed:', error);
-    // Return fallback requirements
     return getFallbackRequirements(request.jobType);
   }
 }
@@ -89,7 +122,15 @@ function getFallbackRequirements(jobType: string): JobAnalysisResponse {
       description: 'Completed permit application form',
       isRequired: true,
       confidence: 1.0,
-      status: 'pending'
+      status: 'pending',
+      actionType: 'Fill out and upload',
+      sourceUrl: 'https://pinellas.gov/topic/building-development/permits/',
+      minimumCriteria: 'Signed form with full property address',
+      whoCanHelp: 'County permit desk',
+      plainLanguageWhy: 'This starts your permit review.',
+      acceptedFormats: ['PDF'],
+      allowsMultipleUploads: false,
+      goodUploadExample: 'Signed permit form PDF'
     },
     {
       id: `req-${Date.now()}-2`,
@@ -99,7 +140,14 @@ function getFallbackRequirements(jobType: string): JobAnalysisResponse {
       description: 'Valid Florida contractor license',
       isRequired: true,
       confidence: 1.0,
-      status: 'pending'
+      status: 'pending',
+      actionType: 'Upload proof',
+      minimumCriteria: 'Active license with matching business name',
+      whoCanHelp: 'Florida DBPR support',
+      plainLanguageWhy: 'County checks licensed workers for permit jobs.',
+      acceptedFormats: ['PDF', 'JPG', 'PNG'],
+      allowsMultipleUploads: false,
+      goodUploadExample: 'License image showing expiration date'
     },
     {
       id: `req-${Date.now()}-3`,
@@ -109,12 +157,19 @@ function getFallbackRequirements(jobType: string): JobAnalysisResponse {
       description: 'General liability insurance certificate',
       isRequired: true,
       confidence: 1.0,
-      status: 'pending'
+      status: 'pending',
+      actionType: 'Request from insurer and upload',
+      minimumCriteria: 'Coverage dates include permit period',
+      whoCanHelp: 'Insurance agent',
+      plainLanguageWhy: 'County wants active coverage during work.',
+      acceptedFormats: ['PDF'],
+      allowsMultipleUploads: true,
+      goodUploadExample: 'Certificate with policy dates and limits'
     }
   ];
 
   return {
-    requirements: baseRequirements,
+    requirements: baseRequirements.map(enrichRequirement),
     estimatedTimeline: '5-10 business days',
     estimatedCost: '$150-500',
     confidenceScore: 0.6,
@@ -122,12 +177,12 @@ function getFallbackRequirements(jobType: string): JobAnalysisResponse {
   };
 }
 
-export async function validateDocument(
-  documentType: string,
-  content: string
-): Promise<{ isValid: boolean; issues: string[] }> {
+export async function validateDocument(documentType: string, content: string): Promise<{ isValid: boolean; issues: string[] }> {
+  const openai = getOpenAIClient();
+  if (!openai) return { isValid: true, issues: [] };
+
   const prompt = `Validate this ${documentType} document. Check for:
-1. Expiration dates (flag if expired or expiring soon)
+1. Expiration dates
 2. Required signatures
 3. Completeness
 4. Correct form version
