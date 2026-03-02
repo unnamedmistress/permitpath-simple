@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, FileText, CheckCircle, Clock, AlertCircle, ExternalLink, Phone, Printer, Video, MessageCircle, Users, Check, ChevronRight } from 'lucide-react';
+import { ArrowLeft, FileText, CheckCircle, Clock, AlertCircle, ExternalLink, Phone, Printer, Video, MessageCircle, Users, Check, ChevronRight, Download, Camera, MapPin } from 'lucide-react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import RequirementsDisplay from '@/components/requirements/RequirementsDisplay';
 import { getJobFromMemory } from './NewJobPage';
 import { Job, Requirement } from '@/types/permit';
-import { calculateProgress } from '@/services/requirements';
+import { calculateProgress, categorizeRequirements } from '@/services/requirements';
 import {
   CLEARWATER_BUILDING_DEPT,
   LARGO_BUILDING_DEPT,
@@ -75,12 +75,142 @@ const commonQuestions = [
   'What if the city rejects my application?'
 ];
 
+// Generate PDF content for checklist
+function generateChecklistPDF(job: Job): string {
+  const department = jurisdictionDepartmentMap[job.jurisdiction] || PINELLAS_COUNTY_BUILDING;
+  const categorized = categorizeRequirements(job.requirements);
+  
+  const completedCount = job.requirements.filter(r => r.status === 'completed').length;
+  const requiredCount = job.requirements.filter(r => r.isRequired).length;
+  
+  let pdfContent = `
+    <html>
+    <head>
+      <title>Permit Checklist - ${job.jobType.replace(/_/g, ' ')}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+        h1 { color: #1a365d; border-bottom: 3px solid #3182ce; padding-bottom: 10px; }
+        h2 { color: #2d3748; margin-top: 30px; }
+        .header-info { background: #ebf8ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .job-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .checklist { margin: 20px 0; }
+        .checklist-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 6px; }
+        .checkbox { width: 20px; height: 20px; border: 2px solid #3182ce; border-radius: 4px; flex-shrink: 0; margin-top: 2px; }
+        .checkbox.checked { background: #3182ce; }
+        .required { background: #fed7d7; }
+        .completed { background: #c6f6d5; }
+        .category-header { background: #e2e8f0; padding: 10px 15px; margin-top: 20px; font-weight: bold; color: #2d3748; border-radius: 6px; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; font-size: 14px; color: #4a5568; }
+        .contact-box { background: #f7fafc; padding: 15px; border-radius: 6px; margin-top: 20px; }
+        @media print {
+          body { padding: 20px; }
+          .no-print { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>🔨 PERMIT CHECKLIST</h1>
+      
+      <div class="header-info">
+        <h2>${job.jobType.replace(/_/g, ' ')}</h2>
+        <div class="job-info">
+          <div><strong>Job #:</strong> ${job.id}</div>
+          <div><strong>Date:</strong> ${job.createdAt.toLocaleDateString()}</div>
+        </div>
+        <div class="info-row">
+          <span><strong>Property:</strong></span>
+          <span>${job.address}</span>
+        </div>
+        <div class="info-row">
+          <span><strong>Jurisdiction:</strong></span>
+          <span>${job.jurisdiction.replace(/_/g, ' ')}</span>
+        </div>
+        <div class="info-row">
+          <span><strong>Progress:</strong></span>
+          <span>${completedCount} of ${job.requirements.length} complete (${requiredCount} required)</span>
+        </div>
+      </div>
+
+      <h2>📋 Your Checklist</h2>
+      <p>Check off items as you complete them. Required items are marked.</p>
+  `;
+
+  // Add requirements by category
+  const categories = [
+    { key: 'documents', label: '📄 Documents', items: categorized.documents },
+    { key: 'licenses', label: '🏆 Licenses', items: categorized.licenses },
+    { key: 'insurance', label: '🛡️ Insurance', items: categorized.insurance },
+    { key: 'drawings', label: '📐 Drawings', items: categorized.drawings },
+    { key: 'inspections', label: '🔍 Inspections', items: categorized.inspections },
+    { key: 'fees', label: '💰 Fees', items: categorized.fees },
+  ];
+
+  categories.forEach(cat => {
+    if (cat.items.length > 0) {
+      pdfContent += `<div class="category-header">${cat.label} (${cat.items.length})</div>`;
+      cat.items.forEach(req => {
+        const isCompleted = req.status === 'completed';
+        const className = `checklist-item ${req.isRequired ? 'required' : ''} ${isCompleted ? 'completed' : ''}`;
+        pdfContent += `
+          <div class="${className}">
+            <div class="checkbox ${isCompleted ? 'checked' : ''}"></div>
+            <div style="flex: 1;">
+              <strong>${req.title}</strong>
+              ${req.isRequired ? ' <span style="color: #c53030;">(REQUIRED)</span>' : ''}
+              <br><span style="color: #4a5568; font-size: 14px;">${req.description}</span>
+              ${req.plainLanguageWhy ? `<br><span style="color: #718096; font-size: 12px; font-style: italic;">Why: ${req.plainLanguageWhy}</span>` : ''}
+            </div>
+          </div>
+        `;
+      });
+    }
+  });
+
+  pdfContent += `
+      <div class="footer">
+        <h2>📞 Next Steps</h2>
+        <ol>
+          <li>Gather all required documents</li>
+          <li>Submit your application to the city</li>
+          <li>Wait for approval (typically 2-4 weeks)</li>
+          <li>Schedule inspections as needed</li>
+        </ol>
+        
+        <div class="contact-box">
+          <h3>🏢 ${department.name}</h3>
+          <p><strong>Phone:</strong> ${department.phone}</p>
+          <p><strong>Hours:</strong> ${department.hours}</p>
+          ${department.website ? `<p><strong>Website:</strong> ${department.website}</p>` : ''}
+          <p><strong>Address:</strong><br>${department.address?.replace(/\n/g, '<br>') || 'Contact for address'}</p>
+        </div>
+        
+        <p style="margin-top: 30px; text-align: center; color: #718096; font-size: 12px;">
+          Generated by PermitPath • ${new Date().toLocaleDateString()}<br>
+          Questions? Call (727) 464-3199
+        </p>
+      </div>
+      
+      <script>
+        // Auto-print on load for better UX
+        window.onload = function() {
+          setTimeout(() => window.print(), 500);
+        };
+      </script>
+    </body>
+    </html>
+  `;
+
+  return pdfContent;
+}
+
 export default function WizardPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
+  const [capturedPhotos, setCapturedPhotos] = useState<string[]>([]);
 
   useEffect(() => {
     if (!jobId) {
@@ -104,6 +234,26 @@ export default function WizardPage() {
     const updatedRequirements = job.requirements.map((r) => (r.id === reqId ? { ...r, status } : r));
     const updatedJob = { ...job, requirements: updatedRequirements };
     setJob(updatedJob);
+  };
+
+  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCapturedPhotos([...capturedPhotos, url]);
+      toast.success('Photo added!', { description: 'We will review this with your permit.' });
+    }
+  };
+
+  const handlePrintChecklist = () => {
+    if (!job) return;
+    
+    const pdfContent = generateChecklistPDF(job);
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(pdfContent);
+      printWindow.document.close();
+    }
   };
 
   const getStatusIcon = (status: Job['status']) => {
@@ -135,6 +285,75 @@ export default function WizardPage() {
     return labels[status];
   };
 
+  // Personalized guidance based on job state
+  const getPersonalizedGuidance = () => {
+    if (!job) return null;
+    
+    const progress = calculateProgress(job.requirements);
+    const hasLicense = job.requirements.some(r => 
+      r.category === 'license' && r.status === 'completed'
+    );
+    const hasInsurance = job.requirements.some(r => 
+      r.category === 'insurance' && r.status === 'completed'
+    );
+    
+    // Guidance for missing license
+    if (!hasLicense && job.requirements.some(r => r.category === 'license')) {
+      return {
+        type: 'warning',
+        title: 'You will need a contractor license',
+        message: 'Florida requires a contractor license for this work. If you do not have one yet, it takes 2-4 weeks to get. Want instructions?',
+        action: 'Learn how to get licensed',
+        actionLink: 'https://www.myfloridalicense.com/wl11.asp'
+      };
+    }
+    
+    // Guidance for missing insurance
+    if (!hasInsurance && job.requirements.some(r => r.category === 'insurance')) {
+      return {
+        type: 'info',
+        title: 'Need insurance certificate?',
+        message: 'Call your insurance agent and ask for a Certificate of Liability. Most jobs need $1M coverage.',
+        action: 'Get template message',
+        actionFn: () => {
+          const template = `Hi, I need a Certificate of Liability Insurance for a ${job.jobType.replace(/_/g, ' ')} permit. The county needs this to approve my permit. Can you email me a PDF?`;
+          navigator.clipboard.writeText(template);
+          toast.success('Template copied!', { description: 'Paste this into a text or email to your agent.' });
+        }
+      };
+    }
+    
+    // Progress-based encouragement
+    if (progress === 0) {
+      return {
+        type: 'info',
+        title: 'Just getting started?',
+        message: 'Start with the documents you already have. Tap each item to see what you need.',
+        action: null
+      };
+    }
+    
+    if (progress > 0 && progress < 50) {
+      return {
+        type: 'encouragement',
+        title: 'Great start!',
+        message: `You are ${progress}% done. Keep going - you are making good progress!`,
+        action: null
+      };
+    }
+    
+    if (progress >= 50 && progress < 100) {
+      return {
+        type: 'encouragement',
+        title: 'Almost there!',
+        message: `You are ${progress}% done. Just a few more items to go!`,
+        action: null
+      };
+    }
+    
+    return null;
+  };
+
   if (loading) {
     return (
       <PageWrapper>
@@ -150,6 +369,7 @@ export default function WizardPage() {
   const progress = calculateProgress(job.requirements);
   const department = jurisdictionDepartmentMap[job.jurisdiction] || PINELLAS_COUNTY_BUILDING;
   const remainingRequired = job.requirements.filter((r) => r.status !== 'completed' && r.isRequired).length;
+  const guidance = getPersonalizedGuidance();
   
   // Determine current stage based on progress
   const getCurrentStageIndex = () => {
@@ -186,6 +406,91 @@ export default function WizardPage() {
       <div className="container max-w-5xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            {/* Personalized Guidance Banner */}
+            {guidance && (
+              <div className={`p-4 rounded-xl border ${
+                guidance.type === 'warning' ? 'bg-amber-50 border-amber-200' :
+                guidance.type === 'encouragement' ? 'bg-green-50 border-green-200' :
+                'bg-blue-50 border-blue-200'
+              }`}>
+                <h3 className={`font-semibold mb-1 ${
+                  guidance.type === 'warning' ? 'text-amber-900' :
+                  guidance.type === 'encouragement' ? 'text-green-900' :
+                  'text-blue-900'
+                }`}>
+                  {guidance.title}
+                </h3>
+                <p className={`text-sm ${
+                  guidance.type === 'warning' ? 'text-amber-800' :
+                  guidance.type === 'encouragement' ? 'text-green-800' :
+                  'text-blue-800'
+                }`}>
+                  {guidance.message}
+                </p>
+                {(guidance.action || guidance.actionLink) && (
+                  <div className="mt-3">
+                    {guidance.actionLink ? (
+                      <a 
+                        href={guidance.actionLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium underline"
+                      >
+                        {guidance.action}
+                        <ExternalLink size={14} />
+                      </a>
+                    ) : guidance.actionFn ? (
+                      <button 
+                        onClick={guidance.actionFn}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium underline"
+                      >
+                        {guidance.action}
+                      </button>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Photo Capture Section */}
+            <div className="p-4 rounded-xl border bg-card">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Camera size={18} className="text-primary" />
+                Job Site Photos
+              </h3>
+              
+              {capturedPhotos.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {capturedPhotos.map((photo, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                      <img src={photo} alt={`Job photo ${index + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  id="job-photo-capture"
+                  className="hidden"
+                  onChange={handlePhotoCapture}
+                />
+                <label 
+                  htmlFor="job-photo-capture"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white cursor-pointer hover:bg-primary/90 transition-colors text-sm"
+                >
+                  <Camera size={16} />
+                  {capturedPhotos.length === 0 ? 'Take a photo' : 'Add another photo'}
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Show us what needs fixing
+                </p>
+              </div>
+            </div>
+
             {/* Requirements Checklist */}
             <div className="p-4 sm:p-6 rounded-xl border bg-card">
               <h2 className="text-lg font-semibold mb-4">Your Permit Checklist</h2>
@@ -248,7 +553,7 @@ export default function WizardPage() {
                                     <Video size={14} className="mr-1.5" />
                                     Watch tutorial
                                   </Button>
-                                  <Button variant="outline" size="sm" onClick={() => window.print()}>
+                                  <Button variant="outline" size="sm" onClick={handlePrintChecklist}>
                                     <Printer size={14} className="mr-1.5" />
                                     Print checklist
                                   </Button>
@@ -294,7 +599,7 @@ export default function WizardPage() {
                         <ExternalLink size={16} className="mr-2" />
                         Submit to City
                       </Button>
-                      <Button variant="outline" onClick={() => window.print()}>
+                      <Button variant="outline" onClick={handlePrintChecklist}>
                         <Printer size={16} className="mr-2" />
                         Print for Records
                       </Button>
@@ -314,9 +619,13 @@ export default function WizardPage() {
                       You are {progress}% done. {remainingRequired} required {remainingRequired === 1 ? 'item' : 'items'} left to complete.
                     </p>
                     <div className="flex flex-wrap gap-3 mt-4">
-                      <Button variant="outline" size="sm" onClick={() => window.print()}>
+                      <Button variant="outline" size="sm" onClick={handlePrintChecklist}>
                         <Printer size={16} className="mr-1.5" />
                         Print checklist
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handlePrintChecklist}>
+                        <Download size={16} className="mr-1.5" />
+                        Save as PDF
                       </Button>
                     </div>
                   </div>
