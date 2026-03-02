@@ -43,6 +43,9 @@ interface JobTypeOption {
   value: JobType;
   label: string;
   description: string;
+  plainEnglishDescription: string;
+  timeline: string;
+  costEstimate: string;
   keywords: string[];
 }
 
@@ -59,8 +62,8 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Roofing',
     icon: House,
     options: [
-      { value: 'RE_ROOFING', label: 'Roof Replacement', description: 'Full roof replacement', keywords: ['reroof', 'roofing'] },
-      { value: 'ROOF_REPAIR', label: 'Roof Repair', description: 'Patch or repair existing roof', keywords: ['shingle', 'leak', 'repair'] }
+      { value: 'RE_ROOFING', label: 'Roof Replacement', description: 'Full roof replacement', plainEnglishDescription: 'Taking off old roof and putting on new one', timeline: '2-3 weeks', costEstimate: '$8,000 - $15,000', keywords: ['reroof', 'roofing'] },
+      { value: 'ROOF_REPAIR', label: 'Roof Repair', description: 'Patch or repair existing roof', plainEnglishDescription: 'Fixing leaks or damaged shingles', timeline: '1-2 days', costEstimate: '$300 - $1,500', keywords: ['shingle', 'leak', 'repair'] }
     ]
   },
   {
@@ -68,7 +71,7 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'HVAC',
     icon: Wind,
     options: [
-      { value: 'AC_HVAC_CHANGEOUT', label: 'AC/HVAC Replacement', description: 'Replace AC unit or HVAC system', keywords: ['air conditioning', 'mechanical'] }
+      { value: 'AC_HVAC_CHANGEOUT', label: 'AC/HVAC Replacement', description: 'Replace AC unit or HVAC system', plainEnglishDescription: 'Installing new air conditioner or heater', timeline: '1-2 days', costEstimate: '$4,000 - $8,000', keywords: ['air conditioning', 'mechanical'] }
     ]
   },
   {
@@ -76,9 +79,9 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Plumbing',
     icon: Droplets,
     options: [
-      { value: 'WATER_HEATER', label: 'Water Heater', description: 'Install or replace water heater', keywords: ['tankless', 'heater'] },
-      { value: 'PLUMBING_MAIN_LINE', label: 'Plumbing Main Line', description: 'Replace main water or sewer line', keywords: ['main line', 'sewer'] },
-      { value: 'SMALL_BATH_REMODEL', label: 'Bathroom Remodel', description: 'Bathroom renovation work', keywords: ['bath', 'bathroom'] }
+      { value: 'WATER_HEATER', label: 'Water Heater', description: 'Install or replace water heater', plainEnglishDescription: 'Putting in new hot water tank', timeline: '3-6 hours', costEstimate: '$800 - $2,500', keywords: ['tankless', 'heater'] },
+      { value: 'PLUMBING_MAIN_LINE', label: 'Plumbing Main Line', description: 'Replace main water or sewer line', plainEnglishDescription: 'Fixing the main pipe to your house', timeline: '1-3 days', costEstimate: '$2,000 - $5,000', keywords: ['main line', 'sewer'] },
+      { value: 'SMALL_BATH_REMODEL', label: 'Bathroom Remodel', description: 'Bathroom renovation work', plainEnglishDescription: 'Updating bathroom fixtures and layout', timeline: '1-2 weeks', costEstimate: '$3,000 - $8,000', keywords: ['bath', 'bathroom'] }
     ]
   },
   {
@@ -86,10 +89,10 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Electrical',
     icon: Zap,
     options: [
-      { value: 'ELECTRICAL_PANEL', label: 'Electrical Panel', description: 'Upgrade or replace panel', keywords: ['service', 'breaker'] },
-      { value: 'ELECTRICAL_REWIRING', label: 'Electrical Rewiring', description: 'Rewire circuits', keywords: ['rewire', 'wiring'] },
-      { value: 'EV_CHARGER', label: 'EV Charger', description: 'Install EV charging station', keywords: ['tesla', 'charger', '240v'] },
-      { value: 'GENERATOR_INSTALL', label: 'Generator', description: 'Install standby generator', keywords: ['backup power', 'transfer switch'] }
+      { value: 'ELECTRICAL_PANEL', label: 'Electrical Panel', description: 'Upgrade or replace panel', plainEnglishDescription: 'Upgrading your home\'s electrical box', timeline: '1 day', costEstimate: '$1,200 - $3,000', keywords: ['service', 'breaker'] },
+      { value: 'ELECTRICAL_REWIRING', label: 'Electrical Rewiring', description: 'Rewire circuits', plainEnglishDescription: 'Replacing old electrical wires', timeline: '3-7 days', costEstimate: '$3,000 - $8,000', keywords: ['rewire', 'wiring'] },
+      { value: 'EV_CHARGER', label: 'EV Charger', description: 'Install EV charging station', plainEnglishDescription: 'Adding plug for electric car', timeline: '4-8 hours', costEstimate: '$500 - $2,000', keywords: ['tesla', 'charger', '240v'] },
+      { value: 'GENERATOR_INSTALL', label: 'Generator', description: 'Install standby generator', plainEnglishDescription: 'Installing backup power for outages', timeline: '1-2 days', costEstimate: '$3,000 - $8,000', keywords: ['backup power', 'transfer switch'] }
     ]
   },
   {
@@ -97,10 +100,10 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Exterior',
     icon: Fence,
     options: [
-      { value: 'WINDOW_DOOR_REPLACEMENT', label: 'Window/Door Replacement', description: 'Replace windows or doors', keywords: ['impact', 'hurricane'] },
-      { value: 'SIDING_EXTERIOR', label: 'Siding/Exterior', description: 'Replace siding or exterior cladding', keywords: ['cladding', 'facade'] },
-      { value: 'DECK_INSTALLATION', label: 'Deck Installation', description: 'Build a new deck', keywords: ['deck', 'outdoor'] },
-      { value: 'FENCE_INSTALLATION', label: 'Fence Installation', description: 'Install perimeter fencing', keywords: ['fence', 'gate'] }
+      { value: 'WINDOW_DOOR_REPLACEMENT', label: 'Window/Door Replacement', description: 'Replace windows or doors', plainEnglishDescription: 'Installing new windows or doors', timeline: '1-3 days', costEstimate: '$300 - $1,000 per window', keywords: ['impact', 'hurricane'] },
+      { value: 'SIDING_EXTERIOR', label: 'Siding/Exterior', description: 'Replace siding or exterior cladding', plainEnglishDescription: 'New outside covering for your house', timeline: '1-2 weeks', costEstimate: '$5,000 - $15,000', keywords: ['cladding', 'facade'] },
+      { value: 'DECK_INSTALLATION', label: 'Deck Installation', description: 'Build a new deck', plainEnglishDescription: 'Building outdoor deck or patio', timeline: '3-7 days', costEstimate: '$4,000 - $12,000', keywords: ['deck', 'outdoor'] },
+      { value: 'FENCE_INSTALLATION', label: 'Fence Installation', description: 'Install perimeter fencing', plainEnglishDescription: 'Putting up fence around property', timeline: '1-3 days', costEstimate: '$2,000 - $6,000', keywords: ['fence', 'gate'] }
     ]
   },
   {
@@ -108,8 +111,8 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Remodeling',
     icon: Paintbrush,
     options: [
-      { value: 'KITCHEN_REMODEL', label: 'Kitchen Remodel', description: 'Renovate kitchen', keywords: ['kitchen', 'remodel'] },
-      { value: 'ROOM_ADDITION', label: 'Room Addition', description: 'Add square footage', keywords: ['addition', 'expansion'] }
+      { value: 'KITCHEN_REMODEL', label: 'Kitchen Remodel', description: 'Renovate kitchen', plainEnglishDescription: 'Updating kitchen cabinets and counters', timeline: '2-6 weeks', costEstimate: '$10,000 - $30,000', keywords: ['kitchen', 'remodel'] },
+      { value: 'ROOM_ADDITION', label: 'Room Addition', description: 'Add square footage', plainEnglishDescription: 'Adding new room to your house', timeline: '4-8 weeks', costEstimate: '$20,000 - $60,000', keywords: ['addition', 'expansion'] }
     ]
   },
   {
@@ -117,7 +120,7 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Safety',
     icon: Shield,
     options: [
-      { value: 'POOL_BARRIER', label: 'Pool Barrier', description: 'Install pool safety fence or barrier', keywords: ['pool', 'barrier', 'safety'] }
+      { value: 'POOL_BARRIER', label: 'Pool Barrier', description: 'Install pool safety fence or barrier', plainEnglishDescription: 'Safety fence around swimming pool', timeline: '1-2 days', costEstimate: '$1,500 - $4,000', keywords: ['pool', 'barrier', 'safety'] }
     ]
   },
   {
@@ -125,7 +128,7 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Structural',
     icon: Building2,
     options: [
-      { value: 'FOUNDATION_REPAIR', label: 'Foundation Repair', description: 'Structural foundation work', keywords: ['structural', 'foundation'] }
+      { value: 'FOUNDATION_REPAIR', label: 'Foundation Repair', description: 'Structural foundation work', plainEnglishDescription: 'Fixing cracks or problems with foundation', timeline: '1-2 weeks', costEstimate: '$2,000 - $10,000', keywords: ['structural', 'foundation'] }
     ]
   }
 ];
@@ -146,11 +149,11 @@ const CATEGORY_STYLES: Record<string, string> = {
 };
 
 const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
-  { value: 'PINELLAS_COUNTY', label: 'Pinellas County (Unincorporated)' },
+  { value: 'PINELLAS_COUNTY', label: 'Pinellas County - areas outside cities' },
   { value: 'ST_PETERSBURG', label: 'City of St. Petersburg' },
   { value: 'CLEARWATER', label: 'City of Clearwater' },
   { value: 'LARGO', label: 'City of Largo' },
-  { value: 'PALM_HARBOR', label: 'Palm Harbor' }
+  { value: 'PALM_HARBOR', label: 'Palm Harbor area' }
 ];
 
 export default function SmartWizard({
@@ -286,8 +289,32 @@ export default function SmartWizard({
 
       {step === 1 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">What type of job?</h2>
-          <p className="text-muted-foreground">Search and select the type of work you're doing</p>
+          <div>
+            <h2 className="text-xl font-semibold">What type of work?</h2>
+            <p className="text-muted-foreground">Pick the job that best matches your project</p>
+          </div>
+          
+          {selectedJobType && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-start gap-3">
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${CATEGORY_STYLES[selectedJobType.category]}`}>
+                  <selectedJobType.icon className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{selectedJobType.label}</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">{selectedJobType.plainEnglishDescription}</p>
+                  <div className="flex flex-wrap gap-3 mt-3 text-xs">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
+                      <span className="font-medium">How long:</span> {selectedJobType.timeline}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700">
+                      <span className="font-medium">Cost:</span> {selectedJobType.costEstimate}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <Popover open={isJobTypeOpen} onOpenChange={setIsJobTypeOpen}>
             <PopoverTrigger asChild>
@@ -338,8 +365,8 @@ export default function SmartWizard({
                           <CommandItem
                             key={type.value}
                             value={type.value}
-                            keywords={[type.label, type.description, category.label, ...type.keywords]}
-                            title={type.description}
+                            keywords={[type.label, type.description, type.plainEnglishDescription, category.label, ...type.keywords]}
+                            title={type.plainEnglishDescription}
                             onSelect={() => {
                               setData({ ...data, jobType: type.value });
                               setIsJobTypeOpen(false);
@@ -351,7 +378,7 @@ export default function SmartWizard({
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="font-medium leading-tight">{type.label}</div>
-                              <div className="text-xs text-muted-foreground leading-tight mt-0.5">{type.description}</div>
+                              <div className="text-xs text-muted-foreground leading-tight mt-0.5">{type.plainEnglishDescription}</div>
                             </div>
                             <Check className={`h-4 w-4 shrink-0 transition-opacity ${data.jobType === type.value ? 'opacity-100 text-primary' : 'opacity-0'}`} />
                           </CommandItem>
@@ -368,8 +395,14 @@ export default function SmartWizard({
 
       {step === 2 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Where is the job located?</h2>
-          <p className="text-muted-foreground">We use this to find the right permit office.</p>
+          <div>
+            <h2 className="text-xl font-semibold">Where is this job?</h2>
+            <p className="text-muted-foreground">This tells us which city's rules to follow</p>
+          </div>
+          
+          <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
+            <p>Pick the area where the work is happening. Different cities have different permit rules.</p>
+          </div>
 
           <div className="space-y-3">
             {JURISDICTIONS.map((j) => (
@@ -381,6 +414,9 @@ export default function SmartWizard({
                 }`}
               >
                 <div className="font-medium">{j.label}</div>
+                {j.value === 'PINELLAS_COUNTY' && (
+                  <div className="text-xs text-muted-foreground mt-1">Areas outside city limits</div>
+                )}
               </button>
             ))}
           </div>
@@ -389,7 +425,10 @@ export default function SmartWizard({
 
       {step === 3 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Job Details</h2>
+          <div>
+            <h2 className="text-xl font-semibold">Tell us about the job</h2>
+            <p className="text-muted-foreground">The more we know, the better we can help</p>
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-2">Property Address *</label>
@@ -400,17 +439,37 @@ export default function SmartWizard({
               placeholder="123 Main St, St Petersburg, FL 33710"
               className="w-full px-4 py-3 rounded-xl border bg-background"
             />
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Don't know the exact address? Just use "corner of Main and Oak" and we'll figure it out
+            </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Job Description (Optional)</label>
+            <label className="block text-sm font-medium mb-2">What work are you doing? (Optional)</label>
             <textarea
               value={data.description}
               onChange={(e) => setData({ ...data, description: e.target.value })}
-              placeholder="Describe the work being done..."
+              placeholder="Describe what needs fixing or replacing..."
               rows={4}
               className="w-full px-4 py-3 rounded-xl border bg-background resize-none"
             />
+            <div className="mt-3 rounded-lg bg-muted p-3 text-sm">
+              <p className="font-medium text-muted-foreground mb-2">Here's what good descriptions look like:</p>
+              <ul className="space-y-1.5 text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>"Old roof is leaking. Need new asphalt shingles. House is 2 stories, about 3000 sq ft"</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>"Gas water heater failing. 40 gallons. Upstairs bathroom"</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-green-600">✓</span>
+                  <span>"Electrical panel too old. Need 200 amp upgrade for AC unit"</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       )}
