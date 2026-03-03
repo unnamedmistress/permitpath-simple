@@ -10,8 +10,8 @@ import HomePage from "./pages/HomePage";
 import NewJobPage from "./pages/NewJobPage";
 import WizardPage from "./pages/WizardPage";
 import AiPermitAssistantPage from "./pages/AiPermitAssistantPage";
-import DetailsPage from "./pages/DetailsPage";
-import PreviewPage from "./pages/PreviewPage";
+import MyJobsPage from "./pages/MyJobsPage";
+import HelpPage from "./pages/HelpPage";
 import SettingsPage from "./pages/SettingsPage";
 import LegalPage from "./pages/LegalPage";
 import BottomNav from "./components/layout/BottomNav";
@@ -39,10 +39,10 @@ const App = () => (
                 <Route path="/" element={<HomePage />} />
                 <Route path="/new" element={<NewJobPage />} />
                 <Route path="/ai-assistant" element={<AiPermitAssistantPage />} />
+                <Route path="/jobs" element={<MyJobsPage />} />
+                <Route path="/help" element={<HelpPage />} />
                 <Route path="/wizard/:jobId" element={<WizardPage />} />
                 <Route path="/wizard" element={<Navigate to="/new" replace />} />
-                <Route path="/details/:jobId" element={<DetailsPage />} />
-                <Route path="/preview/:jobId" element={<PreviewPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/legal" element={<LegalPage />} />
                 <Route path="*" element={<NotFound />} />

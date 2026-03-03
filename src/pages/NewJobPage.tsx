@@ -49,6 +49,10 @@ export function getJobFromMemory(id: string): Job | undefined {
   return memoryJobs.get(id);
 }
 
+export function getAllJobsFromMemory(): Job[] {
+  return Array.from(memoryJobs.values());
+}
+
 // Success Modal Component
 function SuccessModal({ 
   job, 
