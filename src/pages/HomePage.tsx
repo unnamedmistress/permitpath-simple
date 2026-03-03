@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, FileText, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, MapPin, Gift, AlertTriangle } from "lucide-react";
+import { Plus, FileText, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, MapPin, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageWrapper from "@/components/layout/PageWrapper";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -128,15 +128,7 @@ export default function HomePage() {
     <PageWrapper>
       <WelcomeModal />
       
-      {/* UPL Disclaimer Banner */}
-      <div className="bg-amber-50 border-b border-amber-200 px-3 py-2">
-        <div className="flex items-start gap-2 max-w-4xl mx-auto">
-          <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs text-amber-800 leading-relaxed">
-            <strong>Legal Notice:</strong> This tool provides general information only and does not constitute legal advice. Always consult with a qualified professional for your specific situation.
-          </p>
-        </div>
-      </div>
+
 
       {/* Gradient Header */}
       <motion.header 
@@ -273,6 +265,13 @@ export default function HomePage() {
         destructive
         loading={deleteLoading}
       />
+
+      {/* Legal Footer - Compact */}
+      <div className="px-3 py-4 mt-4 border-t border-border">
+        <p className="text-[10px] text-muted-foreground text-center">
+          This tool provides general information only and does not constitute legal advice.
+        </p>
+      </div>
     </PageWrapper>
   );
 }

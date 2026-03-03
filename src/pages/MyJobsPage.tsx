@@ -47,7 +47,7 @@ function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
       <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
         <ClipboardList size={24} className="sm:w-8 sm:h-8 text-muted-foreground" />
       </div>
-      <h3 className="font-semibold mb-1 text-base sm:text-lg">No permits yet</h3>
+      <h3 className="font-semibold mb-1 text-base sm:text-lg">No jobs yet</h3>
       <p className="text-xs sm:text-sm text-muted-foreground mb-4">
         Start your first permit job
       </p>
@@ -199,13 +199,13 @@ export default function MyJobsPage() {
   return (
     <PageWrapper>
       {/* Header */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between mb-4 sm:mb-6 px-3 sm:px-0"
       >
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">My Permits</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">My Jobs</h1>
           <p className="text-muted-foreground text-xs sm:text-sm">
             {activeJobs.length} active, {completedJobs.length} completed
           </p>

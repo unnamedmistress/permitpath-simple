@@ -370,22 +370,7 @@ export default function NewJobPage() {
           </div>
         </motion.div>
 
-        {/* UPL Legal Disclaimer */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mb-4 sm:mb-6 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4"
-        >
-          <div className="flex items-start gap-2 sm:gap-3">
-            <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
-            <div>
-              <p className="text-xs text-amber-800">
-                <strong>Important:</strong> This tool provides general information only and does not constitute legal advice. Always consult with a qualified professional for your specific situation.
-              </p>
-            </div>
-          </div>
-        </motion.div>
+
 
         <SmartWizard
           onComplete={handleWizardComplete}
@@ -424,6 +409,19 @@ export default function NewJobPage() {
             />
           )}
         </AnimatePresence>
+
+        {/* Legal Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 pt-6 border-t border-border"
+        >
+          <p className="text-[10px] sm:text-xs text-muted-foreground text-center leading-relaxed">
+            This tool provides general information only and does not constitute legal advice.
+            Always consult with a qualified professional for your specific situation.
+          </p>
+        </motion.div>
       </div>
     </PageWrapper>
   );

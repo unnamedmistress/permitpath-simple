@@ -69,7 +69,7 @@ export default function HelpPage() {
       <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 px-3 sm:px-0">Help & Support</h1>
 
       {/* Primary Support Options */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 px-3 sm:px-0">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 px-3 sm:px-0">
         <button
           onClick={() => navigate("/ai-assistant")}
           className="p-3 sm:p-4 rounded-xl border bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 text-left hover:shadow-md transition-shadow"
@@ -78,7 +78,7 @@ export default function HelpPage() {
             <MessageCircle size={16} className="sm:w-5 sm:h-5 text-white" />
           </div>
           <p className="font-semibold text-xs sm:text-sm">Chat with AI</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Get instant answers</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 break-words">Get instant answers</p>
         </button>
 
         <button
@@ -89,7 +89,7 @@ export default function HelpPage() {
             <Phone size={16} className="sm:w-5 sm:h-5 text-white" />
           </div>
           <p className="font-semibold text-xs sm:text-sm">Call County</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{PINELLAS_COUNTY_BUILDING.phone}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 break-words">{PINELLAS_COUNTY_BUILDING.phone}</p>
         </button>
       </div>
 

@@ -239,6 +239,7 @@ export default function SmartWizard({
   const [step, setStep] = useState(getInitialStep);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isJobTypeOpen, setIsJobTypeOpen] = useState(false);
+  const [showValidationError, setShowValidationError] = useState(false);
   
   // Use stored jurisdiction as default, fallback to initialData or PINELLAS_COUNTY
   const defaultJurisdiction = initialData?.jurisdiction || getStoredJurisdiction() || 'PINELLAS_COUNTY';
@@ -258,11 +259,18 @@ export default function SmartWizard({
   const optionalCount = requirements.length - requiredCount;
 
   const handleNext = async () => {
+    // Check if user can proceed, if not show validation error
+    if (!canProceed()) {
+      setShowValidationError(true);
+      return;
+    }
+    
     if (step === 3) {
       await analyzeRequirements();
       return;
     }
     setStep(step + 1);
+    setShowValidationError(false);
   };
 
   const handleBack = () => {
@@ -713,10 +721,10 @@ export default function SmartWizard({
         </div>
       )}
 
-      {/* Validation Error Display */}
-      {!canProceed() && step < 4 && (
-        <div className="mt-6 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs text-amber-700 flex items-center gap-2">
+      {/* Inline Validation Error - Only shown after user clicks Next with incomplete fields */}
+      {showValidationError && !canProceed() && step < 4 && (
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-700 flex items-center gap-2">
             <Info size={14} />
             Please complete all required fields to continue
           </p>
