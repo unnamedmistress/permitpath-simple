@@ -272,18 +272,18 @@ export default function NewJobPage() {
 
   return (
     <PageWrapper hasBottomNav={false}>
-      <div className="container max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-sm font-medium text-primary mb-4">
+      <div className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="text-center mb-4 sm:mb-8">
+          <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs sm:text-sm font-medium text-primary mb-3 sm:mb-4">
             Takes about 3-5 minutes
           </div>
-          <h1 className="text-3xl font-bold mb-2">Start a Permit Job</h1>
-          <p className="text-muted-foreground">Tell us about your job. We will make your permit checklist.</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Start a Permit Job</h1>
+          <p className="text-sm text-muted-foreground">Tell us about your job. We will make your permit checklist.</p>
         </div>
 
-        <div className="mb-8 rounded-xl border bg-card p-4">
-          <h2 className="font-semibold mb-2">Before you start</h2>
-          <ul className="space-y-1 text-sm text-muted-foreground">
+        <div className="mb-4 sm:mb-8 rounded-xl border bg-card p-3 sm:p-4">
+          <h2 className="font-semibold text-sm sm:text-base mb-2">Before you start</h2>
+          <ul className="space-y-1 text-xs sm:text-sm text-muted-foreground">
             <li>Job address</li>
             <li>Type of work (roof, electrical, plumbing, etc.)</li>
             <li>Any photos or notes you already have</li>
@@ -291,19 +291,21 @@ export default function NewJobPage() {
         </div>
 
         {/* AI Assistant Option */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Link
             to="/ai-assistant"
-            className="flex items-center gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
+            className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
           >
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Sparkles size={20} className="text-primary" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Sparkles size={18} className="text-primary sm:hidden" />
+              <Sparkles size={20} className="text-primary hidden sm:block" />
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-sm">Try AI chat with photos</h3>
-              <p className="text-xs text-muted-foreground">Describe your job in plain words and upload photos. We'll figure out the permits.</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-xs sm:text-sm">Try AI chat with photos</h3>
+              <p className="text-xs text-muted-foreground truncate">Describe your job in plain words and upload photos. We'll figure out the permits.</p>
             </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
+            <ChevronRight size={16} className="text-muted-foreground sm:hidden" />
+            <ChevronRight size={18} className="text-muted-foreground hidden sm:block" />
           </Link>
         </div>
 
