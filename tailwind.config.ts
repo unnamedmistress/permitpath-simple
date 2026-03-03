@@ -57,6 +57,28 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Blueprint Design System Colors
+        blueprint: {
+          DEFAULT: "#0A3A7E",
+          50: "#E6EEF8",
+          100: "#DDE8F5",
+          200: "#B8D0EB",
+          300: "#8FB8E0",
+          400: "#5C94D1",
+          500: "#3A7ABF",
+          600: "#0A3A7E",
+          700: "#082E65",
+          800: "#06234C",
+          900: "#041733",
+        },
+        parchment: "#F7FAFC",
+        steel: "#4A5568",
+        sky: "#DDE8F5",
+        forest: "#2F855A",
+        crimson: "#C53030",
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -78,7 +100,7 @@ export default {
         },
       },
       animation: {
-        "fade-in": "fade-in 0.3s ease-out",
+        "fade-in": "fade-in 0.2s ease-out",
         "slide-up": "slide-up 0.3s ease-out",
         "pulse-subtle": "pulse-subtle 2s infinite",
       },

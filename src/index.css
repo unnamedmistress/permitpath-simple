@@ -2,70 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AI Permit Assistant Design System */
+/* PermitPath Blueprint Design System */
 
 @layer base {
   :root {
     /* Background & Foreground */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    --background: 210 40% 98%;
+    --foreground: 218 23% 23%;
 
     /* Cards & Surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 218 23% 23%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 218 23% 23%;
 
-    /* Primary - Deep Professional Blue */
-    --primary: 217 91% 40%;
+    /* Primary - Blueprint Blue #0A3A7E */
+    --primary: 214 85% 27%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Light Blue Tint */
-    --secondary: 210 40% 94%;
-    --secondary-foreground: 217 91% 30%;
+    /* Secondary - Light Blue Sky */
+    --secondary: 213 40% 94%;
+    --secondary-foreground: 214 85% 27%;
 
-    /* Muted - Subtle Grays */
+    /* Muted - Steel Gray */
     --muted: 210 20% 94%;
-    --muted-foreground: 215 15% 45%;
+    --muted-foreground: 215 16% 35%;
 
-    /* Accent - Construction Amber */
-    --accent: 38 92% 50%;
+    /* Accent - Safety Orange #DD6B20 */
+    --accent: 25 75% 50%;
     --accent-foreground: 0 0% 100%;
 
-    /* Success - Green */
-    --success: 142 71% 45%;
+    /* Success - Forest Green #2F855A */
+    --success: 152 60% 36%;
     --success-foreground: 0 0% 100%;
 
     /* Warning - Orange */
-    --warning: 25 95% 53%;
+    --warning: 25 75% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* Destructive */
-    --destructive: 0 84% 60%;
+    /* Destructive - Crimson #C53030 */
+    --destructive: 0 63% 48%;
     --destructive-foreground: 0 0% 100%;
 
     /* Borders & Inputs */
-    --border: 214 32% 88%;
-    --input: 214 32% 88%;
-    --ring: 217 91% 40%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 214 85% 27%;
 
     --radius: 0.75rem;
-
-    /* Progress Bar */
-    --progress-bg: 210 20% 90%;
-    --progress-fill: 217 91% 40%;
-
-    /* Chat Bubbles */
-    --chat-user: 217 91% 40%;
-    --chat-user-foreground: 0 0% 100%;
-    --chat-ai: 210 20% 94%;
-    --chat-ai-foreground: 215 25% 15%;
-
-    /* Checklist */
-    --checklist-complete: 142 71% 45%;
-    --checklist-pending: 38 92% 50%;
-    --checklist-active: 217 91% 40%;
   }
 }
 
@@ -81,7 +66,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     min-height: 100vh;
     min-height: 100dvh;
@@ -105,110 +90,95 @@
 }
 
 @layer components {
-  /* Compact action button styles for mobile */
-  .btn-action {
-    @apply flex-1 py-2 px-3 rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 transition-all active:scale-95;
+  /* Design System Button Styles */
+  .btn-primary {
+    @apply bg-blueprint text-white hover:bg-blueprint-700 active:bg-blueprint-800 
+           px-6 py-3 rounded-lg font-medium transition-colors 
+           focus-visible:ring-2 focus-visible:ring-blueprint-400 focus-visible:ring-offset-2;
   }
   
-  .btn-photo {
-    @apply btn-action bg-primary text-primary-foreground;
+  .btn-secondary {
+    @apply bg-sky text-blueprint-600 hover:bg-blueprint-100
+           px-6 py-3 rounded-lg font-medium transition-colors
+           focus-visible:ring-2 focus-visible:ring-blueprint-400 focus-visible:ring-offset-2;
   }
   
-  .btn-preview {
-    @apply btn-action bg-accent text-accent-foreground;
+  .btn-destructive {
+    @apply bg-crimson text-white hover:bg-red-700 active:bg-red-800
+           px-6 py-3 rounded-lg font-medium transition-colors
+           focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2;
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent text-blueprint-600 hover:bg-sky
+           px-6 py-3 rounded-lg font-medium transition-colors
+           focus-visible:ring-2 focus-visible:ring-blueprint-400 focus-visible:ring-offset-2;
   }
 
-  /* Progress bar */
-  .progress-track {
-    @apply h-1.5 rounded-full;
-    background: hsl(var(--progress-bg));
-  }
-  
-  .progress-fill {
-    @apply h-full rounded-full transition-all duration-500;
-    background: hsl(var(--progress-fill));
+  /* Design System Cards */
+  .card-blueprint {
+    @apply bg-white border border-gray-200 rounded-xl p-6 
+           shadow-sm hover:shadow-md transition-shadow
+           hover:border-blueprint-200;
   }
 
-  /* Chat bubbles - compact */
-  .chat-bubble-user {
-    @apply rounded-2xl rounded-br-md px-3 py-2 max-w-[85%] ml-auto;
-    background: hsl(var(--chat-user));
-    color: hsl(var(--chat-user-foreground));
+  /* Status Badges */
+  .badge-draft {
+    @apply bg-gray-100 text-steel px-2 py-0.5 rounded-full text-xs font-medium;
   }
   
-  .chat-bubble-ai {
-    @apply rounded-2xl rounded-bl-md px-3 py-2 max-w-[85%];
-    background: hsl(var(--chat-ai));
-    color: hsl(var(--chat-ai-foreground));
+  .badge-submitted {
+    @apply bg-blueprint-100 text-blueprint px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-approved {
+    @apply bg-green-100 text-forest px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-rejected {
+    @apply bg-red-100 text-crimson px-2 py-0.5 rounded-full text-xs font-medium;
   }
 
-  /* Checklist items - compact */
-  .checklist-item {
-    @apply flex items-start gap-2 p-2 rounded-lg border transition-all;
-  }
-  
-  .checklist-complete {
-    @apply border-transparent;
-    background: hsl(var(--checklist-complete) / 0.1);
-  }
-  
-  .checklist-active {
-    @apply border-primary shadow-sm;
-    background: hsl(var(--checklist-active) / 0.05);
-  }
-  
-  .checklist-pending {
-    @apply border-border bg-card;
+  /* Form Inputs */
+  .input-blueprint {
+    @apply h-11 px-4 rounded-lg border border-gray-200 
+           focus:border-blueprint-500 focus:ring-2 focus:ring-blueprint-200
+           transition-colors bg-white;
   }
 
-  /* Job cards */
+  /* Job Cards */
   .job-card {
-    @apply bg-card rounded-xl p-3 shadow-sm border border-border transition-all hover:shadow-md active:scale-[0.98];
+    @apply bg-white rounded-xl p-4 shadow-sm border border-gray-200 
+           transition-all hover:shadow-md hover:border-blueprint-200;
   }
 
-  /* Photo thumbnail - smaller for mobile */
+  /* Photo thumbnails */
   .photo-thumb {
-    @apply w-14 h-14 rounded-lg object-cover border-2 border-border flex-shrink-0;
+    @apply w-14 h-14 rounded-lg object-cover border-2 border-gray-200 flex-shrink-0;
   }
 
-  /* Bottom navigation - compact */
+  /* Bottom navigation - Blueprint Style */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-1 flex justify-around items-center;
-    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 
+           px-4 py-2 flex justify-around items-center z-50;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
   
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-0.5 py-1 px-2 rounded-lg transition-colors;
+    @apply flex flex-col items-center gap-0.5 py-2 px-3 rounded-lg transition-colors;
   }
   
   .bottom-nav-item.active {
-    @apply text-primary;
+    @apply text-blueprint;
   }
   
   .bottom-nav-item:not(.active) {
-    @apply text-muted-foreground;
-  }
-
-  /* Tab switcher for mobile */
-  .tab-switcher {
-    @apply flex bg-muted rounded-lg p-0.5;
-  }
-
-  .tab-button {
-    @apply flex-1 py-1.5 px-3 text-xs font-medium rounded-md transition-all;
-  }
-
-  .tab-button.active {
-    @apply bg-card text-foreground shadow-sm;
-  }
-
-  .tab-button:not(.active) {
-    @apply text-muted-foreground;
+    @apply text-steel hover:text-blueprint-600;
   }
 
   /* Compact header */
-  .compact-header {
-    @apply bg-card border-b border-border px-3 py-2 safe-area-inset-top;
+  .page-header {
+    @apply bg-white border-b border-gray-200 px-4 py-3;
   }
 }
 
@@ -221,18 +191,14 @@
     padding-top: max(0.5rem, env(safe-area-inset-top));
   }
 
-  /* Dynamic viewport height for mobile browsers */
   .h-screen-safe {
     height: 100dvh;
-    height: -webkit-fill-available;
   }
 
-  /* Minimum touch target */
   .tap-target {
     @apply min-h-[44px] min-w-[44px];
   }
 
-  /* Hide scrollbar but allow scrolling */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -242,91 +208,46 @@
     display: none;
   }
 
-  /* Focus visible ring for accessibility */
   .focus-ring {
-    @apply focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none;
-  }
-}
-
-/* iOS keyboard handling */
-:root {
-  --keyboard-height: 0px;
-}
-
-/* Mobile-specific utilities */
-@layer utilities {
-  /* Responsive container padding */
-  .container-mobile {
-    @apply px-3 sm:px-4 md:px-6;
+    @apply focus-visible:ring-2 focus-visible:ring-blueprint-400 focus-visible:ring-offset-2 focus-visible:outline-none;
   }
 
-  /* Mobile-friendly spacing scale */
-  .gap-mobile {
-    @apply gap-2 sm:gap-3 md:gap-4;
+  /* Typography scale */
+  .text-display {
+    @apply text-4xl sm:text-5xl font-bold leading-tight;
   }
-
-  .p-mobile {
-    @apply p-3 sm:p-4 md:p-6;
+  
+  .text-h1 {
+    @apply text-3xl sm:text-4xl font-bold leading-tight;
   }
-
-  /* Responsive text sizes */
-  .text-mobile-base {
-    @apply text-sm sm:text-base;
+  
+  .text-h2 {
+    @apply text-2xl sm:text-3xl font-bold leading-tight;
   }
-
-  .text-mobile-lg {
-    @apply text-base sm:text-lg;
+  
+  .text-h3 {
+    @apply text-xl sm:text-2xl font-semibold leading-snug;
   }
-
-  .text-mobile-xl {
-    @apply text-lg sm:text-xl;
+  
+  .text-h4 {
+    @apply text-lg font-semibold leading-snug;
   }
-
-  /* Full width on mobile, auto on desktop */
-  .w-mobile-full {
-    @apply w-full sm:w-auto;
+  
+  .text-body-lg {
+    @apply text-lg leading-relaxed;
   }
-}
-
-/* Modal and dialog mobile improvements */
-@media (max-width: 640px) {
-  [role="dialog"] > div:last-child {
-    max-width: calc(100vw - 1.5rem);
-    max-height: calc(100vh - 1.5rem);
+  
+  .text-body {
+    @apply text-base leading-relaxed;
   }
-}
-
-/* Form input focus styles for mobile */
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  ring: 2px;
-  ring-color: hsl(var(--ring));
-}
-
-/* Screen reader only */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.sr-only:focus {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: inherit;
-  margin: inherit;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
+  
+  .text-body-sm {
+    @apply text-sm leading-relaxed;
+  }
+  
+  .text-caption {
+    @apply text-xs font-medium;
+  }
 }
 
 /* Reduced motion */
@@ -341,82 +262,18 @@ textarea:focus {
   }
 }
 
-/* Animation utilities for dialogs */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Skip to content link */
+.skip-link {
+  @apply sr-only;
 }
 
-@keyframes zoom-in-95 {
-  from { transform: scale(0.95); }
-  to { transform: scale(1); }
+.skip-link:focus {
+  @apply not-sr-only fixed z-50 top-2 left-2 px-4 py-2 bg-blueprint text-white rounded-lg;
 }
 
-.animate-in {
-  animation-duration: 200ms;
-  animation-fill-mode: both;
-}
-
-.fade-in {
-  animation-name: fade-in;
-}
-
-.zoom-in-95 {
-  animation-name: zoom-in-95;
-}
-/* Print Styles */
+/* Print styles */
 @media print {
-  @page {
-    size: letter;
-    margin: 0.5in;
-  }
-  
-  body {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-  
-  .print\\:hidden {
+  .no-print {
     display: none !important;
-  }
-  
-  /* Hide navigation elements */
-  header, nav, .safe-area-inset-top, .safe-area-inset-bottom {
-    display: none !important;
-  }
-  
-  /* Ensure page breaks work nicely */
-  section {
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-  
-  /* Make sure text is readable */
-  * {
-    color: black !important;
-    background: white !important;
-  }
-  
-  /* Keep borders visible */
-  .border, .border-border {
-    border-color: #ccc !important;
-  }
-  
-  /* Keep success/warning colors for checkmarks */
-  .bg-success, .text-success {
-    background-color: #22c55e !important;
-    color: #22c55e !important;
-  }
-  
-  .bg-primary, .text-primary {
-    background-color: #2563eb !important;
-    color: #2563eb !important;
-  }
-  
-  /* Photo grid for print */
-  img {
-    max-width: 100%;
-    height: auto;
-    page-break-inside: avoid;
   }
 }
