@@ -70,12 +70,12 @@ export default function AnalysisResultCards({ result, onUsePlan, onFollowUp, onS
 
       <div className="rounded-xl border bg-amber-50 border-amber-200 p-3 text-sm text-amber-900">{result.disclaimer}</div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button onClick={onUsePlan}>Use this plan</Button>
-        <Button variant="outline" onClick={onFollowUp}>
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+        <Button onClick={onUsePlan} className="w-full sm:w-auto">Use this plan</Button>
+        <Button variant="outline" onClick={onFollowUp} className="w-full sm:w-auto">
           Ask follow-up
         </Button>
-        <Button variant="secondary" onClick={onStartOver}>
+        <Button variant="secondary" onClick={onStartOver} className="w-full sm:w-auto">
           <RefreshCcw size={14} />
           Start over
         </Button>

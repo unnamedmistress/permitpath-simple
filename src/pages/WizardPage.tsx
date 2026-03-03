@@ -412,12 +412,12 @@ export default function WizardPage() {
         </div>
       </header>
 
-      <div className="container max-w-5xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <div className="lg:col-span-2 space-y-6">
             {/* Personalized Guidance Banner */}
             {guidance && (
-              <div className={`p-4 rounded-xl border ${
+              <div className={`p-3 sm:p-4 rounded-xl border ${
                 guidance.type === 'warning' ? 'bg-amber-50 border-amber-200' :
                 guidance.type === 'encouragement' ? 'bg-green-50 border-green-200' :
                 'bg-blue-50 border-blue-200'
@@ -479,7 +479,7 @@ export default function WizardPage() {
             />
 
             {/* Photo Capture Section */}
-            <div className="p-4 rounded-xl border bg-card">
+            <div className="p-3 sm:p-4 rounded-xl border bg-card">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <Camera size={18} className="text-primary" />
                 Job Site Photos
@@ -518,8 +518,8 @@ export default function WizardPage() {
             </div>
 
             {/* Requirements Checklist */}
-            <div className="p-4 sm:p-6 rounded-xl border bg-card">
-              <h2 className="text-lg font-semibold mb-4">Your Permit Checklist</h2>
+            <div className="p-3 sm:p-4 md:p-6 rounded-xl border bg-card">
+              <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Your Permit Checklist</h2>
               <RequirementsDisplay 
                 requirements={job.requirements} 
                 onStatusChange={handleRequirementStatusChange}
@@ -553,8 +553,8 @@ export default function WizardPage() {
             </div>
 
             {/* Permit Journey Timeline */}
-            <div className="p-4 sm:p-6 rounded-xl border bg-card">
-              <h2 className="text-lg font-semibold mb-4">What Happens Next</h2>
+            <div className="p-3 sm:p-4 md:p-6 rounded-xl border bg-card">
+              <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">What Happens Next</h2>
               
               <div className="relative">
                 {/* Timeline line */}
@@ -628,10 +628,10 @@ export default function WizardPage() {
 
             {/* Success / Next Steps Banner */}
             {progress === 100 ? (
-              <div className="p-6 rounded-xl border border-green-200 bg-green-50">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                    <CheckCircle className="text-white" size={24} />
+              <div className="p-4 sm:p-6 rounded-xl border border-green-200 bg-green-50">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                    <CheckCircle className="text-white w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-green-900">All done! Ready to submit</h3>
@@ -659,10 +659,10 @@ export default function WizardPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-6 rounded-xl border bg-card">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                    <Clock className="text-amber-600" size={24} />
+              <div className="p-4 sm:p-6 rounded-xl border bg-card">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                    <Clock className="text-amber-600 w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Keep Going!</h3>
@@ -686,9 +686,9 @@ export default function WizardPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Job Details Card */}
-            <div className="p-4 rounded-xl border bg-card">
+            <div className="p-3 sm:p-4 rounded-xl border bg-card">
               <h3 className="font-semibold mb-3">Job Info</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between gap-2">
@@ -707,7 +707,7 @@ export default function WizardPage() {
             </div>
 
             {/* Documents Card */}
-            <div className="p-4 rounded-xl border bg-card">
+            <div className="p-3 sm:p-4 rounded-xl border bg-card">
               <h3 className="font-semibold mb-3">Your Documents</h3>
               {job.documents.length === 0 ? (
                 <div className="text-center py-4 bg-muted rounded-lg">
@@ -730,7 +730,7 @@ export default function WizardPage() {
             </div>
 
             {/* Need Help Section - Improved */}
-            <div className="p-4 rounded-xl border bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <div className="p-3 sm:p-4 rounded-xl border bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
               <h3 className="font-semibold text-blue-900 mb-1">Need Help?</h3>
               <p className="text-sm text-blue-700 mb-4">Pick how you want help</p>
               
@@ -799,8 +799,8 @@ export default function WizardPage() {
             />
 
             {/* Common Questions */}
-            <div className="p-4 rounded-xl border bg-card">
-              <h3 className="font-semibold mb-3">Common Questions</h3>
+            <div className="p-3 sm:p-4 rounded-xl border bg-card">
+              <h3 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Common Questions</h3>
               <div className="space-y-2">
                 {commonQuestions.map((question) => (
                   <button

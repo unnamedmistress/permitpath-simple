@@ -194,15 +194,15 @@ export default function AiPermitAssistantPage() {
 
   return (
     <PageWrapper hasBottomNav={false}>
-      <div className="container max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <div className="container max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">AI Permit Assistant</h1>
-          <p className="text-muted-foreground mt-1">Share your job. Add photos. Get a simple permit plan.</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">AI Permit Assistant</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Share your job. Add photos. Get a simple permit plan.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Job address</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1">Job address</label>
             <input
               value={address}
               onChange={(event) => setAddress(event.target.value)}
@@ -244,8 +244,8 @@ export default function AiPermitAssistantPage() {
           />
         )}
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/new')}>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={() => navigate('/new')} className="w-full sm:w-auto">
             Go to wizard
           </Button>
         </div>

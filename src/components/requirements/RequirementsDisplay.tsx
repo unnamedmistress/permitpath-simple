@@ -460,29 +460,29 @@ export default function RequirementsDisplay({
   return (
     <div className="w-full">
       {/* Progress Header */}
-      <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-blue-500/10 border border-primary/20">
+      <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-gradient-to-r from-primary/10 to-blue-500/10 border border-primary/20">
         <div className="flex items-center justify-between mb-2">
-          <span className="font-semibold">Your Progress</span>
-          <span className="text-2xl font-bold text-primary">{progress}%</span>
+          <span className="font-semibold text-sm sm:text-base">Your Progress</span>
+          <span className="text-xl sm:text-2xl font-bold text-primary">{progress}%</span>
         </div>
-        <div className="h-3 bg-muted rounded-full overflow-hidden">
+        <div className="h-2 sm:h-3 bg-muted rounded-full overflow-hidden">
           <div 
             className="h-full bg-gradient-to-r from-primary to-blue-500 transition-all duration-500" 
             style={{ width: `${progress}%` }} 
           />
         </div>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="text-xs sm:text-sm text-muted-foreground mt-2">
           {completedCount} of {requirements.length} items done
           {requiredCount > 0 && ` (${requiredCount} must-have)`}
         </p>
       </div>
 
       {/* Requirements Breakdown */}
-      <div className="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200">
-        <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
-          <AlertCircle size={18} /> What's Normal for This Job
+      <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl bg-blue-50 border border-blue-200">
+        <h3 className="font-semibold text-sm sm:text-base text-blue-900 mb-2 flex items-center gap-2">
+          <AlertCircle size={16} className="sm:w-5 sm:h-5" /> What's Normal for This Job
         </h3>
-        <ul className="space-y-1.5 text-sm text-blue-800">
+        <ul className="space-y-1 text-xs sm:text-sm text-blue-800">
           <li>• Most {jobType || 'these'} permits need: {requiredCount} required documents</li>
           <li>• Timeline: Usually takes 2-4 weeks from start to approval</li>
           <li>• Permit fee: ~$50-150 (varies by city)</li>

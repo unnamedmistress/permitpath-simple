@@ -256,7 +256,7 @@ export default function DetailsPage() {
       </header>
 
       {/* Content */}
-      <div className="p-4 space-y-6 pb-24">
+      <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 pb-24">
         {/* Intro message (first question only) */}
         {currentQuestionIndex === 0 && currentQuestion.intro && (
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
@@ -266,7 +266,7 @@ export default function DetailsPage() {
 
         {/* Question */}
         <div>
-          <h2 className="text-lg font-semibold text-foreground mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
             {currentQuestion.question}
           </h2>
 

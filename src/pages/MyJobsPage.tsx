@@ -86,21 +86,21 @@ export default function MyJobsPage() {
   return (
     <PageWrapper>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 px-3 sm:px-0">
         <div>
-          <h1 className="text-2xl font-bold">My Permits</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-xl sm:text-2xl font-bold">My Permits</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
             {activeJobs.length} active, {completedJobs.length} completed
           </p>
         </div>
-        <Button onClick={() => navigate("/new")} size="sm">
+        <Button onClick={() => navigate("/new")} size="sm" className="shrink-0">
           <Plus size={16} className="mr-1" />
           New
         </Button>
       </div>
 
       {/* Search & Filter */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 px-3 sm:px-0">
         <div className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -109,35 +109,35 @@ export default function MyJobsPage() {
             className="w-full pl-9 pr-4 py-2 rounded-lg border bg-background text-sm"
           />
         </div>
-        <Button variant="outline" size="sm" className="px-3">
+        <Button variant="outline" size="sm" className="px-3 shrink-0">
           <Filter size={16} />
         </Button>
       </div>
 
       {jobs.length === 0 ? (
         // Empty State
-        <div className="text-center py-12">
-          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-            <ClipboardList size={32} className="text-muted-foreground" />
+        <div className="text-center py-8 sm:py-12 px-3 sm:px-0">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <ClipboardList size={24} className="sm:w-8 sm:h-8 text-muted-foreground" />
           </div>
-          <h3 className="font-semibold mb-1">No permits yet</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <h3 className="font-semibold mb-1 text-base sm:text-lg">No permits yet</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-4">
             Start your first permit job
           </p>
-          <Button onClick={() => navigate("/new")}>
+          <Button onClick={() => navigate("/new")} className="w-full sm:w-auto">
             <Plus size={16} className="mr-2" />
             Start New Job
           </Button>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">
           {/* Active Jobs */}
           {activeJobs.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2 sm:mb-3">
                 Active ({activeJobs.length})
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {activeJobs.map(renderJobCard)}
               </div>
             </section>
@@ -146,10 +146,10 @@ export default function MyJobsPage() {
           {/* Completed Jobs */}
           {completedJobs.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              <h2 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2 sm:mb-3">
                 Completed ({completedJobs.length})
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {completedJobs.map(renderJobCard)}
               </div>
             </section>

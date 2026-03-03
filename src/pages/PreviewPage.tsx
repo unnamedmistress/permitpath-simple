@@ -189,7 +189,7 @@ export default function PreviewPage() {
       </header>
 
       {/* Content */}
-      <div className="p-3 space-y-4 pb-6">
+      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 pb-6">
         {/* Quick Actions */}
         <div className="flex gap-2 print:hidden">
           <Button

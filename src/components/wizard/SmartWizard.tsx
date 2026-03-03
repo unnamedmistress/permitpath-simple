@@ -265,6 +265,11 @@ export default function SmartWizard({
     setStep(step - 1);
   };
 
+  const handleJurisdictionSelect = (jurisdiction: Jurisdiction) => {
+    setData({ ...data, jurisdiction });
+    storeJurisdiction(jurisdiction);
+  };
+
   const analyzeRequirements = async () => {
     if (!data.jobType || !data.jurisdiction || !data.address) {
       toast.error('Please fill in all required fields');
@@ -322,7 +327,7 @@ export default function SmartWizard({
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto px-3 sm:px-4">
       {createState === 'failed' && createError && (
         <div className="mb-6 rounded-xl border border-red-300 bg-red-50 p-4">
           <div className="flex items-start gap-3">
@@ -355,10 +360,10 @@ export default function SmartWizard({
       </div>
 
       {step === 1 && (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div>
-            <h2 className="text-xl font-semibold">What type of work?</h2>
-            <p className="text-muted-foreground">Pick the job that best matches your project</p>
+            <h2 className="text-lg sm:text-xl font-semibold">What type of work?</h2>
+            <p className="text-muted-foreground text-sm sm:text-base">Pick the job that best matches your project</p>
           </div>
           
           {selectedJobType && (
@@ -461,10 +466,10 @@ export default function SmartWizard({
       )}
 
       {step === 2 && (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div>
-            <h2 className="text-xl font-semibold">Where is this job?</h2>
-            <p className="text-muted-foreground">This tells us which city's rules to follow</p>
+            <h2 className="text-lg sm:text-xl font-semibold">Where is this job?</h2>
+            <p className="text-muted-foreground text-sm sm:text-base">This tells us which city's rules to follow</p>
           </div>
           
           <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
@@ -479,16 +484,16 @@ export default function SmartWizard({
             </div>
           )}
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {JURISDICTIONS.map((j) => (
               <button
                 key={j.value}
                 onClick={() => handleJurisdictionSelect(j.value)}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                className={`w-full p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
                   data.jurisdiction === j.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                 }`}
               >
-                <div className="font-medium">{j.label}</div>
+                <div className="font-medium text-sm sm:text-base">{j.label}</div>
                 {j.value === 'PINELLAS_COUNTY' && (
                   <div className="text-xs text-muted-foreground mt-1">Areas outside city limits</div>
                 )}

@@ -37,13 +37,13 @@ export default function SettingsPage() {
   return (
     <PageWrapper>
       {/* Header */}
-      <header className="bg-card px-6 pt-8 pb-6 border-b border-border safe-area-inset-top">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">App configuration and info</p>
+      <header className="bg-card px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-border safe-area-inset-top">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">App configuration and info</p>
       </header>
 
       {/* Content */}
-      <div className="px-4 py-6 space-y-6">
+      <div className="px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* API Configuration */}
         <section className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
