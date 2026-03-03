@@ -1,13 +1,17 @@
-import { useState } from 'react';
-import { Check, Circle, AlertCircle, FileText, PenTool, ClipboardCheck, Award, Shield, DollarSign, HelpCircle, Phone, FileEdit, Video, Copy, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Check, Circle, AlertCircle, FileText, PenTool, ClipboardCheck, Award, Shield, DollarSign, HelpCircle, Phone, FileEdit, Video, Copy, ChevronDown, ChevronUp, Camera, Upload } from 'lucide-react';
 import { Requirement, RequirementCategory } from '@/types/permit';
 import { categorizeRequirements, calculateProgress } from '@/services/requirements';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import Button from '@/components/shared/Button';
+import HelpTooltip from '@/components/shared/HelpTooltip';
+import DocumentScanner from '@/components/shared/DocumentScanner';
 
 interface RequirementsDisplayProps {
   requirements: Requirement[];
   onStatusChange?: (id: string, status: Requirement['status']) => void;
+  onDocumentUpload?: (reqId: string, file: File) => void;
   readOnly?: boolean;
   jobType?: string;
 }
@@ -112,9 +116,17 @@ function getStatusBadge(status: Requirement['status']) {
   }
 }
 
-export default function RequirementsDisplay({ requirements, onStatusChange, readOnly = false, jobType }: RequirementsDisplayProps) {
+export default function RequirementsDisplay({ 
+  requirements, 
+  onStatusChange, 
+  onDocumentUpload,
+  readOnly = false, 
+  jobType 
+}: RequirementsDisplayProps) {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [expandedReq, setExpandedReq] = useState<string | null>(null);
+  const [scanningForReq, setScanningForReq] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categorized = categorizeRequirements(requirements);
   const progress = calculateProgress(requirements);
@@ -124,6 +136,35 @@ export default function RequirementsDisplay({ requirements, onStatusChange, read
 
     const newStatus: Requirement['status'] = req.status === 'completed' ? 'pending' : 'completed';
     onStatusChange(req.id, newStatus);
+  };
+
+  const handleFileSelect = (reqId: string) => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+      fileInputRef.current.dataset.reqId = reqId;
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const reqId = fileInputRef.current?.dataset.reqId;
+    if (file && reqId && onDocumentUpload) {
+      onDocumentUpload(reqId, file);
+      toast.success('Document uploaded!');
+    }
+  };
+
+  const handleScanCapture = (imageData: string) => {
+    if (scanningForReq && onDocumentUpload) {
+      fetch(imageData)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], 'scanned-document.jpg', { type: 'image/jpeg' });
+          onDocumentUpload(scanningForReq, file);
+          toast.success('Document scanned and uploaded!');
+          setScanningForReq(null);
+        });
+    }
   };
 
   const copyTemplate = (template: string) => {
@@ -304,6 +345,31 @@ export default function RequirementsDisplay({ requirements, onStatusChange, read
                           >
                             {isReqExpanded ? 'Show less' : 'Show more'} {isReqExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                           </button>
+                          
+                          {/* Upload Actions */}
+                          {onDocumentUpload && req.status !== 'completed' && (
+                            <>
+                              <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*,.pdf"
+                                onChange={handleFileChange}
+                              />
+                              <button
+                                onClick={() => handleFileSelect(req.id)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 text-xs font-medium hover:bg-blue-200 transition-colors"
+                              >
+                                <Upload size={14} /> Upload
+                              </button>
+                              <button
+                                onClick={() => setScanningForReq(req.id)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-xs font-medium hover:bg-green-200 transition-colors"
+                              >
+                                <Camera size={14} /> Scan
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -453,6 +519,14 @@ export default function RequirementsDisplay({ requirements, onStatusChange, read
           <p className="font-medium">No requirements found</p>
           <p className="text-sm mt-1">Try selecting a different job type</p>
         </div>
+      )}
+
+      {/* Document Scanner Modal */}
+      {scanningForReq && (
+        <DocumentScanner
+          onCapture={handleScanCapture}
+          onCancel={() => setScanningForReq(null)}
+        />
       )}
     </div>
   );

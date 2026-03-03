@@ -523,6 +523,31 @@ export default function WizardPage() {
               <RequirementsDisplay 
                 requirements={job.requirements} 
                 onStatusChange={handleRequirementStatusChange}
+                onDocumentUpload={(reqId, file) => {
+                  // Create document object
+                  const newDoc = {
+                    id: `doc-${Date.now()}`,
+                    jobId: job.id,
+                    name: file.name,
+                    type: file.type,
+                    url: URL.createObjectURL(file),
+                    requirementId: reqId,
+                    uploadedAt: new Date(),
+                    status: 'uploaded' as const
+                  };
+                  
+                  // Update job with new document and mark requirement as completed
+                  const updatedJob = {
+                    ...job,
+                    documents: [...job.documents, newDoc],
+                    requirements: job.requirements.map(r => 
+                      r.id === reqId ? { ...r, status: 'completed' as const } : r
+                    ),
+                    updatedAt: new Date()
+                  };
+                  setJob(updatedJob);
+                  toast.success(`${file.name} uploaded!`);
+                }}
                 jobType={job.jobType.replace(/_/g, ' ')}
               />
             </div>
