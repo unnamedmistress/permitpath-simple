@@ -76,6 +76,9 @@ export default {
         sky: "#DDE8F5",
         forest: "#2F855A",
         crimson: "#C53030",
+        safetyOrange: "#DD6B20",
+        lightGray: "#E2E8F0",
+        charcoal: "#2D3748",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],

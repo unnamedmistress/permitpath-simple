@@ -51,6 +51,28 @@
     --ring: 214 85% 27%;
 
     --radius: 0.75rem;
+    
+    /* Design System Colors */
+    --blueprint: #0A3A7E;
+    --blueprint-50: #E6EEF8;
+    --blueprint-100: #DDE8F5;
+    --blueprint-200: #B8D0EB;
+    --blueprint-300: #8FB8E0;
+    --blueprint-400: #5C94D1;
+    --blueprint-500: #3A7ABF;
+    --blueprint-600: #0A3A7E;
+    --blueprint-700: #082E65;
+    --blueprint-800: #06234C;
+    --blueprint-900: #041733;
+    
+    --parchment: #F7FAFC;
+    --steel: #4A5568;
+    --sky: #DDE8F5;
+    --forest: #2F855A;
+    --crimson: #C53030;
+    --safety-orange: #DD6B20;
+    --light-gray: #E2E8F0;
+    --charcoal: #2D3748;
   }
 }
 

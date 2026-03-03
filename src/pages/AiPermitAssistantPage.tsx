@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MessageCircle, Send, Bot, User, Paperclip, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
-import Button from '@/components/shared/Button';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { JobType, Jurisdiction, Requirement } from '@/types/permit';
 import ChatPanel, { ChatMessage } from '@/components/ai-chat/ChatPanel';
 import PhotoUploadTray, { SelectedPhoto } from '@/components/ai-chat/PhotoUploadTray';
 import AnalysisResultCards, { PermitAssistantAnalysis } from '@/components/ai-chat/AnalysisResultCards';
-import { JobType, Jurisdiction, Requirement } from '@/types/permit';
 
 const JURISDICTIONS: Array<{ value: Jurisdiction; label: string }> = [
   { value: 'PINELLAS_COUNTY', label: 'Pinellas County (Unincorporated)' },
@@ -49,6 +52,30 @@ function analysisToRequirements(result: PermitAssistantAnalysis): Requirement[] 
   }));
 }
 
+// Message bubble component
+function MessageBubble({ message, isUser }: { message: string; isUser: boolean }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
+    >
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+        isUser ? 'bg-blueprint' : 'bg-sky'
+      }`}>
+        {isUser ? <User size={16} className="text-white" /> : <Bot size={16} className="text-blueprint" />}
+      </div>
+      <div className={`max-w-[80%] p-4 rounded-2xl ${
+        isUser 
+          ? 'bg-blueprint text-white rounded-tr-sm' 
+          : 'bg-white border border-lightGray rounded-tl-sm'
+      }`}>
+        <p className="text-sm leading-relaxed">{message}</p>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function AiPermitAssistantPage() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -63,6 +90,7 @@ export default function AiPermitAssistantPage() {
   const [jurisdiction, setJurisdiction] = useState<Jurisdiction>('PINELLAS_COUNTY');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PermitAssistantAnalysis | null>(null);
+  const [inputMessage, setInputMessage] = useState('');
 
   const photoCountLabel = useMemo(() => `${photos.length} photo${photos.length === 1 ? '' : 's'} ready`, [photos.length]);
 
@@ -125,8 +153,12 @@ export default function AiPermitAssistantPage() {
   };
 
   const handleSend = async (message: string) => {
+    if (!message.trim()) return;
+    
     setMessages((prev) => [...prev, { id: `user-${Date.now()}`, role: 'user', content: message }]);
+    setInputMessage('');
     setIsLoading(true);
+    
     try {
       const imageRefs = await uploadPhotos();
       const response = await fetch('/api/permit-assistant/analyze', {
@@ -194,28 +226,47 @@ export default function AiPermitAssistantPage() {
 
   return (
     <PageWrapper hasBottomNav={false}>
-      <div className="container max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">AI Permit Assistant</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Share your job. Add photos. Get a simple permit plan.</p>
+      <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* Header with AI Banner */}
+        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-blueprint to-blueprint-800">
+          <img 
+            src="/images/ai-banner.svg" 
+            alt="" 
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
+          />
+          <div className="relative px-6 py-8 sm:py-12">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <Bot size={24} className="text-white" />
+              </div>
+              <span className="px-3 py-1 bg-safetyOrange text-white text-xs font-semibold rounded-full">
+                AI Powered
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">AI Permit Assistant</h1>
+            <p className="text-white/80 mt-2 max-w-lg">
+              Share your job details and photos. Our AI will analyze your project and create a personalized permit plan.
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
+        {/* Location Inputs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-white rounded-xl border border-lightGray">
           <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1">Job address</label>
-            <input
+            <label className="block text-sm font-medium text-charcoal mb-2">Job address</label>
+            <Input
               value={address}
               onChange={(event) => setAddress(event.target.value)}
               placeholder="123 Main St, St Petersburg, FL 33710"
-              className="w-full rounded-xl border bg-background px-3 py-2 text-sm"
+              className="w-full"
             />
           </div>
           <div>
-            <label className="block text-xs sm:text-sm font-medium mb-1">Permit office area</label>
+            <label className="block text-sm font-medium text-charcoal mb-2">Permit office area</label>
             <select
               value={jurisdiction}
               onChange={(event) => setJurisdiction(event.target.value as Jurisdiction)}
-              className="w-full rounded-xl border bg-background px-3 py-2 text-sm"
+              className="w-full h-10 px-3 rounded-md border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
             >
               {JURISDICTIONS.map((item) => (
                 <option key={item.value} value={item.value}>
@@ -226,11 +277,43 @@ export default function AiPermitAssistantPage() {
           </div>
         </div>
 
+        {/* Photo Upload */}
         <PhotoUploadTray photos={photos} onAddPhotos={addPhotos} onRemovePhoto={removePhoto} />
-        <p className="text-xs text-muted-foreground">{photoCountLabel}</p>
+        <p className="text-xs text-steel">{photoCountLabel}</p>
 
-        <ChatPanel messages={messages} onSend={handleSend} isLoading={isLoading} />
+        {/* Chat Messages */}
+        <div className="bg-white rounded-xl border border-lightGray min-h-[300px] max-h-[500px] overflow-y-auto p-4 space-y-4">
+          <AnimatePresence>
+            {messages.map((msg, index) => (
+              <MessageBubble 
+                key={msg.id} 
+                message={msg.content} 
+                isUser={msg.role === 'user'} 
+              />
+            ))}
+          </AnimatePresence>
+          
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex gap-3"
+            >
+              <div className="w-8 h-8 rounded-full bg-sky flex items-center justify-center">
+                <Bot size={16} className="text-blueprint" />
+              </div>
+              <div className="p-4 bg-sky rounded-2xl rounded-tl-sm">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-steel rounded-full animate-bounce" />
+                  <span className="w-2 h-2 bg-steel rounded-full animate-bounce delay-100" />
+                  <span className="w-2 h-2 bg-steel rounded-full animate-bounce delay-200" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
 
+        {/* Analysis Results */}
         {result && (
           <AnalysisResultCards
             result={result}
@@ -244,6 +327,25 @@ export default function AiPermitAssistantPage() {
           />
         )}
 
+        {/* Chat Input */}
+        <div className="flex gap-2 p-2 bg-white rounded-xl border border-lightGray">
+          <Input
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend(inputMessage)}
+            placeholder="Type your message..."
+            className="flex-1 border-0 focus-visible:ring-0"
+          />
+          <Button
+            onClick={() => handleSend(inputMessage)}
+            disabled={isLoading || !inputMessage.trim()}
+            className="bg-blueprint hover:bg-blueprint-700"
+          >
+            <Send size={18} />
+          </Button>
+        </div>
+
+        {/* Go to Wizard Button */}
         <div className="flex flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={() => navigate('/new')} className="w-full sm:w-auto">
             Go to wizard

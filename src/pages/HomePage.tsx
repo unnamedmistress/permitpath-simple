@@ -55,78 +55,12 @@ const staggerContainer = {
   }
 };
 
-// Hero SVG Illustration Component
-function HeroIllustration() {
-  return (
-    <svg viewBox="0 0 400 300" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Background gradient */}
-      <defs>
-        <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.1" />
-          <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.2" />
-        </linearGradient>
-        <linearGradient id="buildingGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#f8fafc" />
-          <stop offset="100%" stopColor="#e2e8f0" />
-        </linearGradient>
-        <linearGradient id="roofGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#3b82f6" />
-          <stop offset="100%" stopColor="#1d4ed8" />
-        </linearGradient>
-      </defs>
-      
-      {/* House base */}
-      <rect x="80" y="120" width="180" height="140" fill="url(#buildingGrad)" rx="4" />
-      
-      {/* Roof */}
-      <path d="M60 130 L170 50 L280 130 Z" fill="url(#roofGrad)" />
-      
-      {/* Door */}
-      <rect x="150" y="180" width="40" height="80" fill="#64748b" rx="2" />
-      <circle cx="180" cy="220" r="3" fill="#fbbf24" />
-      
-      {/* Windows */}
-      <rect x="100" y="150" width="30" height="30" fill="#94a3b8" rx="2" stroke="#64748b" strokeWidth="2" />
-      <rect x="210" y="150" width="30" height="30" fill="#94a3b8" rx="2" stroke="#64748b" strokeWidth="2" />
-      <rect x="100" y="210" width="30" height="30" fill="#94a3b8" rx="2" stroke="#64748b" strokeWidth="2" />
-      <rect x="210" y="210" width="30" height="30" fill="#94a3b8" rx="2" stroke="#64748b" strokeWidth="2" />
-      
-      {/* Permit Document */}
-      <g transform="translate(250, 160)">
-        <rect x="0" y="0" width="70" height="90" fill="white" rx="4" filter="url(#shadow)" />
-        <rect x="0" y="0" width="70" height="25" fill="#22c55e" rx="4" />
-        <rect x="0" y="25" width="70" height="2" fill="#22c55e" />
-        <text x="8" y="17" fill="white" fontSize="10" fontWeight="bold">APPROVED</text>
-        <line x1="8" y1="38" x2="62" y2="38" stroke="#e2e8f0" strokeWidth="2" />
-        <line x1="8" y1="48" x2="50" y2="48" stroke="#e2e8f0" strokeWidth="2" />
-        <line x1="8" y1="58" x2="55" y2="58" stroke="#e2e8f0" strokeWidth="2" />
-        <line x1="8" y1="68" x2="45" y2="68" stroke="#e2e8f0" strokeWidth="2" />
-        <circle cx="55" cy="78" r="8" fill="#22c55e" />
-        <path d="M51 78 L54 81 L59 75" stroke="white" strokeWidth="2" fill="none" />
-      </g>
-      
-      {/* Checkmarks */}
-      <g transform="translate(50, 180)">
-        <circle cx="12" cy="12" r="12" fill="#22c55e" fillOpacity="0.2" />
-        <circle cx="12" cy="12" r="8" fill="#22c55e" />
-        <path d="M8 12 L11 15 L16 9" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </g>
-      
-      <defs>
-        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity="0.1" />
-        </filter>
-      </defs>
-    </svg>
-  );
-}
-
 // Trust Badge Component
 function TrustBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-sm">
-      <Icon size={14} className="text-primary flex-shrink-0" />
-      <span className="text-xs font-medium text-slate-700">{label}</span>
+    <div className="flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-sm rounded-full shadow-sm">
+      <Icon size={16} className="text-blueprint flex-shrink-0" />
+      <span className="text-sm font-medium text-charcoal">{label}</span>
     </div>
   );
 }
@@ -134,9 +68,9 @@ function TrustBadge({ icon: Icon, label }: { icon: React.ElementType; label: str
 // Skeleton loader for job cards
 function JobCardSkeleton() {
   return (
-    <div className="bg-card rounded-xl p-4 shadow-sm border border-border animate-pulse">
-      <div className="h-4 bg-muted rounded w-3/4 mb-2" />
-      <div className="h-3 bg-muted rounded w-1/2" />
+    <div className="bg-white rounded-xl p-4 shadow-sm border border-lightGray animate-pulse">
+      <div className="h-4 bg-sky rounded w-3/4 mb-2" />
+      <div className="h-3 bg-sky rounded w-1/2" />
     </div>
   );
 }
@@ -147,25 +81,25 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="text-center py-12 bg-gradient-to-b from-slate-50 to-slate-100 rounded-2xl border border-slate-200/60"
+      className="text-center py-12 bg-white rounded-2xl border border-lightGray"
     >
       <motion.div 
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-        className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"
+        className="w-16 h-16 rounded-full bg-sky flex items-center justify-center mx-auto mb-4"
       >
-        <Home size={28} className="text-primary" />
+        <Home size={28} className="text-blueprint" />
       </motion.div>
-      <h3 className="text-lg font-semibold text-slate-800 mb-2">No jobs yet</h3>
-      <p className="text-sm text-slate-500 mb-5 max-w-xs mx-auto leading-relaxed">
+      <h3 className="text-lg font-semibold text-charcoal mb-2">No jobs yet</h3>
+      <p className="text-sm text-steel mb-5 max-w-xs mx-auto leading-relaxed">
         Start your first project and get your personalized permit checklist
       </p>
       <motion.button
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={onCreate}
-        className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90 transition-colors"
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-blueprint text-white rounded-xl text-sm font-semibold shadow-lg shadow-blueprint/25 hover:bg-blueprint-700 transition-colors"
       >
         <Plus size={18} />
         Start Your First Job
@@ -179,7 +113,6 @@ function StickyCTA() {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const [isVisible, setIsVisible] = useState(false);
-  const heroRef = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // Show sticky CTA after scrolling past hero (roughly 400px)
@@ -201,7 +134,7 @@ function StickyCTA() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate("/new")}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white font-bold rounded-xl shadow-2xl shadow-primary/40 hover:bg-primary/90 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-safetyOrange text-white font-bold rounded-xl shadow-2xl shadow-safetyOrange/40 hover:bg-orange-600 transition-colors"
             >
               <Plus size={20} />
               Start Your Project
@@ -264,20 +197,29 @@ export default function HomePage() {
 
   const getStatusColorClass = (status: Job["status"]) => {
     return status === "approved" || status === "ready_to_submit" 
-      ? 'bg-emerald-100 text-emerald-700' 
+      ? 'bg-forest/10 text-forest' 
       : status === "rejected" 
-        ? 'bg-red-100 text-red-700'
-        : 'bg-amber-100 text-amber-700';
+        ? 'bg-crimson/10 text-crimson'
+        : 'bg-safetyOrange/10 text-safetyOrange';
   };
 
   return (
     <PageWrapper>
       <WelcomeModal />
       
-      {/* Hero Section */}
+      {/* Hero Section - Blueprint Blue Gradient */}
       <section className="relative overflow-hidden">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-blue-800" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blueprint via-blueprint to-blueprint-800" />
+        
+        {/* Hero SVG Background */}
+        <div className="absolute inset-0 opacity-10">
+          <img 
+            src="/images/hero.svg" 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+        </div>
         
         {/* Decorative circles */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
@@ -306,7 +248,7 @@ export default function HomePage() {
             >
               Get Your Permit
               <br />
-              <span className="text-blue-200">Without the Headache</span>
+              <span className="text-sky">Without the Headache</span>
             </motion.h1>
             
             {/* Subheadline */}
@@ -323,7 +265,7 @@ export default function HomePage() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate("/new")}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary font-bold rounded-xl shadow-xl shadow-black/10 hover:bg-blue-50 transition-colors text-base"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-safetyOrange text-white font-bold rounded-xl shadow-xl shadow-black/10 hover:bg-orange-600 transition-colors text-base"
               >
                 Start New Project
                 <ArrowRight size={18} />
@@ -340,24 +282,11 @@ export default function HomePage() {
               <TrustBadge icon={Clock} label="Saves Hours" />
             </motion.div>
           </motion.div>
-          
-          {/* Hero Illustration */}
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 max-w-sm mx-auto"
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-white/10 blur-3xl rounded-full" />
-              <HeroIllustration />
-            </div>
-          </motion.div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="px-4 py-10 bg-slate-50/50">
+      <section className="px-4 py-10 bg-parchment">
         <motion.div
           variants={staggerContainer}
           initial="initial"
@@ -366,8 +295,8 @@ export default function HomePage() {
           className="max-w-4xl mx-auto"
         >
           <motion.div variants={fadeInUp} className="text-center mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-2">How It Works</h2>
-            <p className="text-slate-500 text-sm">Three simple steps to get your permit</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-charcoal mb-2">How It Works</h2>
+            <p className="text-steel text-sm">Three simple steps to get your permit</p>
           </motion.div>
           
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
@@ -379,22 +308,22 @@ export default function HomePage() {
               >
                 {/* Connector line for desktop */}
                 {index < HOW_IT_WORKS.length - 1 && (
-                  <div className="hidden sm:block absolute top-10 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-primary/30 to-transparent" />
+                  <div className="hidden sm:block absolute top-10 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-blueprint/30 to-transparent" />
                 )}
                 
-                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md hover:border-primary/20 transition-all group">
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-lightGray hover:shadow-md hover:border-blueprint/20 transition-all group">
                   <div className="flex sm:flex-col items-center sm:text-center gap-4 sm:gap-3">
-                    <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform">
+                    <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-blueprint to-blueprint-600 flex items-center justify-center shadow-lg shadow-blueprint/25 group-hover:scale-110 transition-transform">
                       <item.icon size={22} className="text-white" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 sm:justify-center mb-1">
-                        <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
+                        <span className="w-5 h-5 rounded-full bg-sky text-blueprint text-xs font-bold flex items-center justify-center">
                           {item.step}
                         </span>
-                        <h3 className="font-semibold text-slate-800 text-sm sm:text-base">{item.title}</h3>
+                        <h3 className="font-semibold text-charcoal text-sm sm:text-base">{item.title}</h3>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed">{item.description}</p>
+                      <p className="text-xs text-steel leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 </div>
@@ -405,7 +334,7 @@ export default function HomePage() {
       </section>
 
       {/* Popular Jobs Section */}
-      <section className="px-4 py-8">
+      <section className="px-4 py-8 bg-white">
         <motion.div
           variants={staggerContainer}
           initial="initial"
@@ -414,8 +343,8 @@ export default function HomePage() {
           className="max-w-4xl mx-auto"
         >
           <motion.div variants={fadeInUp} className="text-center mb-6">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-800 mb-1">Popular Projects</h2>
-            <p className="text-slate-500 text-xs sm:text-sm">Tap a project to get started</p>
+            <h2 className="text-lg sm:text-xl font-bold text-charcoal mb-1">Popular Projects</h2>
+            <p className="text-steel text-xs sm:text-sm">Tap a project to get started</p>
           </motion.div>
           
           <motion.div 
@@ -428,22 +357,22 @@ export default function HomePage() {
                 whileHover={{ scale: 1.03, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate(`/new?jobType=${type}`)}
-                className="group relative bg-white rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-lg hover:border-primary/30 transition-all text-left overflow-hidden"
+                className="group relative bg-white rounded-xl p-4 shadow-sm border border-lightGray hover:shadow-lg hover:border-blueprint/30 transition-all text-left overflow-hidden"
               >
                 {/* Hover gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blueprint/0 to-blueprint/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="relative">
                   <div className={`w-11 h-11 rounded-xl ${color} flex items-center justify-center shadow-md mb-3 group-hover:scale-110 transition-transform`}>
                     <Icon size={22} className="text-white" />
                   </div>
-                  <h3 className="font-semibold text-slate-800 text-sm mb-0.5">{label}</h3>
-                  <p className="text-[10px] sm:text-xs text-slate-400">{description}</p>
+                  <h3 className="font-semibold text-charcoal text-sm mb-0.5">{label}</h3>
+                  <p className="text-[10px] sm:text-xs text-steel">{description}</p>
                 </div>
                 
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ArrowRight size={12} className="text-primary" />
+                  <div className="w-6 h-6 rounded-full bg-sky flex items-center justify-center">
+                    <ArrowRight size={12} className="text-blueprint" />
                   </div>
                 </div>
               </motion.button>
@@ -453,7 +382,7 @@ export default function HomePage() {
       </section>
 
       {/* Your Jobs Section */}
-      <section className="px-4 py-6">
+      <section className="px-4 py-6 bg-parchment">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -463,14 +392,14 @@ export default function HomePage() {
         >
           <motion.div variants={itemVariants} className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-800">Your Projects</h2>
-              <p className="text-xs text-slate-500">{jobs.length} {jobs.length === 1 ? 'project' : 'projects'}</p>
+              <h2 className="text-lg font-bold text-charcoal">Your Projects</h2>
+              <p className="text-xs text-steel">{jobs.length} {jobs.length === 1 ? 'project' : 'projects'}</p>
             </div>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate("/new")}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors shadow-md shadow-primary/20"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-blueprint text-white rounded-lg text-sm font-semibold hover:bg-blueprint-700 transition-colors shadow-md shadow-blueprint/20"
             >
               <Plus size={16} />
               New
@@ -497,29 +426,29 @@ export default function HomePage() {
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ scale: 1.01 }}
                     onClick={() => navigate(`/wizard/${job.id}`)}
-                    className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 cursor-pointer hover:shadow-md hover:border-primary/20 transition-all group"
+                    className="bg-white rounded-xl p-4 shadow-sm border border-lightGray cursor-pointer hover:shadow-md hover:border-blueprint/20 transition-all group"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center flex-shrink-0 border border-slate-100 group-hover:border-primary/20 transition-colors">
-                        <FileText size={20} className="text-slate-400 group-hover:text-primary transition-colors" />
+                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-sky to-sky/50 flex items-center justify-center flex-shrink-0 border border-sky group-hover:border-blueprint/20 transition-colors">
+                        <FileText size={20} className="text-steel group-hover:text-blueprint transition-colors" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-semibold text-sm text-slate-800 truncate">
+                          <h3 className="font-semibold text-sm text-charcoal truncate">
                             {formatJobTypeLabel(job.jobType)}
                           </h3>
                           <span className={`text-[10px] font-semibold px-2 py-1 rounded-full flex-shrink-0 ${getStatusColorClass(job.status)}`}>
                             {getStatusLabel(job.status)}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 truncate mt-1">
+                        <p className="text-xs text-steel truncate mt-1">
                           {job.address || "No address set"}
                         </p>
                         <div className="flex items-center justify-between mt-2">
-                          <p className="text-[10px] text-slate-400">
+                          <p className="text-[10px] text-steel">
                             Started {formatDate(job.createdAt)}
                           </p>
-                          <ChevronRight size={14} className="text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                          <ChevronRight size={14} className="text-steel group-hover:text-blueprint group-hover:translate-x-0.5 transition-all" />
                         </div>
                       </div>
                     </div>
@@ -548,9 +477,9 @@ export default function HomePage() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="px-4 py-8 mt-4 border-t border-slate-200 bg-slate-50/50"
+        className="px-4 py-6 mt-4 border-t border-lightGray bg-white"
       >
-        <p className="text-xs text-slate-600 text-center leading-relaxed max-w-sm mx-auto">
+        <p className="text-xs text-steel text-center leading-relaxed max-w-sm mx-auto">
           This tool provides general information only and does not constitute legal advice. Always consult your local building department.
         </p>
       </motion.footer>

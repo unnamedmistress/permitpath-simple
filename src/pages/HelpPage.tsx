@@ -1,14 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Phone, Mail, BookOpen, Video, ChevronRight, Clock, Info } from "lucide-react";
+import { MessageCircle, Phone, Mail, BookOpen, Video, ChevronRight, Clock, Info, HelpCircle, FileText, ExternalLink } from "lucide-react";
+import { motion } from "framer-motion";
 import PageWrapper from "@/components/layout/PageWrapper";
-import Button from "@/components/shared/Button";
-import { PINELLAS_COUNTY_BUILDING } from "@/data/jurisdictionData";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PINELLAS_COUNTY_BUILDING } from "@/data/jurisdictionData";
 
 interface FAQItem {
   question: string;
@@ -51,70 +52,129 @@ const videoGuides = [
   { title: "Navigating the County Portal", duration: "5 min" },
 ];
 
+const supportCards = [
+  {
+    icon: MessageCircle,
+    title: "Chat with AI",
+    description: "Get instant answers to your permit questions",
+    color: "bg-purple-500",
+    bgColor: "bg-purple-50",
+    borderColor: "border-purple-200",
+    textColor: "text-purple-700",
+    action: (navigate: any) => navigate("/ai-assistant")
+  },
+  {
+    icon: Phone,
+    title: "Call County",
+    description: PINELLAS_COUNTY_BUILDING.phone,
+    color: "bg-forest",
+    bgColor: "bg-forest/10",
+    borderColor: "border-forest/20",
+    textColor: "text-forest",
+    action: () => window.location.href = `tel:${PINELLAS_COUNTY_BUILDING.phone.replace(/\D/g, "")}`
+  },
+  {
+    icon: Mail,
+    title: "Email Support",
+    description: "support@permitpath.com",
+    color: "bg-blueprint",
+    bgColor: "bg-sky",
+    borderColor: "border-lightGray",
+    textColor: "text-blueprint",
+    action: () => {
+      const subject = encodeURIComponent("PermitPath Support Request");
+      const body = encodeURIComponent("Hi PermitPath Support,\n\nI need help with:\n\n");
+      window.location.href = `mailto:support@permitpath.com?subject=${subject}&body=${body}`;
+    }
+  },
+  {
+    icon: ExternalLink,
+    title: "County Website",
+    description: "Visit official county portal",
+    color: "bg-safetyOrange",
+    bgColor: "bg-safetyOrange/10",
+    borderColor: "border-safetyOrange/20",
+    textColor: "text-safetyOrange",
+    action: () => window.open("https://www.pinellas.gov/", "_blank")
+  }
+];
+
 export default function HelpPage() {
   const navigate = useNavigate();
 
-  const handleCallSupport = () => {
-    window.location.href = `tel:${PINELLAS_COUNTY_BUILDING.phone.replace(/\D/g, "")}`;
-  };
-
-  const handleEmailSupport = () => {
-    const subject = encodeURIComponent("PermitPath Support Request");
-    const body = encodeURIComponent("Hi PermitPath Support,\n\nI need help with:\n\n");
-    window.location.href = `mailto:support@permitpath.com?subject=${subject}&body=${body}`;
-  };
-
   return (
     <PageWrapper>
-      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 px-3 sm:px-0">Help & Support</h1>
-
-      {/* Primary Support Options */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 px-3 sm:px-0">
-        <button
-          onClick={() => navigate("/ai-assistant")}
-          className="p-3 sm:p-4 rounded-xl border bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 text-left hover:shadow-md transition-shadow"
-        >
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-500 flex items-center justify-center mb-2 sm:mb-3">
-            <MessageCircle size={16} className="sm:w-5 sm:h-5 text-white" />
-          </div>
-          <p className="font-semibold text-xs sm:text-sm">Chat with AI</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 break-words">Get instant answers</p>
-        </button>
-
-        <button
-          onClick={handleCallSupport}
-          className="p-3 sm:p-4 rounded-xl border bg-gradient-to-br from-green-50 to-green-100 border-green-200 text-left hover:shadow-md transition-shadow"
-        >
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-500 flex items-center justify-center mb-2 sm:mb-3">
-            <Phone size={16} className="sm:w-5 sm:h-5 text-white" />
-          </div>
-          <p className="font-semibold text-xs sm:text-sm">Call County</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 break-words">{PINELLAS_COUNTY_BUILDING.phone}</p>
-        </button>
+      {/* Header */}
+      <div className="px-4 sm:px-0 mb-6">
+        <h1 className="text-2xl font-bold text-charcoal">Help & Support</h1>
+        <p className="text-steel mt-1">Get help with your permits and questions</p>
       </div>
+
+      {/* Support Cards Grid */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-2 gap-3 mb-6 px-4 sm:px-0"
+      >
+        {supportCards.map((card, index) => (
+          <motion.button
+            key={card.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            onClick={() => card.action(navigate)}
+            className={`p-4 rounded-xl border ${card.borderColor} ${card.bgColor} text-left hover:shadow-md transition-all group`}
+          >
+            <div className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+              <card.icon size={20} className="text-white" />
+            </div>
+            <p className={`font-semibold text-sm ${card.textColor}`}>{card.title}</p>
+            <p className="text-xs text-steel mt-1">{card.description}</p>
+          </motion.button>
+        ))}
+      </motion.div>
 
       {/* County Hours */}
-      <div className="p-3 rounded-lg bg-muted mb-4 sm:mb-6 flex items-center gap-3 mx-3 sm:mx-0">
-        <Clock size={16} className="text-muted-foreground" />
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          <span className="font-medium">County Hours:</span> {PINELLAS_COUNTY_BUILDING.hours}
-        </p>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="p-4 rounded-xl bg-sky border border-lightGray mb-6 mx-4 sm:mx-0"
+      >
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-blueprint/10 flex items-center justify-center flex-shrink-0">
+            <Clock size={20} className="text-blueprint" />
+          </div>
+          <div>
+            <p className="font-medium text-charcoal">County Office Hours</p>
+            <p className="text-sm text-steel">{PINELLAS_COUNTY_BUILDING.hours}</p>
+            <p className="text-xs text-steel mt-1">Closed on weekends and holidays</p>
+          </div>
+        </div>
+      </motion.div>
 
       {/* FAQ Accordion */}
-      <section className="mb-4 sm:mb-6 mx-3 sm:mx-0">
-        <h2 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Common Questions</h2>
-        <Accordion type="single" collapsible className="bg-card rounded-lg border">
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mb-6 mx-4 sm:mx-0"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <HelpCircle size={20} className="text-blueprint" />
+          <h2 className="font-semibold text-charcoal">Common Questions</h2>
+        </div>
+        <Accordion type="single" collapsible className="bg-white rounded-xl border border-lightGray overflow-hidden">
           {faqItems.map((faq, index) => (
-            <AccordionItem key={index} value={`item-${index}`} className="border-b last:border-b-0">
-              <AccordionTrigger className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium hover:no-underline">
+            <AccordionItem key={index} value={`item-${index}`} className="border-b border-lightGray last:border-b-0">
+              <AccordionTrigger className="px-4 py-4 text-left text-sm font-medium text-charcoal hover:no-underline hover:bg-sky/50 transition-colors">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="px-3 sm:px-4 pb-3">
-                <p className="text-xs sm:text-sm text-foreground mb-2">
+              <AccordionContent className="px-4 pb-4">
+                <p className="text-sm text-charcoal mb-2 font-medium">
                   {faq.shortAnswer}
                 </p>
-                <p className="text-xs text-muted-foreground mb-3">
+                <p className="text-xs text-steel">
                   {faq.fullContext}
                 </p>
               </AccordionContent>
@@ -125,49 +185,79 @@ export default function HelpPage() {
         {/* Need More Help Button */}
         <button
           onClick={() => navigate("/ai-assistant")}
-          className="w-full mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+          className="w-full mt-3 p-4 rounded-xl bg-blueprint/5 border border-blueprint/20 hover:bg-blueprint/10 transition-colors flex items-center justify-center gap-2"
         >
-          <MessageCircle size={16} className="text-primary" />
-          <span className="text-sm font-medium text-primary">Need more help? Chat with AI</span>
+          <MessageCircle size={18} className="text-blueprint" />
+          <span className="text-sm font-medium text-blueprint">Need more help? Chat with AI</span>
         </button>
-      </section>
+      </motion.section>
 
-      {/* Video Guides */}
-      <section className="mb-4 sm:mb-6 mx-3 sm:mx-0">
-        <h2 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Video Tutorials</h2>
-        <div className="space-y-1 sm:space-y-2">
-          {videoGuides.map((video) => (
-            <button
+      {/* Video Tutorials */}
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="mb-6 mx-4 sm:mx-0"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Video size={20} className="text-crimson" />
+          <h2 className="font-semibold text-charcoal">Video Tutorials</h2>
+        </div>
+        <div className="space-y-2">
+          {videoGuides.map((video, index) => (
+            <motion.button
               key={video.title}
-              className="w-full text-left p-2 sm:p-3 rounded-lg bg-card border hover:bg-muted/50 transition-colors flex items-center gap-2 sm:gap-3"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 + index * 0.1 }}
+              className="w-full text-left p-3 rounded-xl bg-white border border-lightGray hover:shadow-md transition-all flex items-center gap-3 group"
             >
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
-                <Video size={16} className="sm:w-5 sm:h-5 text-red-600" />
+              <div className="w-12 h-12 rounded-lg bg-crimson/10 flex items-center justify-center flex-shrink-0 group-hover:bg-crimson/20 transition-colors">
+                <Video size={20} className="text-crimson" />
               </div>
               <div className="flex-1">
-                <p className="text-xs sm:text-sm font-medium">{video.title}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">{video.duration}</p>
+                <p className="text-sm font-medium text-charcoal">{video.title}</p>
+                <p className="text-xs text-steel">{video.duration}</p>
               </div>
-              <ChevronRight size={14} className="sm:w-4 sm:h-4 text-muted-foreground" />
+              <ChevronRight size={16} className="text-steel group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* Documentation Section */}
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mb-24 mx-4 sm:mx-0"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <FileText size={20} className="text-forest" />
+          <h2 className="font-semibold text-charcoal">Documentation</h2>
+        </div>
+        <div className="space-y-2">
+          {[
+            { title: "Permit Application Guide", description: "Step-by-step application process" },
+            { title: "Required Documents Checklist", description: "What you'll need for each permit type" },
+            { title: "Inspection Guidelines", description: "What inspectors look for" },
+          ].map((doc, index) => (
+            <button
+              key={doc.title}
+              className="w-full text-left p-3 rounded-xl bg-white border border-lightGray hover:shadow-md transition-all flex items-center gap-3 group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-forest/10 flex items-center justify-center flex-shrink-0">
+                <FileText size={18} className="text-forest" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-charcoal">{doc.title}</p>
+                <p className="text-xs text-steel">{doc.description}</p>
+              </div>
+              <ExternalLink size={14} className="text-steel" />
             </button>
           ))}
         </div>
-      </section>
-
-      {/* Email Support */}
-      <button
-        onClick={handleEmailSupport}
-        className="w-full p-3 sm:p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors flex items-center gap-2 sm:gap-3 mx-3 sm:mx-0 mb-24"
-      >
-        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center">
-          <Mail size={16} className="sm:w-5 sm:h-5 text-blue-600" />
-        </div>
-        <div className="flex-1 text-left">
-          <p className="font-medium text-xs sm:text-sm">Email Support</p>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">support@permitpath.com</p>
-        </div>
-        <ChevronRight size={14} className="sm:w-4 sm:h-4 text-muted-foreground" />
-      </button>
+      </motion.section>
     </PageWrapper>
   );
 }
