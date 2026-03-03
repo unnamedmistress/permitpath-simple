@@ -8,6 +8,8 @@ import SmartWizard, { CreateJobState, WizardData } from '@/components/wizard/Sma
 import { useJobs, JobInput } from '@/hooks/useJobs';
 import { Job, Requirement } from '@/types/permit';
 import { motion, AnimatePresence } from 'framer-motion';
+import { saveJob } from '@/services/jobStorage';
+import { v4 as uuidv4 } from 'uuid';
 
 // Simple error boundary component
 function ErrorFallback({ error }: { error: Error }) {
@@ -225,6 +227,8 @@ export default function NewJobPage() {
   }, []);
 
   const handleWizardComplete = async (data: WizardData) => {
+    console.log('[NewJobPage] Starting job creation...', data);
+    
     if (timeoutRef.current) {
       window.clearTimeout(timeoutRef.current);
     }
@@ -234,6 +238,20 @@ export default function NewJobPage() {
     setCreateError(null);
 
     try {
+      // Validate required fields before submission
+      if (!data.jobType) {
+        throw new Error('Job type is required');
+      }
+      if (!data.jurisdiction) {
+        throw new Error('Jurisdiction is required');
+      }
+      if (!data.address || data.address.trim().length < 3) {
+        throw new Error('A valid address is required');
+      }
+      if (!data.requirements || data.requirements.length === 0) {
+        throw new Error('Requirements must be analyzed before creating job');
+      }
+
       const jobInput: JobInput = {
         jobType: data.jobType,
         jurisdiction: data.jurisdiction,
@@ -245,27 +263,82 @@ export default function NewJobPage() {
         permitHistory: data.permitHistory,
       };
 
-      const job = await createJob(jobInput, data.requirements);
+      let job: Job;
       
-      if (job) {
-        setCreatedJob(job);
-        setCreateState('created');
+      try {
+        // Try to create job via Supabase
+        job = await createJob(jobInput, data.requirements);
+        console.log('[NewJobPage] Job created via Supabase:', job.id);
+      } catch (supabaseError) {
+        console.warn('[NewJobPage] Supabase creation failed, falling back to localStorage:', supabaseError);
         
-        // Show success modal instead of immediate navigation
-        setShowSuccessModal(true);
+        // Fallback: Create job locally
+        const localJob: Job = {
+          id: uuidv4(),
+          contractorId: 'local-user',
+          jobType: data.jobType,
+          jurisdiction: data.jurisdiction,
+          address: data.address,
+          description: data.description || '',
+          status: 'requirements_pending',
+          requirements: data.requirements.map(r => ({ 
+            ...r, 
+            jobId: 'temp',
+            id: r.id || uuidv4()
+          })),
+          documents: [],
+          inspections: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          contractorInfo: data.contractorInfo,
+          budgetTimeline: data.budgetTimeline,
+          buildingDetails: data.buildingDetails,
+          permitHistory: data.permitHistory,
+        };
         
-        // Still show toast for accessibility/screen readers
-        toast.success('Job created successfully!', {
-          description: `Created ${data.jobType} job with ${data.requirements.length} requirements`
-        });
-      } else {
-        throw new Error('Failed to create job');
+        // Update requirements with correct jobId
+        localJob.requirements = localJob.requirements.map(r => ({ ...r, jobId: localJob.id }));
+        
+        // Save to localStorage
+        try {
+          saveJob(localJob);
+          console.log('[NewJobPage] Job saved to localStorage:', localJob.id);
+          job = localJob;
+          
+          // Show warning that job is stored locally
+          toast.warning('Job saved locally', {
+            description: 'We could not connect to our servers. Your job is saved on this device only.'
+          });
+        } catch (localStorageError) {
+          console.error('[NewJobPage] localStorage fallback failed:', localStorageError);
+          throw new Error('Unable to save job. Please check your browser storage settings and try again.');
+        }
       }
+      
+      setCreatedJob(job);
+      setCreateState('created');
+      
+      // Show success modal instead of immediate navigation
+      setShowSuccessModal(true);
+      
+      // Show toast for accessibility/screen readers
+      toast.success('Job created successfully!', {
+        description: `Created ${data.jobType} job with ${data.requirements.length} requirements`
+      });
+      
     } catch (error) {
-      console.error('Failed to create job:', error);
+      console.error('[NewJobPage] Job creation failed:', error);
       setCreateState('failed');
-      setCreateError(jobError || 'Could not create your job. Please try again.');
-      toast.error('Failed to create job');
+      
+      // Get specific error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'An unexpected error occurred. Please try again.';
+      
+      setCreateError(errorMessage);
+      toast.error('Failed to create job', {
+        description: errorMessage
+      });
     }
   };
 

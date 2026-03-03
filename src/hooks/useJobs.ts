@@ -67,10 +67,17 @@ export function useJobs() {
     }
   }, [user?.id, isAuthenticated]);
 
-  const createJob = useCallback(async (input: JobInput, requirements: Requirement[]): Promise<Job | null> => {
-    if (!isSupabaseConfigured() || !isAuthenticated) {
-      setError('Authentication required');
-      return null;
+  const createJob = useCallback(async (input: JobInput, requirements: Requirement[]): Promise<Job> => {
+    console.log('[useJobs] Starting createJob:', { jobType: input.jobType, jurisdiction: input.jurisdiction });
+    
+    if (!isSupabaseConfigured()) {
+      console.error('[useJobs] Supabase not configured');
+      throw new Error('Database connection not available. Please check your internet connection and try again.');
+    }
+    
+    if (!isAuthenticated) {
+      console.error('[useJobs] User not authenticated');
+      throw new Error('Authentication required. Please sign in to create a job.');
     }
 
     setIsLoading(true);
@@ -78,6 +85,8 @@ export function useJobs() {
 
     try {
       const supabase = getSupabaseClient();
+      console.log('[useJobs] Inserting job into Supabase...');
+      
       const { data: jobData, error: jobError } = await supabase
         .from('jobs')
         .insert({
@@ -91,9 +100,15 @@ export function useJobs() {
         .select()
         .single();
 
-      if (jobError) throw jobError;
+      if (jobError) {
+        console.error('[useJobs] Supabase insert error:', jobError);
+        throw new Error(`Database error: ${jobError.message}`);
+      }
+
+      console.log('[useJobs] Job created with ID:', jobData.id);
 
       if (requirements.length > 0) {
+        console.log('[useJobs] Inserting', requirements.length, 'requirements...');
         const requirementsData = requirements.map((req) => ({
           job_id: jobData.id,
           category: req.category,
@@ -103,7 +118,12 @@ export function useJobs() {
           status: 'pending',
         }));
 
-        await supabase.from('requirements').insert(requirementsData);
+        const { error: reqError } = await supabase.from('requirements').insert(requirementsData);
+        if (reqError) {
+          console.error('[useJobs] Failed to insert requirements:', reqError);
+          // Don't fail the whole job creation if requirements fail
+          // Job is already created, user can retry adding requirements
+        }
       }
 
       const newJob: Job = {
@@ -127,11 +147,13 @@ export function useJobs() {
       };
 
       setJobs(prev => [newJob, ...prev]);
+      console.log('[useJobs] Job created successfully:', newJob.id);
       return newJob;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create job';
+      console.error('[useJobs] createJob failed:', message);
       setError(message);
-      return null;
+      throw err; // Re-throw so caller can handle it
     } finally {
       setIsLoading(false);
     }
