@@ -7,6 +7,7 @@ import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useJob } from "@/hooks/useJob";
 import { Job, JobType } from "@/types";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import WelcomeModal from "@/components/shared/WelcomeModal";
 
 const JOB_ICONS: Record<JobType, typeof Zap> = {
   AC_HVAC_CHANGEOUT: Sun,
