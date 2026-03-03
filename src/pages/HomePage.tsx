@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin, Sparkles } from "lucide-react";
+import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin, Sparkles, Shield, Gift } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useJob } from "@/hooks/useJob";
@@ -107,8 +107,18 @@ export default function HomePage() {
         </p>
       </header>
 
+      {/* FREE Banner */}
+      <div className="px-3 -mt-2">
+        <div className="bg-green-100 border border-green-300 rounded-xl p-2 sm:p-3 flex items-center justify-center gap-2">
+          <Gift size={16} className="text-green-700" />
+          <p className="text-xs sm:text-sm font-medium text-green-800">
+            PermitPath is <strong>FREE</strong> — We help you get permits, county fees are paid separately
+          </p>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className="px-3 -mt-4">
+      <div className="px-3 -mt-4 pt-2">
         
         {/* Quick Job Type Banner */}
         <div className="bg-card rounded-xl p-3 sm:p-4 shadow-md border border-border mb-4">
@@ -294,6 +304,18 @@ export default function HomePage() {
               })}
           </div>
         )}
+        {/* Trust Signal Footer */}
+        <div className="mt-6 mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
+          <div className="flex items-start gap-3">
+            <Shield size={18} className="text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-900">PermitPath is FREE</p>
+              <p className="text-xs text-blue-700 mt-0.5">
+                Permit fees go directly to your county. We help you navigate the process at no cost.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

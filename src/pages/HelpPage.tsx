@@ -1,15 +1,47 @@
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Phone, Mail, BookOpen, Video, ChevronRight, Clock } from "lucide-react";
+import { MessageCircle, Phone, Mail, BookOpen, Video, ChevronRight, Clock, Info } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import Button from "@/components/shared/Button";
 import { PINELLAS_COUNTY_BUILDING } from "@/data/jurisdictionData";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-const quickQuestions = [
-  "What permits do I need for a water heater?",
-  "How long does approval take?",
-  "What if the city rejects my application?",
-  "How do I upload documents?",
-  "Do I need an inspection?",
+interface FAQItem {
+  question: string;
+  shortAnswer: string;
+  fullContext: string;
+}
+
+const faqItems: FAQItem[] = [
+  {
+    question: "What permits do I need for a water heater?",
+    shortAnswer: "Water heater replacements typically need a plumbing permit. If it's gas, you may also need an electrical permit for the ignition.",
+    fullContext: "The specific permits depend on whether you're replacing an existing unit or installing a new one, and whether it's gas or electric. Our wizard will determine exactly what you need based on your situation."
+  },
+  {
+    question: "How long does approval take?",
+    shortAnswer: "Most permits are approved within 2-10 business days for simple jobs. Complex projects may take 2-4 weeks.",
+    fullContext: "Pinellas County offers express permitting for common jobs like water heaters and AC replacements, which can be same-day. Roofing and structural work typically takes longer due to additional reviews."
+  },
+  {
+    question: "What if the city rejects my application?",
+    shortAnswer: "Don't worry! Rejections usually just mean missing documents. We'll help you gather what's needed and resubmit.",
+    fullContext: "Most rejections are for missing information, not denied permits. The county will tell you exactly what's needed. Our checklist helps ensure you submit complete applications the first time."
+  },
+  {
+    question: "How do I upload documents?",
+    shortAnswer: "After you create your job, use the checklist to upload photos and documents directly from your phone.",
+    fullContext: "You can take photos with your camera or upload from your gallery. Each checklist item has an upload button. Documents are stored securely and linked to your job."
+  },
+  {
+    question: "Do I need an inspection?",
+    shortAnswer: "Most permits require at least one inspection. Simple replacements may only need a final inspection.",
+    fullContext: "Inspections ensure work meets safety codes. The number of inspections depends on the job type. Electrical and plumbing work typically need rough-in and final inspections. Our checklist shows you exactly which inspections apply."
+  },
 ];
 
 const videoGuides = [
@@ -69,21 +101,35 @@ export default function HelpPage() {
         </p>
       </div>
 
-      {/* Quick Questions */}
+      {/* FAQ Accordion */}
       <section className="mb-4 sm:mb-6 mx-3 sm:mx-0">
         <h2 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Common Questions</h2>
-        <div className="space-y-1 sm:space-y-2">
-          {quickQuestions.map((question) => (
-            <button
-              key={question}
-              onClick={() => navigate("/ai-assistant")}
-              className="w-full text-left p-2 sm:p-3 rounded-lg bg-card border hover:bg-muted/50 transition-colors flex items-center justify-between"
-            >
-              <span className="text-xs sm:text-sm">{question}</span>
-              <ChevronRight size={14} className="sm:w-4 sm:h-4 text-muted-foreground" />
-            </button>
+        <Accordion type="single" collapsible className="bg-card rounded-lg border">
+          {faqItems.map((faq, index) => (
+            <AccordionItem key={index} value={`item-${index}`} className="border-b last:border-b-0">
+              <AccordionTrigger className="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium hover:no-underline">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="px-3 sm:px-4 pb-3">
+                <p className="text-xs sm:text-sm text-foreground mb-2">
+                  {faq.shortAnswer}
+                </p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {faq.fullContext}
+                </p>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
+        
+        {/* Need More Help Button */}
+        <button
+          onClick={() => navigate("/ai-assistant")}
+          className="w-full mt-3 p-3 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors flex items-center justify-center gap-2"
+        >
+          <MessageCircle size={16} className="text-primary" />
+          <span className="text-sm font-medium text-primary">Need more help? Chat with AI</span>
+        </button>
       </section>
 
       {/* Video Guides */}

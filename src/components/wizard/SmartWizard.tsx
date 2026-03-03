@@ -12,7 +12,9 @@ import {
   Fence,
   Building2,
   Shield,
-  AlertCircle
+  AlertCircle,
+  Info,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { JobType, Jurisdiction, Requirement } from '@/types/permit';
@@ -20,6 +22,7 @@ import { getRequirementsForJob } from '@/services/requirements';
 import Button from '@/components/shared/Button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 export type CreateJobState = 'idle' | 'creating' | 'created' | 'failed';
 
@@ -362,7 +365,21 @@ export default function SmartWizard({
       {step === 1 && (
         <div className="space-y-3 sm:space-y-4">
           <div>
-            <h2 className="text-lg sm:text-xl font-semibold">What type of work?</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold">What type of work?</h2>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <button className="p-1 rounded-full hover:bg-muted transition-colors">
+                    <Info size={16} className="text-muted-foreground" />
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-72 p-3">
+                  <p className="text-sm text-foreground">
+                    Not sure which to pick? <strong>Roof Replacement</strong> means new shingles/tiles. <strong>Roof Repair</strong> means patching leaks. When in doubt, describe your project and we'll help.
+                  </p>
+                </HoverCardContent>
+              </HoverCard>
+            </div>
             <p className="text-muted-foreground text-sm sm:text-base">Pick the job that best matches your project</p>
           </div>
           
@@ -468,7 +485,21 @@ export default function SmartWizard({
       {step === 2 && (
         <div className="space-y-3 sm:space-y-4">
           <div>
-            <h2 className="text-lg sm:text-xl font-semibold">Where is this job?</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold">Where is this job?</h2>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <button className="p-1 rounded-full hover:bg-muted transition-colors">
+                    <Info size={16} className="text-muted-foreground" />
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-64 p-3">
+                  <p className="text-sm text-foreground">
+                    <strong>Not within city limits?</strong> If you pay city taxes, pick your city. Otherwise, select "Pinellas County" for areas outside cities.
+                  </p>
+                </HoverCardContent>
+              </HoverCard>
+            </div>
             <p className="text-muted-foreground text-sm sm:text-base">This tells us which city's rules to follow</p>
           </div>
           
@@ -665,21 +696,70 @@ export default function SmartWizard({
         </div>
       )}
 
+      {/* Validation Error Display */}
+      {!canProceed() && step < 4 && (
+        <div className="mt-6 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-xs text-amber-700 flex items-center gap-2">
+            <Info size={14} />
+            Please complete all required fields to continue
+          </p>
+        </div>
+      )}
+
       <div className="flex justify-between mt-8">
-        <Button variant="secondary" onClick={handleBack} disabled={step === 1 || createState === 'creating'}>
+        <Button 
+          variant="secondary" 
+          onClick={handleBack} 
+          disabled={step === 1 || createState === 'creating'}
+          className="transition-all active:scale-95"
+        >
           <ArrowLeft size={18} className="mr-2" />
           Back
         </Button>
 
         {step < 4 ? (
-          <Button onClick={handleNext} disabled={!canProceed() || isAnalyzing} loading={isAnalyzing}>
-            {isAnalyzing ? 'Analyzing...' : 'Next'}
-            <ArrowRight size={18} className="ml-2" />
+          <Button 
+            onClick={handleNext} 
+            disabled={!canProceed() || isAnalyzing} 
+            loading={isAnalyzing}
+            className={`transition-all ${!canProceed() ? 'opacity-50' : 'hover:scale-105 active:scale-95'}`}
+          >
+            {isAnalyzing ? (
+              <>
+                <Loader2 size={18} className="mr-2 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                Next
+                <ArrowRight size={18} className="ml-2" />
+              </>
+            )}
           </Button>
         ) : (
-          <Button onClick={handleComplete} variant="primary" loading={createState === 'creating'} disabled={createState === 'created'}>
-            <Check size={18} className="mr-2" />
-            {createState === 'created' ? 'Job Created' : 'Create Job'}
+          <Button 
+            onClick={handleComplete} 
+            variant="primary" 
+            loading={createState === 'creating'} 
+            disabled={createState === 'created'}
+            className={`transition-all ${createState === 'created' ? 'bg-green-600 hover:bg-green-600' : 'hover:scale-105 active:scale-95'}`}
+          >
+            {createState === 'creating' ? (
+              <>
+                <Loader2 size={18} className="mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : createState === 'created' ? (
+              <>
+                <Check size={18} className="mr-2" />
+                Created!
+              </>
+            ) : (
+              <>
+                <Check size={18} className="mr-2" />
+                Create Job
+              </>
+            )}
           </Button>
         )}
       </div>

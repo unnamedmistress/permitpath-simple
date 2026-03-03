@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X, ArrowRight, CheckCircle, FileText, Send, Check } from 'lucide-react';
+import { X, ArrowRight, CheckCircle, FileText, Send, Check, Gift } from 'lucide-react';
 import Button from './Button';
 
 const WELCOME_STEPS = [
   {
     title: "Welcome to PermitPath",
     subtitle: "The easiest way to get your construction permits",
-    description: "No more guessing what documents you need. We guide you through every step.",
+    description: "No more guessing what documents you need. We guide you through every step — completely FREE.",
     icon: CheckCircle,
     color: "text-green-500"
   },
@@ -30,6 +30,13 @@ const WELCOME_STEPS = [
     description: "Upload your documents, download filled forms, and submit knowing everything is right.",
     icon: Send,
     color: "text-orange-500"
+  },
+  {
+    title: "PermitPath is FREE",
+    subtitle: "Always will be",
+    description: "We help you navigate the permit process at no cost. You only pay permit fees directly to your county when you apply.",
+    icon: Gift,
+    color: "text-green-600"
   }
 ];
 

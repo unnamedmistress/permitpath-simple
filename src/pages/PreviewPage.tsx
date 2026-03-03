@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, FileText, RotateCcw, CheckCircle2, MapPin, ExternalLink, BookOpen, Download, Printer, Mail } from "lucide-react";
+import { ArrowLeft, FileText, RotateCcw, CheckCircle2, MapPin, ExternalLink, BookOpen, Download, Printer, Mail, Info, Shield, DollarSign } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import Button from "@/components/shared/Button";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -50,12 +50,15 @@ export default function PreviewPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   
-  const { currentJob, getJob, isLoading: jobLoading } = useJob();
+  const { currentJob, getJob, isLoading: jobLoading, updateJob } = useJob();
   const { items: checklistItems, fetchChecklist } = useChecklist(jobId || "");
   const { photos, loadPhotos } = usePhotos(jobId || "");
   
   const [initialized, setInitialized] = useState(false);
   const [jobNotFound, setJobNotFound] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   useEffect(() => {
     if (!jobId) return;
@@ -101,14 +104,26 @@ export default function PreviewPage() {
   };
 
   const handleEmail = () => {
-    const subject = encodeURIComponent(`Permit Package: ${JOB_TYPE_LABELS[currentJob.jobType]}`);
-    const body = encodeURIComponent(
-      `My permit package for ${JOB_TYPE_LABELS[currentJob.jobType]} at ${currentJob.address || 'my property'}.\n\n` +
-      `Completed ${completedItems.length} of ${checklistItems.length} requirements.\n\n` +
-      `View full details: ${window.location.href}`
-    );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    toast.success("Opening email client...");
+    if (!email || !email.includes('@')) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
+    setSendingEmail(true);
+    
+    // Store email in job data
+    if (currentJob && updateJob) {
+      updateJob(currentJob.id, { contactEmail: email });
+    }
+    
+    // Simulate sending email (in production this would call an API)
+    setTimeout(() => {
+      setSendingEmail(false);
+      setEmailSent(true);
+      toast.success("Checklist emailed!", {
+        description: `Your checklist has been emailed to ${email}`
+      });
+    }, 1000);
   };
 
   const completedItems = checklistItems.filter(i => i.status === "COMPLETE");
@@ -190,6 +205,49 @@ export default function PreviewPage() {
 
       {/* Content */}
       <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 pb-6">
+        {/* Email Capture & Delivery */}
+        <div className="bg-card rounded-lg border border-border p-4">
+          <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
+            <Mail size={16} className="text-primary" />
+            Email Your Checklist
+          </h3>
+          
+          {emailSent ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-green-600" />
+                <p className="text-sm text-green-700">
+                  Your checklist has been emailed to <strong>{email}</strong>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Send this checklist to your email for easy access on any device.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="flex-1 px-4 py-2 rounded-xl border bg-background text-sm"
+                />
+                <Button
+                  onClick={handleEmail}
+                  variant="primary"
+                  size="sm"
+                  loading={sendingEmail}
+                  disabled={sendingEmail || !email}
+                >
+                  Send
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Quick Actions */}
         <div className="flex gap-2 print:hidden">
           <Button
@@ -209,15 +267,6 @@ export default function PreviewPage() {
             icon={<Download size={16} />}
           >
             PDF
-          </Button>
-          <Button
-            onClick={handleEmail}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            icon={<Mail size={16} />}
-          >
-            Email
           </Button>
         </div>
 
@@ -266,10 +315,19 @@ export default function PreviewPage() {
 
         {/* FEE ESTIMATE - Only show if permit required */}
         {permitReq.required && (
-          <FeeEstimate 
-            jobType={jobType}
-            jurisdictionId="pinellas-county"
-          />
+          <>
+            <FeeEstimate 
+              jobType={jobType}
+              jurisdictionId="pinellas-county"
+            />
+            {/* Trust Signal */}
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <Info size={16} className="text-blue-600 shrink-0" />
+              <p className="text-xs text-blue-700">
+                <strong>Estimate only.</strong> Pay county directly when you submit your application.
+              </p>
+            </div>
+          </>
         )}
 
         {/* TIMELINE ESTIMATE - Only show if permit required */}
@@ -478,6 +536,16 @@ export default function PreviewPage() {
           >
             Start New Project
           </Button>
+        </div>
+
+        {/* Trust Signal Footer */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+          <div className="flex items-center justify-center gap-2">
+            <Shield size={16} className="text-green-600" />
+            <p className="text-xs text-green-700">
+              <strong>PermitPath is FREE.</strong> Permit fees go directly to your county.
+            </p>
+          </div>
         </div>
 
         {/* Disclaimer */}

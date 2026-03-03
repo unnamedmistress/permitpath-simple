@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock, Sparkles } from 'lucide-react';
+import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock, Sparkles, Shield, DollarSign, Info } from 'lucide-react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import SmartWizard, { CreateJobState, WizardData } from '@/components/wizard/SmartWizard';
@@ -167,6 +167,22 @@ function SuccessModal({
               Typical timeline: 2-4 weeks from submission to approval
             </p>
           </div>
+
+          {/* Trust Signals */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <Shield size={16} className="text-green-600 shrink-0" />
+              <p className="text-xs text-green-700">
+                <strong>PermitPath is FREE.</strong> Permit fees go directly to your county.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <DollarSign size={16} className="text-amber-600 shrink-0" />
+              <p className="text-xs text-amber-700">
+                Cost estimates are approximate. Pay your county directly when applying.
+              </p>
+            </div>
+          </div>
         </div>
         
         {/* Footer */}
@@ -307,6 +323,17 @@ export default function NewJobPage() {
             <ChevronRight size={16} className="text-muted-foreground sm:hidden" />
             <ChevronRight size={18} className="text-muted-foreground hidden sm:block" />
           </Link>
+        </div>
+
+        {/* Trust Signal Banner */}
+        <div className="mb-4 sm:mb-6 bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
+          <Shield size={18} className="text-green-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs sm:text-sm font-medium text-green-800">PermitPath is completely FREE</p>
+            <p className="text-xs text-green-700 mt-0.5">
+              We help you navigate the permit process. You pay permit fees directly to your county when you apply.
+            </p>
+          </div>
         </div>
 
         <SmartWizard
