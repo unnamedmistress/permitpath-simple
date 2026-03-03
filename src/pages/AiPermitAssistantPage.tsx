@@ -200,7 +200,7 @@ export default function AiPermitAssistantPage() {
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">Share your job. Add photos. Get a simple permit plan.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="block text-xs sm:text-sm font-medium mb-1">Job address</label>
             <input
@@ -211,7 +211,7 @@ export default function AiPermitAssistantPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Permit office area</label>
+            <label className="block text-xs sm:text-sm font-medium mb-1">Permit office area</label>
             <select
               value={jurisdiction}
               onChange={(event) => setJurisdiction(event.target.value as Jurisdiction)}

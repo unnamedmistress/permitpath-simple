@@ -37,7 +37,7 @@ export default function HelpPage() {
       <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 px-3 sm:px-0">Help & Support</h1>
 
       {/* Primary Support Options */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 px-3 sm:px-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 px-3 sm:px-0">
         <button
           onClick={() => navigate("/ai-assistant")}
           className="p-3 sm:p-4 rounded-xl border bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 text-left hover:shadow-md transition-shadow"
@@ -111,7 +111,7 @@ export default function HelpPage() {
       {/* Email Support */}
       <button
         onClick={handleEmailSupport}
-        className="w-full p-3 sm:p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors flex items-center gap-2 sm:gap-3 mx-3 sm:mx-0"
+        className="w-full p-3 sm:p-4 rounded-xl border bg-card hover:bg-muted/50 transition-colors flex items-center gap-2 sm:gap-3 mx-3 sm:mx-0 mb-24"
       >
         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 flex items-center justify-center">
           <Mail size={16} className="sm:w-5 sm:h-5 text-blue-600" />

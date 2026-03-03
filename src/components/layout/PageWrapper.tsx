@@ -13,7 +13,7 @@ export default function PageWrapper({
 }: PageWrapperProps) {
   return (
     <div
-      className={`min-h-screen bg-background overflow-x-hidden ${hasBottomNav ? "pb-16 sm:pb-20" : ""} ${className}`}
+      className={`min-h-screen bg-background overflow-x-hidden ${hasBottomNav ? "pb-24 sm:pb-20" : ""} ${className}`}
     >
       {children}
     </div>

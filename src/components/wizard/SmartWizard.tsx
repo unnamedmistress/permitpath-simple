@@ -427,7 +427,7 @@ export default function SmartWizard({
             <PopoverContent align="start" sideOffset={8} className="w-[min(var(--radix-popover-trigger-width),95vw)] rounded-2xl border p-0 shadow-xl">
               <Command>
                 <CommandInput placeholder="Search job type or keyword..." className="h-12 text-base" />
-                <CommandList className="max-h-[65vh]">
+                <CommandList className="max-h-[60vh] overflow-y-auto">
                   <CommandEmpty>No job type found.</CommandEmpty>
                   {JOB_TYPE_CATEGORIES.map((category) => {
                     const CategoryIcon = category.icon;
