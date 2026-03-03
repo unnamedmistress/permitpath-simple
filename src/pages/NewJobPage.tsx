@@ -239,6 +239,10 @@ export default function NewJobPage() {
         jurisdiction: data.jurisdiction,
         address: data.address,
         description: data.description,
+        contractorInfo: data.contractorInfo,
+        budgetTimeline: data.budgetTimeline,
+        buildingDetails: data.buildingDetails,
+        permitHistory: data.permitHistory,
       };
 
       const job = await createJob(jobInput, data.requirements);

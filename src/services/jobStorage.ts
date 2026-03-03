@@ -60,7 +60,17 @@ export function saveJobs(jobs: Job[]): void {
 // Get a single job by ID
 export function getJob(jobId: string): Job | null {
   const jobs = getJobs();
-  return jobs.find(j => j.id === jobId) || null;
+  const job = jobs.find(j => j.id === jobId);
+  if (!job) return null;
+  
+  // Ensure new fields exist (backward compatibility)
+  return {
+    ...job,
+    contractorInfo: job.contractorInfo || {},
+    budgetTimeline: job.budgetTimeline || {},
+    buildingDetails: job.buildingDetails || {},
+    permitHistory: job.permitHistory || {},
+  };
 }
 
 // Save a single job (creates or updates)

@@ -9,6 +9,36 @@ export interface Contractor {
   createdAt: Date;
 }
 
+// Contractor Information
+export interface ContractorInfo {
+  contractorName?: string;
+  licenseNumber?: string;
+  yearsExperience?: '0-2' | '3-5' | '5-10' | '10+';
+  hasInsurance?: boolean;
+}
+
+// Budget & Timeline
+export interface BudgetTimeline {
+  estimatedCost?: '<$1k' | '$1k-$5k' | '$5k-$10k' | '$10k-$25k' | '$25k+';
+  whosPaying?: 'Homeowner' | 'Contractor' | 'Split';
+  desiredStartDate?: string; // ISO date string
+  projectDuration?: '<1 week' | '1-2 weeks' | '2-4 weeks' | '1-2 months' | '2+ months';
+}
+
+// Building Details
+export interface BuildingDetails {
+  propertyType?: 'Single-Family' | 'Condo' | 'Townhouse' | 'Commercial';
+  numberOfStories?: '1' | '2' | '3+';
+  yearBuilt?: number;
+  previousWorkOnThis?: boolean;
+}
+
+// Permit History
+export interface PermitHistory {
+  openPermits?: 'yes' | 'no' | 'unsure';
+  knownCodeViolations?: 'yes' | 'no' | 'unsure';
+}
+
 export interface Job {
   id: string;
   contractorId: string;
@@ -22,6 +52,11 @@ export interface Job {
   inspections: Inspection[];
   createdAt: Date;
   updatedAt: Date;
+  // Phase 2: New fields
+  contractorInfo?: ContractorInfo;
+  budgetTimeline?: BudgetTimeline;
+  buildingDetails?: BuildingDetails;
+  permitHistory?: PermitHistory;
 }
 
 export type JobStatus = 

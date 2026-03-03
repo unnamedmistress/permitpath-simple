@@ -19,7 +19,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { JobType, Jurisdiction, Requirement } from '@/types/permit';
+import { JobType, Jurisdiction, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory } from '@/types/permit';
 import { getRequirementsForJob } from '@/services/requirements';
 import Button from '@/components/shared/Button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -42,6 +42,11 @@ export interface WizardData {
   address: string;
   description: string;
   requirements: Requirement[];
+  // Phase 2: New fields
+  contractorInfo?: ContractorInfo;
+  budgetTimeline?: BudgetTimeline;
+  buildingDetails?: BuildingDetails;
+  permitHistory?: PermitHistory;
 }
 
 interface JobTypeOption {
@@ -223,6 +228,18 @@ function storeJurisdiction(jurisdiction: Jurisdiction) {
   }
 }
 
+// FL License validation - formats: C1234567, EC1234567, CBC1234567, etc.
+function isValidFLLicense(license: string): boolean {
+  const flLicenseRegex = /^[A-Z]{1,3}\d{7,10}$/i;
+  return flLicenseRegex.test(license.trim());
+}
+
+// Year built validation
+function isValidYearBuilt(year: number): boolean {
+  const currentYear = new Date().getFullYear();
+  return year >= 1800 && year <= currentYear + 1;
+}
+
 export default function SmartWizard({
   onComplete,
   createState = 'idle',
@@ -249,7 +266,11 @@ export default function SmartWizard({
     jobType: initialData?.jobType,
     jurisdiction: defaultJurisdiction,
     address: initialData?.address || '',
-    description: initialData?.description || ''
+    description: initialData?.description || '',
+    contractorInfo: initialData?.contractorInfo || {},
+    budgetTimeline: initialData?.budgetTimeline || {},
+    buildingDetails: initialData?.buildingDetails || {},
+    permitHistory: initialData?.permitHistory || {}
   });
   const [requirements, setRequirements] = useState<Requirement[]>(initialData?.requirements || []);
   const [guidedAnswers, setGuidedAnswers] = useState<Record<string, string>>({});
@@ -328,7 +349,11 @@ export default function SmartWizard({
       jurisdiction: data.jurisdiction,
       address: data.address,
       description: data.description || '',
-      requirements
+      requirements,
+      contractorInfo: data.contractorInfo,
+      budgetTimeline: data.budgetTimeline,
+      buildingDetails: data.buildingDetails,
+      permitHistory: data.permitHistory
     });
   };
 
@@ -571,12 +596,13 @@ export default function SmartWizard({
       )}
 
       {step === 3 && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold">Tell us about the job</h2>
             <p className="text-muted-foreground">The more we know, the better we can help</p>
           </div>
 
+          {/* Property Address */}
           <div>
             <label className="block text-sm font-medium mb-2">Property Address *</label>
             <input
@@ -592,22 +618,354 @@ export default function SmartWizard({
             </p>
           </div>
 
+          {/* === FIELD SET 1: Contractor Information === */}
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-slate-600 text-white text-xs flex items-center justify-center">1</span>
+              Contractor Information
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Contractor Name */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Contractor/Business Name</label>
+                <input
+                  type="text"
+                  value={data.contractorInfo?.contractorName || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    contractorInfo: { ...data.contractorInfo, contractorName: e.target.value }
+                  })}
+                  placeholder="Your business name..."
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                />
+              </div>
+
+              {/* License Number */}
+              <div>
+                <label className="block text-sm font-medium mb-2">FL License Number</label>
+                <input
+                  type="text"
+                  value={data.contractorInfo?.licenseNumber || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    contractorInfo: { ...data.contractorInfo, licenseNumber: e.target.value }
+                  })}
+                  placeholder="e.g., C1234567 or CBC1234567"
+                  className={`w-full px-4 py-3 rounded-xl border bg-background ${
+                    data.contractorInfo?.licenseNumber && !isValidFLLicense(data.contractorInfo.licenseNumber)
+                      ? 'border-amber-400 focus:border-amber-500'
+                      : ''
+                  }`}
+                />
+                {data.contractorInfo?.licenseNumber && !isValidFLLicense(data.contractorInfo.licenseNumber) && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ⚠️ FL licenses typically start with letters (C, EC, CBC) followed by 7-10 digits
+                  </p>
+                )}
+              </div>
+
+              {/* Years of Experience */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Years of Experience</label>
+                <select
+                  value={data.contractorInfo?.yearsExperience || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    contractorInfo: { ...data.contractorInfo, yearsExperience: e.target.value as any }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                >
+                  <option value="">Select experience level...</option>
+                  <option value="0-2">0-2 years</option>
+                  <option value="3-5">3-5 years</option>
+                  <option value="5-10">5-10 years</option>
+                  <option value="10+">10+ years</option>
+                </select>
+              </div>
+
+              {/* Has Insurance */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Do you have liability insurance?</label>
+                <div className="flex gap-2">
+                  {['yes', 'no'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setData({ 
+                        ...data, 
+                        contractorInfo: { ...data.contractorInfo, hasInsurance: option === 'yes' }
+                      })}
+                      className={`flex-1 px-4 py-3 rounded-xl border transition-all ${
+                        data.contractorInfo?.hasInsurance === (option === 'yes')
+                          ? 'bg-slate-600 text-white border-slate-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
+                      }`}
+                    >
+                      {option === 'yes' ? '✓ Yes' : '✗ No'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* === FIELD SET 2: Budget & Timeline === */}
+          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <h3 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">2</span>
+              Budget & Timeline
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Estimated Project Cost */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Estimated Project Cost</label>
+                <select
+                  value={data.budgetTimeline?.estimatedCost || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    budgetTimeline: { ...data.budgetTimeline, estimatedCost: e.target.value as any }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                >
+                  <option value="">Select cost range...</option>
+                  <option value="<$1k">Under $1,000</option>
+                  <option value="$1k-$5k">$1,000 - $5,000</option>
+                  <option value="$5k-$10k">$5,000 - $10,000</option>
+                  <option value="$10k-$25k">$10,000 - $25,000</option>
+                  <option value="$25k+">$25,000+</option>
+                </select>
+              </div>
+
+              {/* Who's Paying */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Who's paying for this project?</label>
+                <select
+                  value={data.budgetTimeline?.whosPaying || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    budgetTimeline: { ...data.budgetTimeline, whosPaying: e.target.value as any }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                >
+                  <option value="">Select who's paying...</option>
+                  <option value="Homeowner">Homeowner</option>
+                  <option value="Contractor">Contractor</option>
+                  <option value="Split">Split between both</option>
+                </select>
+              </div>
+
+              {/* Desired Start Date */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Desired Start Date</label>
+                <input
+                  type="date"
+                  value={data.budgetTimeline?.desiredStartDate || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    budgetTimeline: { ...data.budgetTimeline, desiredStartDate: e.target.value }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              {/* Project Duration */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Expected Project Duration</label>
+                <select
+                  value={data.budgetTimeline?.projectDuration || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    budgetTimeline: { ...data.budgetTimeline, projectDuration: e.target.value as any }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                >
+                  <option value="">Select duration...</option>
+                  <option value="<1 week">Less than 1 week</option>
+                  <option value="1-2 weeks">1-2 weeks</option>
+                  <option value="2-4 weeks">2-4 weeks</option>
+                  <option value="1-2 months">1-2 months</option>
+                  <option value="2+ months">2+ months</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* === FIELD SET 3: Building Details === */}
+          <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+            <h3 className="font-semibold text-green-900 mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-green-600 text-white text-xs flex items-center justify-center">3</span>
+              Building Details
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Property Type */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Property Type</label>
+                <select
+                  value={data.buildingDetails?.propertyType || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    buildingDetails: { ...data.buildingDetails, propertyType: e.target.value as any }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                >
+                  <option value="">Select property type...</option>
+                  <option value="Single-Family">Single-Family Home</option>
+                  <option value="Condo">Condo/Apartment</option>
+                  <option value="Townhouse">Townhouse</option>
+                  <option value="Commercial">Commercial Building</option>
+                </select>
+              </div>
+
+              {/* Number of Stories */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Number of Stories</label>
+                <select
+                  value={data.buildingDetails?.numberOfStories || ''}
+                  onChange={(e) => setData({ 
+                    ...data, 
+                    buildingDetails: { ...data.buildingDetails, numberOfStories: e.target.value as any }
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border bg-background"
+                >
+                  <option value="">Select stories...</option>
+                  <option value="1">1 story</option>
+                  <option value="2">2 stories</option>
+                  <option value="3+">3+ stories</option>
+                </select>
+              </div>
+
+              {/* Year Built */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Year Built</label>
+                <input
+                  type="number"
+                  value={data.buildingDetails?.yearBuilt || ''}
+                  onChange={(e) => {
+                    const year = parseInt(e.target.value);
+                    setData({ 
+                      ...data, 
+                      buildingDetails: { 
+                        ...data.buildingDetails, 
+                        yearBuilt: e.target.value ? year : undefined 
+                      }
+                    });
+                  }}
+                  placeholder="e.g., 1985"
+                  min="1800"
+                  max={new Date().getFullYear() + 1}
+                  className={`w-full px-4 py-3 rounded-xl border bg-background ${
+                    data.buildingDetails?.yearBuilt && !isValidYearBuilt(data.buildingDetails.yearBuilt)
+                      ? 'border-amber-400 focus:border-amber-500'
+                      : ''
+                  }`}
+                />
+                {data.buildingDetails?.yearBuilt && !isValidYearBuilt(data.buildingDetails.yearBuilt) && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ⚠️ Please enter a valid year between 1800 and {new Date().getFullYear() + 1}
+                  </p>
+                )}
+              </div>
+
+              {/* Previous Work on This */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Has there been previous work done on this property?</label>
+                <div className="flex gap-2">
+                  {['yes', 'no'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setData({ 
+                        ...data, 
+                        buildingDetails: { ...data.buildingDetails, previousWorkOnThis: option === 'yes' }
+                      })}
+                      className={`flex-1 px-4 py-3 rounded-xl border transition-all ${
+                        data.buildingDetails?.previousWorkOnThis === (option === 'yes')
+                          ? 'bg-green-600 text-white border-green-600'
+                          : 'bg-white text-green-700 border-green-200 hover:border-green-400'
+                      }`}
+                    >
+                      {option === 'yes' ? '✓ Yes' : '✗ No'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* === FIELD SET 4: Permit History === */}
+          <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+            <h3 className="font-semibold text-amber-900 mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-amber-600 text-white text-xs flex items-center justify-center">4</span>
+              Permit History
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Open Permits */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Are there any open permits for this property?</label>
+                <div className="flex flex-wrap gap-2">
+                  {['yes', 'no', 'unsure'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setData({ 
+                        ...data, 
+                        permitHistory: { ...data.permitHistory, openPermits: option as any }
+                      })}
+                      className={`px-4 py-3 rounded-xl border transition-all capitalize ${
+                        data.permitHistory?.openPermits === option
+                          ? 'bg-amber-600 text-white border-amber-600'
+                          : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Known Code Violations */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Are there any known code violations?</label>
+                <div className="flex flex-wrap gap-2">
+                  {['yes', 'no', 'unsure'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setData({ 
+                        ...data, 
+                        permitHistory: { ...data.permitHistory, knownCodeViolations: option as any }
+                      })}
+                      className={`px-4 py-3 rounded-xl border transition-all capitalize ${
+                        data.permitHistory?.knownCodeViolations === option
+                          ? 'bg-amber-600 text-white border-amber-600'
+                          : 'bg-white text-amber-700 border-amber-200 hover:border-amber-400'
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Guided Questions for selected job type */}
           {data.jobType && guidedQuestions[data.jobType] && (
             <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <h3 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">?</span>
-                  Quick Questions
+              <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                <h3 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center">?</span>
+                  Quick Questions About Your Project
                 </h3>
-                <p className="text-sm text-blue-700 mb-4">
+                <p className="text-sm text-indigo-700 mb-4">
                   Answer a few quick questions. We'll write the description for you.
                 </p>
                 
                 <div className="space-y-4">
                   {guidedQuestions[data.jobType].map((q, index) => (
                     <div key={q.field}>
-                      <label className="block text-sm font-medium text-blue-900 mb-2">
+                      <label className="block text-sm font-medium text-indigo-900 mb-2">
                         {index + 1}. {q.question}
                       </label>
                       {q.options ? (
@@ -627,8 +985,8 @@ export default function SmartWizard({
                               }}
                               className={`px-3 py-2 rounded-lg text-sm border transition-all ${
                                 guidedAnswers[q.field] === option
-                                  ? 'bg-blue-500 text-white border-blue-500'
-                                  : 'bg-white text-blue-700 border-blue-200 hover:border-blue-400'
+                                  ? 'bg-indigo-500 text-white border-indigo-500'
+                                  : 'bg-white text-indigo-700 border-indigo-200 hover:border-indigo-400'
                               }`}
                             >
                               {option}
@@ -649,7 +1007,7 @@ export default function SmartWizard({
                               .join(', ');
                             setData({ ...data, description: answeredQuestions });
                           }}
-                          className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-indigo-200 bg-white text-sm"
                           placeholder="Type your answer..."
                         />
                       )}
@@ -660,6 +1018,7 @@ export default function SmartWizard({
             </div>
           )}
 
+          {/* Project Description */}
           <div>
             <label className="block text-sm font-medium mb-2">
               {data.jobType && guidedQuestions[data.jobType] 
@@ -743,9 +1102,10 @@ export default function SmartWizard({
           </div>
 
           <div className="rounded-xl border bg-card p-4 space-y-4">
+            {/* Job Type Section */}
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <selectedJobType?.icon className="h-5 w-5 text-primary" />
+                {selectedJobType && <selectedJobType.icon className="h-5 w-5 text-primary" />}
               </div>
               <div>
                 <div className="font-medium text-sm text-muted-foreground">Job Type</div>
@@ -754,6 +1114,7 @@ export default function SmartWizard({
               </div>
             </div>
 
+            {/* Location Section */}
             <div className="border-t pt-4">
               <div className="font-medium text-sm text-muted-foreground mb-2">Location</div>
               <div className="space-y-1">
@@ -767,13 +1128,93 @@ export default function SmartWizard({
               </div>
             </div>
 
+            {/* Contractor Information Summary */}
+            {(data.contractorInfo?.contractorName || data.contractorInfo?.licenseNumber) && (
+              <div className="border-t pt-4">
+                <div className="font-medium text-sm text-muted-foreground mb-2">Contractor Information</div>
+                <div className="space-y-1 text-sm">
+                  {data.contractorInfo?.contractorName && (
+                    <div><span className="text-muted-foreground">Business:</span> {data.contractorInfo.contractorName}</div>
+                  )}
+                  {data.contractorInfo?.licenseNumber && (
+                    <div><span className="text-muted-foreground">License:</span> {data.contractorInfo.licenseNumber}</div>
+                  )}
+                  {data.contractorInfo?.yearsExperience && (
+                    <div><span className="text-muted-foreground">Experience:</span> {data.contractorInfo.yearsExperience} years</div>
+                  )}
+                  {data.contractorInfo?.hasInsurance !== undefined && (
+                    <div><span className="text-muted-foreground">Insurance:</span> {data.contractorInfo.hasInsurance ? 'Yes ✓' : 'No ✗'}</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Budget & Timeline Summary */}
+            {(data.budgetTimeline?.estimatedCost || data.budgetTimeline?.whosPaying) && (
+              <div className="border-t pt-4">
+                <div className="font-medium text-sm text-muted-foreground mb-2">Budget & Timeline</div>
+                <div className="space-y-1 text-sm">
+                  {data.budgetTimeline?.estimatedCost && (
+                    <div><span className="text-muted-foreground">Estimated Cost:</span> {data.budgetTimeline.estimatedCost}</div>
+                  )}
+                  {data.budgetTimeline?.whosPaying && (
+                    <div><span className="text-muted-foreground">Who's Paying:</span> {data.budgetTimeline.whosPaying}</div>
+                  )}
+                  {data.budgetTimeline?.desiredStartDate && (
+                    <div><span className="text-muted-foreground">Start Date:</span> {new Date(data.budgetTimeline.desiredStartDate).toLocaleDateString()}</div>
+                  )}
+                  {data.budgetTimeline?.projectDuration && (
+                    <div><span className="text-muted-foreground">Duration:</span> {data.budgetTimeline.projectDuration}</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Building Details Summary */}
+            {(data.buildingDetails?.propertyType || data.buildingDetails?.yearBuilt) && (
+              <div className="border-t pt-4">
+                <div className="font-medium text-sm text-muted-foreground mb-2">Building Details</div>
+                <div className="space-y-1 text-sm">
+                  {data.buildingDetails?.propertyType && (
+                    <div><span className="text-muted-foreground">Property Type:</span> {data.buildingDetails.propertyType}</div>
+                  )}
+                  {data.buildingDetails?.numberOfStories && (
+                    <div><span className="text-muted-foreground">Stories:</span> {data.buildingDetails.numberOfStories}</div>
+                  )}
+                  {data.buildingDetails?.yearBuilt && (
+                    <div><span className="text-muted-foreground">Year Built:</span> {data.buildingDetails.yearBuilt}</div>
+                  )}
+                  {data.buildingDetails?.previousWorkOnThis !== undefined && (
+                    <div><span className="text-muted-foreground">Previous Work:</span> {data.buildingDetails.previousWorkOnThis ? 'Yes' : 'No'}</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Permit History Summary */}
+            {(data.permitHistory?.openPermits || data.permitHistory?.knownCodeViolations) && (
+              <div className="border-t pt-4">
+                <div className="font-medium text-sm text-muted-foreground mb-2">Permit History</div>
+                <div className="space-y-1 text-sm">
+                  {data.permitHistory?.openPermits && (
+                    <div><span className="text-muted-foreground">Open Permits:</span> <span className="capitalize">{data.permitHistory.openPermits}</span></div>
+                  )}
+                  {data.permitHistory?.knownCodeViolations && (
+                    <div><span className="text-muted-foreground">Code Violations:</span> <span className="capitalize">{data.permitHistory.knownCodeViolations}</span></div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
             {data.description && (
               <div className="border-t pt-4">
-                <div className="font-medium text-sm text-muted-foreground mb-2">Description</div>
+                <div className="font-medium text-sm text-muted-foreground mb-2">Project Description</div>
                 <p className="text-sm">{data.description}</p>
               </div>
             )}
 
+            {/* Requirements Summary */}
             <div className="border-t pt-4">
               <div className="font-medium text-sm text-muted-foreground mb-2">Requirements</div>
               <div className="flex items-center gap-3 text-sm">

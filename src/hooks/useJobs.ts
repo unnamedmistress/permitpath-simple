@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabaseClient, isSupabaseConfigured } from '@/config/supabase';
 import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
-import { Job, Requirement } from '@/types/permit';
+import { Job, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory } from '@/types/permit';
 import { JobType, Jurisdiction } from '@/types';
 
 export interface JobInput {
@@ -10,6 +10,11 @@ export interface JobInput {
   jurisdiction: Jurisdiction;
   address?: string;
   description?: string;
+  // Phase 2: New fields
+  contractorInfo?: ContractorInfo;
+  budgetTimeline?: BudgetTimeline;
+  buildingDetails?: BuildingDetails;
+  permitHistory?: PermitHistory;
 }
 
 export function useJobs() {
@@ -114,6 +119,11 @@ export function useJobs() {
         inspections: [],
         createdAt: new Date(jobData.created_at),
         updatedAt: new Date(jobData.updated_at),
+        // Phase 2: New fields
+        contractorInfo: input.contractorInfo,
+        budgetTimeline: input.budgetTimeline,
+        buildingDetails: input.buildingDetails,
+        permitHistory: input.permitHistory,
       };
 
       setJobs(prev => [newJob, ...prev]);

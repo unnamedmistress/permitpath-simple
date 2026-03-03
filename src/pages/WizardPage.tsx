@@ -782,6 +782,38 @@ export default function WizardPage() {
                   <span className="text-muted-foreground">Started</span>
                   <span className="font-medium">{new Date(job.createdAt).toLocaleDateString()}</span>
                 </div>
+                
+                {/* Phase 2: New fields in sidebar */}
+                {job.contractorInfo?.contractorName && (
+                  <div className="border-t pt-2 mt-2">
+                    <span className="text-muted-foreground">Contractor</span>
+                    <div className="font-medium text-right">{job.contractorInfo.contractorName}</div>
+                  </div>
+                )}
+                {job.contractorInfo?.licenseNumber && (
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">License</span>
+                    <span className="font-medium text-right">{job.contractorInfo.licenseNumber}</span>
+                  </div>
+                )}
+                {job.budgetTimeline?.estimatedCost && (
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Est. Cost</span>
+                    <span className="font-medium text-right">{job.budgetTimeline.estimatedCost}</span>
+                  </div>
+                )}
+                {job.buildingDetails?.propertyType && (
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Property</span>
+                    <span className="font-medium text-right">{job.buildingDetails.propertyType}</span>
+                  </div>
+                )}
+                {job.buildingDetails?.yearBuilt && (
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Year Built</span>
+                    <span className="font-medium text-right">{job.buildingDetails.yearBuilt}</span>
+                  </div>
+                )}
               </div>
             </div>
 
