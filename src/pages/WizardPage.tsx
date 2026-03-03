@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, FileText, CheckCircle, Clock, AlertCircle, ExternalLink, Phone, Printer, Video, MessageCircle, Users, Check, ChevronRight, Download, Camera, MapPin } from 'lucide-react';
+import { ArrowLeft, FileText, CheckCircle, Clock, AlertCircle, ExternalLink, Phone, Printer, Video, MessageCircle, Users, Check, ChevronRight, Download, Camera, MapPin, Trash2, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import RequirementsDisplay from '@/components/requirements/RequirementsDisplay';
@@ -10,7 +11,8 @@ import FormDownloader from '@/components/pinellas/FormDownloader';
 import TimelineViewer from '@/components/pinellas/TimelineViewer';
 import NextActionCard from '@/components/shared/NextActionCard';
 import ProgressCelebration from '@/components/shared/ProgressCelebration';
-import { getJobFromMemory } from './NewJobPage';
+import { useJob } from '@/hooks/useJobs';
+import { useDocumentUpload } from '@/services/storage';
 import { Job, Requirement } from '@/types/permit';
 import { calculateProgress, categorizeRequirements } from '@/services/requirements';
 import {
@@ -121,7 +123,7 @@ function generateChecklistPDF(job: Job): string {
         <h2>${job.jobType.replace(/_/g, ' ')}</h2>
         <div class="job-info">
           <div><strong>Job #:</strong> ${job.id}</div>
-          <div><strong>Date:</strong> ${job.createdAt.toLocaleDateString()}</div>
+          <div><strong>Date:</strong> ${new Date(job.createdAt).toLocaleDateString()}</div>
         </div>
         <div class="info-row">
           <span><strong>Property:</strong></span>
@@ -209,14 +211,36 @@ function generateChecklistPDF(job: Job): string {
   return pdfContent;
 }
 
+// Skeleton loader
+function WizardSkeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-16 bg-muted rounded-lg" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="h-48 bg-muted rounded-xl" />
+          <div className="h-64 bg-muted rounded-xl" />
+        </div>
+        <div className="space-y-4">
+          <div className="h-32 bg-muted rounded-xl" />
+          <div className="h-48 bg-muted rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function WizardPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const [job, setJob] = useState<Job | null>(null);
+  const { job, isLoading, error, fetchJob, updateRequirementStatus } = useJob(jobId || null);
+  const { upload, getDocuments } = useDocumentUpload();
   const [loading, setLoading] = useState(true);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
   const [capturedPhotos, setCapturedPhotos] = useState<string[]>([]);
   const [previousProgress, setPreviousProgress] = useState<number>(0);
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
 
   useEffect(() => {
     if (!jobId) {
@@ -224,33 +248,77 @@ export default function WizardPage() {
       return;
     }
 
-    const foundJob = getJobFromMemory(jobId);
-    if (foundJob) {
-      setJob(foundJob);
-    } else {
-      toast.error('Job not found');
-      navigate('/new');
-    }
-    setLoading(false);
+    loadJobData();
   }, [jobId, navigate]);
 
-  const handleRequirementStatusChange = (reqId: string, status: Requirement['status']) => {
+  const loadJobData = async () => {
+    setLoading(true);
+    try {
+      await fetchJob();
+      if (jobId) {
+        const docsResult = await getDocuments(jobId);
+        if (docsResult.success) {
+          setDocuments(docsResult.documents);
+        }
+      }
+    } catch (err) {
+      toast.error('Failed to load job data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRequirementStatusChange = async (reqId: string, status: Requirement['status']) => {
     if (!job) return;
 
     // Store current progress before update
     setPreviousProgress(calculateProgress(job.requirements));
 
-    const updatedRequirements = job.requirements.map((r) => (r.id === reqId ? { ...r, status } : r));
-    const updatedJob = { ...job, requirements: updatedRequirements };
-    setJob(updatedJob);
+    await updateRequirementStatus(reqId, status);
   };
 
-  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setCapturedPhotos([...capturedPhotos, url]);
-      toast.success('Photo added!', { description: 'We will review this with your permit.' });
+    if (!file || !jobId) return;
+
+    setUploadingDoc(true);
+    try {
+      const result = await upload(jobId, file);
+      if (result.success && result.url) {
+        setCapturedPhotos([...capturedPhotos, result.url]);
+        toast.success('Photo added!', { description: 'We will review this with your permit.' });
+      } else {
+        toast.error(result.error || 'Failed to upload photo');
+      }
+    } catch (err) {
+      toast.error('Failed to upload photo');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleDocumentUpload = async (reqId: string, file: File) => {
+    if (!jobId) return;
+
+    setUploadingDoc(true);
+    try {
+      const result = await upload(jobId, file, reqId);
+      if (result.success) {
+        toast.success(`${file.name} uploaded!`);
+        // Mark requirement as completed
+        await updateRequirementStatus(reqId, 'completed');
+        // Refresh documents
+        const docsResult = await getDocuments(jobId);
+        if (docsResult.success) {
+          setDocuments(docsResult.documents);
+        }
+      } else {
+        toast.error(result.error || 'Upload failed');
+      }
+    } catch (err) {
+      toast.error('Failed to upload document');
+    } finally {
+      setUploadingDoc(false);
     }
   };
 
@@ -363,17 +431,28 @@ export default function WizardPage() {
     return null;
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <PageWrapper>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div className="container max-w-5xl mx-auto px-4 py-8">
+          <WizardSkeleton />
         </div>
       </PageWrapper>
     );
   }
 
-  if (!job) return null;
+  if (error || !job) {
+    return (
+      <PageWrapper>
+        <div className="container max-w-5xl mx-auto px-4 py-16 text-center">
+          <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Job not found</h2>
+          <p className="text-muted-foreground mb-4">{error || 'This job may have been deleted'}</p>
+          <Button onClick={() => navigate('/new')}>Create New Job</Button>
+        </div>
+      </PageWrapper>
+    );
+  }
 
   const progress = calculateProgress(job.requirements);
   const department = jurisdictionDepartmentMap[job.jurisdiction] || PINELLAS_COUNTY_BUILDING;
@@ -416,50 +495,57 @@ export default function WizardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <div className="lg:col-span-2 space-y-6">
             {/* Personalized Guidance Banner */}
-            {guidance && (
-              <div className={`p-3 sm:p-4 rounded-xl border ${
-                guidance.type === 'warning' ? 'bg-amber-50 border-amber-200' :
-                guidance.type === 'encouragement' ? 'bg-green-50 border-green-200' :
-                'bg-blue-50 border-blue-200'
-              }`}>
-                <h3 className={`font-semibold mb-1 ${
-                  guidance.type === 'warning' ? 'text-amber-900' :
-                  guidance.type === 'encouragement' ? 'text-green-900' :
-                  'text-blue-900'
-                }`}>
-                  {guidance.title}
-                </h3>
-                <p className={`text-sm ${
-                  guidance.type === 'warning' ? 'text-amber-800' :
-                  guidance.type === 'encouragement' ? 'text-green-800' :
-                  'text-blue-800'
-                }`}>
-                  {guidance.message}
-                </p>
-                {(guidance.action || guidance.actionLink) && (
-                  <div className="mt-3">
-                    {guidance.actionLink ? (
-                      <a 
-                        href={guidance.actionLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm font-medium underline"
-                      >
-                        {guidance.action}
-                        <ExternalLink size={14} />
-                      </a>
-                    ) : guidance.actionFn ? (
-                      <button 
-                        onClick={guidance.actionFn}
-                        className="inline-flex items-center gap-1.5 text-sm font-medium underline"
-                      >
-                        {guidance.action}
-                      </button>
-                    ) : null}
-                  </div>
-                )}
-              </div>
-            )}
+            <AnimatePresence>
+              {guidance && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className={`p-3 sm:p-4 rounded-xl border ${
+                    guidance.type === 'warning' ? 'bg-amber-50 border-amber-200' :
+                    guidance.type === 'encouragement' ? 'bg-green-50 border-green-200' :
+                    'bg-blue-50 border-blue-200'
+                  }`}
+                >
+                  <h3 className={`font-semibold mb-1 ${
+                    guidance.type === 'warning' ? 'text-amber-900' :
+                    guidance.type === 'encouragement' ? 'text-green-900' :
+                    'text-blue-900'
+                  }`}>
+                    {guidance.title}
+                  </h3>
+                  <p className={`text-sm ${
+                    guidance.type === 'warning' ? 'text-amber-800' :
+                    guidance.type === 'encouragement' ? 'text-green-800' :
+                    'text-blue-800'
+                  }`}>
+                    {guidance.message}
+                  </p>
+                  {(guidance.action || guidance.actionLink) && (
+                    <div className="mt-3">
+                      {guidance.actionLink ? (
+                        <a 
+                          href={guidance.actionLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm font-medium underline"
+                        >
+                          {guidance.action}
+                          <ExternalLink size={14} />
+                        </a>
+                      ) : guidance.actionFn ? (
+                        <button 
+                          onClick={guidance.actionFn}
+                          className="inline-flex items-center gap-1.5 text-sm font-medium underline"
+                        >
+                          {guidance.action}
+                        </button>
+                      ) : null}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Progress Celebration */}
             <ProgressCelebration progress={progress} />
@@ -503,12 +589,13 @@ export default function WizardPage() {
                   id="job-photo-capture"
                   className="hidden"
                   onChange={handlePhotoCapture}
+                  disabled={uploadingDoc}
                 />
                 <label 
                   htmlFor="job-photo-capture"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white cursor-pointer hover:bg-primary/90 transition-colors text-sm"
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white cursor-pointer hover:bg-primary/90 transition-colors text-sm ${uploadingDoc ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <Camera size={16} />
+                  {uploadingDoc ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
                   {capturedPhotos.length === 0 ? 'Take a photo' : 'Add another photo'}
                 </label>
                 <p className="text-xs text-muted-foreground">
@@ -523,31 +610,7 @@ export default function WizardPage() {
               <RequirementsDisplay 
                 requirements={job.requirements} 
                 onStatusChange={handleRequirementStatusChange}
-                onDocumentUpload={(reqId, file) => {
-                  // Create document object
-                  const newDoc = {
-                    id: `doc-${Date.now()}`,
-                    jobId: job.id,
-                    name: file.name,
-                    type: file.type,
-                    url: URL.createObjectURL(file),
-                    requirementId: reqId,
-                    uploadedAt: new Date(),
-                    status: 'uploaded' as const
-                  };
-                  
-                  // Update job with new document and mark requirement as completed
-                  const updatedJob = {
-                    ...job,
-                    documents: [...job.documents, newDoc],
-                    requirements: job.requirements.map(r => 
-                      r.id === reqId ? { ...r, status: 'completed' as const } : r
-                    ),
-                    updatedAt: new Date()
-                  };
-                  setJob(updatedJob);
-                  toast.success(`${file.name} uploaded!`);
-                }}
+                onDocumentUpload={handleDocumentUpload}
                 jobType={job.jobType.replace(/_/g, ' ')}
               />
             </div>
@@ -567,7 +630,13 @@ export default function WizardPage() {
                     const Icon = stage.icon;
                     
                     return (
-                      <div key={stage.id} className="relative flex gap-4 pb-6 last:pb-0">
+                      <motion.div 
+                        key={stage.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="relative flex gap-4 pb-6 last:pb-0"
+                      >
                         {/* Status dot */}
                         <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                           isComplete ? 'bg-green-500 text-white' : 
@@ -619,7 +688,7 @@ export default function WizardPage() {
                             </div>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -627,62 +696,72 @@ export default function WizardPage() {
             </div>
 
             {/* Success / Next Steps Banner */}
-            {progress === 100 ? (
-              <div className="p-4 sm:p-6 rounded-xl border border-green-200 bg-green-50">
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                    <CheckCircle className="text-white w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-green-900">All done! Ready to submit</h3>
-                    <p className="text-green-700 mt-1">
-                      You have everything you need. Submit your permit application to the city now.
-                    </p>
-                    <div className="flex flex-wrap gap-3 mt-4">
-                      <Button 
-                        className="bg-green-600 hover:bg-green-700"
-                        onClick={() => {
-                          if (department.onlinePortal || department.website) {
-                            window.open(department.onlinePortal || department.website, '_blank', 'noopener,noreferrer');
-                          }
-                        }}
-                      >
-                        <ExternalLink size={16} className="mr-2" />
-                        Submit to City
-                      </Button>
-                      <Button variant="outline" onClick={handlePrintChecklist}>
-                        <Printer size={16} className="mr-2" />
-                        Print for Records
-                      </Button>
+            <AnimatePresence mode="wait">
+              {progress === 100 ? (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-4 sm:p-6 rounded-xl border border-green-200 bg-green-50"
+                >
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                      <CheckCircle className="text-white w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-green-900">All done! Ready to submit</h3>
+                      <p className="text-green-700 mt-1">
+                        You have everything you need. Submit your permit application to the city now.
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-4">
+                        <Button 
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => {
+                            if (department.onlinePortal || department.website) {
+                              window.open(department.onlinePortal || department.website, '_blank', 'noopener,noreferrer');
+                            }
+                          }}
+                        >
+                          <ExternalLink size={16} className="mr-2" />
+                          Submit to City
+                        </Button>
+                        <Button variant="outline" onClick={handlePrintChecklist}>
+                          <Printer size={16} className="mr-2" />
+                          Print for Records
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <div className="p-4 sm:p-6 rounded-xl border bg-card">
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                    <Clock className="text-amber-600 w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold">Keep Going!</h3>
-                    <p className="text-muted-foreground mt-1">
-                      You are {progress}% done. {remainingRequired} required {remainingRequired === 1 ? 'item' : 'items'} left to complete.
-                    </p>
-                    <div className="flex flex-wrap gap-3 mt-4">
-                      <Button variant="outline" size="sm" onClick={handlePrintChecklist}>
-                        <Printer size={16} className="mr-1.5" />
-                        Print checklist
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={handlePrintChecklist}>
-                        <Download size={16} className="mr-1.5" />
-                        Save as PDF
-                      </Button>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-4 sm:p-6 rounded-xl border bg-card"
+                >
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                      <Clock className="text-amber-600 w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">Keep Going!</h3>
+                      <p className="text-muted-foreground mt-1">
+                        You are {progress}% done. {remainingRequired} required {remainingRequired === 1 ? 'item' : 'items'} left to complete.
+                      </p>
+                      <div className="flex flex-wrap gap-3 mt-4">
+                        <Button variant="outline" size="sm" onClick={handlePrintChecklist}>
+                          <Printer size={16} className="mr-1.5" />
+                          Print checklist
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handlePrintChecklist}>
+                          <Download size={16} className="mr-1.5" />
+                          Save as PDF
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Sidebar */}
@@ -701,7 +780,7 @@ export default function WizardPage() {
                 </div>
                 <div className="flex justify-between gap-2">
                   <span className="text-muted-foreground">Started</span>
-                  <span className="font-medium">{job.createdAt.toLocaleDateString()}</span>
+                  <span className="font-medium">{new Date(job.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
@@ -709,7 +788,7 @@ export default function WizardPage() {
             {/* Documents Card */}
             <div className="p-3 sm:p-4 rounded-xl border bg-card">
               <h3 className="font-semibold mb-3">Your Documents</h3>
-              {job.documents.length === 0 ? (
+              {documents.length === 0 ? (
                 <div className="text-center py-4 bg-muted rounded-lg">
                   <FileText size={24} className="mx-auto text-muted-foreground/50 mb-2" />
                   <p className="text-sm text-muted-foreground">No documents yet</p>
@@ -719,10 +798,10 @@ export default function WizardPage() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {job.documents.map((doc) => (
+                  {documents.map((doc) => (
                     <div key={doc.id} className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted">
                       <FileText size={16} className="text-primary" />
-                      <span className="truncate">{doc.name}</span>
+                      <span className="truncate">{doc.file_name || doc.name}</span>
                     </div>
                   ))}
                 </div>

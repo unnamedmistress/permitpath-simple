@@ -1,4 +1,4 @@
-import { analyzeJobRequirements } from './ai';
+import { analyzeJobRequirements } from './ai-backend';
 import { JobAnalysisRequest, Requirement, JobType, Jurisdiction } from '@/types/permit';
 
 const requirementsCache = new Map<string, Requirement[]>();

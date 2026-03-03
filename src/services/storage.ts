@@ -11,11 +11,25 @@ const ALLOWED_FILE_TYPES = [
 
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
 
+// In-memory storage for anonymous users (session-based)
+const anonymousDocuments: Map<string, any[]> = new Map();
+
 export interface UploadResult {
   success: boolean;
   url?: string;
   error?: string;
   fileName?: string;
+  documentId?: string;
+}
+
+export interface AnonymousDocument {
+  id: string;
+  jobId: string;
+  name: string;
+  fileType: string;
+  data: string; // base64 data URL
+  uploadedAt: Date;
+  requirementId?: string;
 }
 
 export function validateFile(file: File): { valid: boolean; error?: string } {
@@ -47,16 +61,71 @@ export function sanitizeFileName(fileName: string): string {
     .substring(0, 100);
 }
 
+// Convert file to base64 for anonymous storage
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export async function uploadDocument(
   jobId: string,
   file: File,
-  userId: string
+  userId: string | null,
+  requirementId?: string
 ): Promise<UploadResult> {
   const validation = validateFile(file);
   if (!validation.valid) {
     return { success: false, error: validation.error };
   }
 
+  // Anonymous upload (no auth)
+  if (!userId) {
+    try {
+      const base64Data = await fileToBase64(file);
+      const docId = `anon-doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      const doc: AnonymousDocument = {
+        id: docId,
+        jobId,
+        name: file.name,
+        fileType: file.type,
+        data: base64Data,
+        uploadedAt: new Date(),
+        requirementId,
+      };
+
+      // Store in memory (and localStorage if available)
+      const existing = anonymousDocuments.get(jobId) || [];
+      existing.push(doc);
+      anonymousDocuments.set(jobId, existing);
+      
+      // Also try to save to localStorage
+      try {
+        const key = `permitpath_docs_${jobId}`;
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch (e) {
+        // localStorage might be full, ignore
+      }
+      
+      return {
+        success: true,
+        url: base64Data,
+        fileName: file.name,
+        documentId: docId,
+      };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Anonymous upload failed' 
+      };
+    }
+  }
+
+  // Authenticated upload to Supabase
   try {
     const supabase = getSupabaseClient();
     const sanitizedName = sanitizeFileName(file.name);
@@ -83,13 +152,14 @@ export async function uploadDocument(
       .getPublicUrl(filePath);
 
     // Save document record to database
-    const { error: dbError } = await supabase.from('documents').insert({
+    const { data: docData, error: dbError } = await supabase.from('documents').insert({
       job_id: jobId,
       user_id: userId,
       file_name: file.name,
       file_url: urlData.publicUrl,
       file_type: file.type,
-    });
+      requirement_id: requirementId,
+    }).select().single();
 
     if (dbError) {
       throw new Error(dbError.message);
@@ -99,6 +169,7 @@ export async function uploadDocument(
       success: true,
       url: urlData.publicUrl,
       fileName: file.name,
+      documentId: docData.id,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Upload failed';
@@ -106,7 +177,29 @@ export async function uploadDocument(
   }
 }
 
-export async function deleteDocument(documentId: string, userId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteDocument(
+  documentId: string, 
+  userId: string | null,
+  jobId?: string
+): Promise<{ success: boolean; error?: string }> {
+  // Anonymous delete
+  if (!userId && jobId) {
+    const existing = anonymousDocuments.get(jobId) || [];
+    const filtered = existing.filter(d => d.id !== documentId);
+    
+    if (filtered.length !== existing.length) {
+      anonymousDocuments.set(jobId, filtered);
+      // Update localStorage
+      try {
+        localStorage.setItem(`permitpath_docs_${jobId}`, JSON.stringify(filtered));
+      } catch (e) {}
+      return { success: true };
+    }
+    
+    return { success: false, error: 'Document not found' };
+  }
+
+  // Authenticated delete
   try {
     const supabase = getSupabaseClient();
 
@@ -154,7 +247,44 @@ export async function deleteDocument(documentId: string, userId: string): Promis
   }
 }
 
-export async function getDocumentsForJob(jobId: string, userId: string) {
+export async function getDocumentsForJob(
+  jobId: string, 
+  userId: string | null
+): Promise<{ success: boolean; error?: string; documents: any[] }> {
+  // Anonymous - get from memory/storage
+  if (!userId) {
+    // Check memory first
+    let docs = anonymousDocuments.get(jobId) || [];
+    
+    // Try to load from localStorage if memory is empty
+    if (docs.length === 0) {
+      try {
+        const stored = localStorage.getItem(`permitpath_docs_${jobId}`);
+        if (stored) {
+          docs = JSON.parse(stored).map((d: any) => ({
+            ...d,
+            uploadedAt: new Date(d.uploadedAt),
+          }));
+          anonymousDocuments.set(jobId, docs);
+        }
+      } catch (e) {}
+    }
+    
+    return { 
+      success: true, 
+      documents: docs.map(d => ({
+        id: d.id,
+        job_id: jobId,
+        file_name: d.name,
+        file_url: d.data,
+        file_type: d.fileType,
+        requirement_id: d.requirementId,
+        uploaded_at: d.uploadedAt.toISOString(),
+      }))
+    };
+  }
+
+  // Authenticated - get from Supabase
   try {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
@@ -166,7 +296,7 @@ export async function getDocumentsForJob(jobId: string, userId: string) {
 
     if (error) throw error;
 
-    return { success: true, documents: data || [] };
+    return { success: true, documents: data || [], error: undefined };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch documents';
     return { success: false, error: message, documents: [] };
@@ -177,25 +307,16 @@ export async function getDocumentsForJob(jobId: string, userId: string) {
 export function useDocumentUpload() {
   const { user, isAuthenticated } = useSupabaseAuth();
 
-  const upload = async (jobId: string, file: File): Promise<UploadResult> => {
-    if (!isAuthenticated || !user) {
-      return { success: false, error: 'Authentication required' };
-    }
-    return uploadDocument(jobId, file, user.id);
+  const upload = async (jobId: string, file: File, requirementId?: string): Promise<UploadResult> => {
+    return uploadDocument(jobId, file, user?.id || null, requirementId);
   };
 
-  const deleteDoc = async (documentId: string) => {
-    if (!isAuthenticated || !user) {
-      return { success: false, error: 'Authentication required' };
-    }
-    return deleteDocument(documentId, user.id);
+  const deleteDoc = async (documentId: string, jobId?: string) => {
+    return deleteDocument(documentId, user?.id || null, jobId);
   };
 
   const getDocuments = async (jobId: string) => {
-    if (!isAuthenticated || !user) {
-      return { success: false, error: 'Authentication required', documents: [] };
-    }
-    return getDocumentsForJob(jobId, user.id);
+    return getDocumentsForJob(jobId, user?.id || null);
   };
 
   return {
