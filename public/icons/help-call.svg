@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#0A3A7E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Phone handset -->
+  <path d="M16 10C16 10 12 16 12 24C12 38 26 52 40 52C48 52 54 48 54 48L48 38L42 42C42 42 38 38 36 36C34 34 32 30 32 30L38 24L28 18L26 12C26 12 22 12 16 10Z" fill="#DDE8F5"/>
+  <path d="M16 10C16 10 12 16 12 24C12 38 26 52 40 52C48 52 54 48 54 48L48 38L42 42C42 42 38 38 36 36C34 34 32 30 32 30L38 24L28 18L26 12C26 12 22 12 16 10Z"/>
+  <!-- Government building columns -->
+  <rect x="46" y="8" width="14" height="12" fill="#0A3A7E" opacity="0.2"/>
+  <line x1="46" y1="8" x2="46" y2="20"/>
+  <line x1="51" y1="8" x2="51" y2="20"/>
+  <line x1="56" y1="8" x2="56" y2="20"/>
+  <line x1="60" y1="8" x2="60" y2="20"/>
+  <line x1="44" y1="20" x2="62" y2="20"/>
+  <line x1="46" y1="8" x2="60" y2="8"/>
+</svg>

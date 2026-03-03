@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E6EEF8"/>
+      <stop offset="100%" style="stop-color:#DDE8F5"/>
+    </linearGradient>
+    <linearGradient id="building" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F7FAFC"/>
+      <stop offset="100%" style="stop-color:#E2E8F0"/>
+    </linearGradient>
+    <pattern id="blueprintGrid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#0A3A7E" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#blueprintGrid)"/>
+  
+  <!-- Building silhouette -->
+  <path d="M200 800 L200 400 L400 300 L600 400 L600 800 Z" fill="url(#building)" stroke="#0A3A7E" stroke-width="2"/>
+  <rect x="250" y="450" width="80" height="100" fill="#DDE8F5" stroke="#0A3A7E" stroke-width="1.5"/>
+  <rect x="470" y="450" width="80" height="100" fill="#DDE8F5" stroke="#0A3A7E" stroke-width="1.5"/>
+  
+  <!-- Second building -->
+  <path d="M1300 800 L1300 350 L1500 250 L1700 350 L1700 800 Z" fill="url(#building)" stroke="#0A3A7E" stroke-width="2"/>
+  <rect x="1350" y="400" width="90" height="120" fill="#DDE8F5" stroke="#0A3A7E" stroke-width="1.5"/>
+  <rect x="1560" y="400" width="90" height="120" fill="#DDE8F5" stroke="#0A3A7E" stroke-width="1.5"/>
+  
+  <!-- Architect figure -->
+  <ellipse cx="960" cy="700" rx="60" ry="80" fill="#0A3A7E" opacity="0.9"/>
+  <rect x="920" y="600" width="80" height="100" rx="40" fill="#0A3A7E"/>
+  <circle cx="960" cy="550" r="35" fill="#F7FAFC"/>
+  <rect x="940" y="530" width="40" height="8" fill="#0A3A7E" rx="2"/>
+  
+  <!-- Blueprint table -->
+  <rect x="700" y="750" width="520" height="20" fill="#4A5568"/>
+  <rect x="720" y="770" width="480" height="8" fill="#2D3748"/>
+  
+  <!-- Blueprint on table -->
+  <rect x="750" y="650" width="420" height="120" fill="#FFFFFF" stroke="#0A3A7E" stroke-width="2"/>
+  <line x1="780" y1="680" x2="1140" y2="680" stroke="#0A3A7E" stroke-width="1" opacity="0.3"/>
+  <line x1="780" y1="700" x2="1100" y2="700" stroke="#0A3A7E" stroke-width="1" opacity="0.3"/>
+  <line x1="780" y1="720" x2="1140" y2="720" stroke="#0A3A7E" stroke-width="1" opacity="0.3"/>
+  <rect x="800" y="660" width="60" height="40" fill="none" stroke="#0A3A7E" stroke-width="1.5"/>
+  <circle cx="1020" cy="680" r="25" fill="none" stroke="#0A3A7E" stroke-width="1.5"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="200" cy="200" r="100" fill="#0A3A7E" opacity="0.05"/>
+  <circle cx="1700" cy="150" r="150" fill="#0A3A7E" opacity="0.05"/>
+  
+  <!-- Compass icon -->
+  <circle cx="1650" cy="850" r="40" fill="none" stroke="#0A3A7E" stroke-width="2"/>
+  <line x1="1650" y1="810" x2="1650" y2="890" stroke="#0A3A7E" stroke-width="2"/>
+  <line x1="1610" y1="850" x2="1690" y2="850" stroke="#0A3A7E" stroke-width="2"/>
+  <text x="1635" y="800" fill="#0A3A7E" font-size="14" font-family="sans-serif">N</text>
+</svg>

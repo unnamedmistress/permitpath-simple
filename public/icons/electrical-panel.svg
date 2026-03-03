@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="#0A3A7E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Panel box -->
+  <rect x="10" y="8" width="44" height="48" rx="2" fill="#DDE8F5"/>
+  <line x1="10" y1="8" x2="10" y2="56"/>
+  <line x1="54" y1="8" x2="54" y2="56"/>
+  <line x1="10" y1="8" x2="54" y2="8"/>
+  <line x1="10" y1="56" x2="54" y2="56"/>
+  <!-- Main breaker -->
+  <rect x="16" y="14" width="32" height="8" rx="1" fill="#FFFFFF"/>
+  <line x1="16" y1="14" x2="48" y2="14"/>
+  <line x1="16" y1="22" x2="48" y2="22"/>
+  <text x="20" y="20" fill="#0A3A7E" font-size="4" font-family="sans-serif">MAIN</text>
+  <!-- Circuit breakers -->
+  <rect x="16" y="28" width="10" height="6" rx="1"/>
+  <rect x="29" y="28" width="10" height="6" rx="1"/>
+  <rect x="42" y="28" width="10" height="6" rx="1"/>
+  <rect x="16" y="38" width="10" height="6" rx="1"/>
+  <rect x="29" y="38" width="10" height="6" rx="1"/>
+  <rect x="42" y="38" width="10" height="6" rx="1"/>
+  <!-- Warning symbol -->
+  <path d="M32 48 L28 54 L36 54 Z" fill="#DD6B20"/>
+  <line x1="32" y1="50" x2="32" y2="52" stroke="#FFFFFF" stroke-width="1"/>
+  <circle cx="32" cy="53" r="0.5" fill="#FFFFFF"/>
+</svg>

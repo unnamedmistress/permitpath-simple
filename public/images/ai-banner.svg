@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A3A7E"/>
+      <stop offset="100%" style="stop-color:#041733"/>
+    </linearGradient>
+    <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5C94D1"/>
+      <stop offset="100%" style="stop-color:#0A3A7E"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="400" fill="url(#bgGrad)"/>
+  
+  <!-- Blueprint grid -->
+  <pattern id="grid" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#5C94D1" stroke-width="0.5" opacity="0.2"/>
+  </pattern>
+  <rect width="1200" height="400" fill="url(#grid)"/>
+  
+  <!-- Neural network nodes -->
+  <!-- Layer 1 -->
+  <circle cx="100" cy="100" r="8" fill="url(#nodeGrad)"/>
+  <circle cx="100" cy="200" r="8" fill="url(#nodeGrad)"/>
+  <circle cx="100" cy="300" r="8" fill="url(#nodeGrad)"/>
+  
+  <!-- Layer 2 -->
+  <circle cx="300" cy="80" r="10" fill="url(#nodeGrad)"/>
+  <circle cx="300" cy="160" r="10" fill="url(#nodeGrad)"/>
+  <circle cx="300" cy="240" r="10" fill="url(#nodeGrad)"/>
+  <circle cx="300" cy="320" r="10" fill="url(#nodeGrad)"/>
+  
+  <!-- Layer 3 -->
+  <circle cx="500" cy="60" r="12" fill="url(#nodeGrad)"/>
+  <circle cx="500" cy="140" r="12" fill="url(#nodeGrad)"/>
+  <circle cx="500" cy="220" r="12" fill="url(#nodeGrad)"/>
+  <circle cx="500" cy="300" r="12" fill="url(#nodeGrad)"/>
+  
+  <!-- Central large node -->
+  <circle cx="700" cy="200" r="50" fill="#0A3A7E" stroke="#5C94D1" stroke-width="2"/>
+  <circle cx="700" cy="200" r="35" fill="none" stroke="#5C94D1" stroke-width="1" opacity="0.5"/>
+  <circle cx="700" cy="200" r="20" fill="#5C94D1" opacity="0.3"/>
+  
+  <!-- Layer 4 -->
+  <circle cx="900" cy="80" r="10" fill="url(#nodeGrad)"/>
+  <circle cx="900" cy="160" r="10" fill="url(#nodeGrad)"/>
+  <circle cx="900" cy="240" r="10" fill="url(#nodeGrad)"/>
+  <circle cx="900" cy="320" r="10" fill="url(#nodeGrad)"/>
+  
+  <!-- Layer 5 -->
+  <circle cx="1100" cy="100" r="8" fill="url(#nodeGrad)"/>
+  <circle cx="1100" cy="200" r="8" fill="url(#nodeGrad)"/>
+  <circle cx="1100" cy="300" r="8" fill="url(#nodeGrad)"/>
+  
+  <!-- Connections -->
+  <g stroke="#5C94D1" stroke-width="1" opacity="0.3">
+    <!-- Layer 1 to 2 -->
+    <line x1="108" y1="100" x2="292" y2="80"/>
+    <line x1="108" y1="100" x2="292" y2="160"/>
+    <line x1="108" y1="200" x2="292" y2="160"/>
+    <line x1="108" y1="200" x2="292" y2="240"/>
+    <line x1="108" y1="300" x2="292" y2="240"/>
+    <line x1="108" y1="300" x2="292" y2="320"/>
+    
+    <!-- Layer 2 to 3 -->
+    <line x1="310" y1="80" x2="490" y2="60"/>
+    <line x1="310" y1="80" x2="490" y2="140"/>
+    <line x1="310" y1="160" x2="490" y2="140"/>
+    <line x1="310" y1="160" x2="490" y2="220"/>
+    <line x1="310" y1="240" x2="490" y2="220"/>
+    <line x1="310" y1="240" x2="490" y2="300"/>
+    <line x1="310" y1="320" x2="490" y2="300"/>
+    
+    <!-- Layer 3 to center -->
+    <line x1="512" y1="60" x2="660" y2="180"/>
+    <line x1="512" y1="140" x2="665" y2="190"/>
+    <line x1="512" y1="220" x2="665" y2="210"/>
+    <line x1="512" y1="300" x2="660" y2="220"/>
+    
+    <!-- Center to Layer 4 -->
+    <line x1="740" y1="180" x2="892" y2="80"/>
+    <line x1="735" y1="190" x2="892" y2="160"/>
+    <line x1="735" y1="210" x2="892" y2="240"/>
+    <line x1="740" y1="220" x2="892" y2="320"/>
+    
+    <!-- Layer 4 to 5 -->
+    <line x1="908" y1="80" x2="1092" y2="100"/>
+    <line x1="908" y1="160" x2="1092" y2="100"/>
+    <line x1="908" y1="160" x2="1092" y2="200"/>
+    <line x1="908" y1="240" x2="1092" y2="200"/>
+    <line x1="908" y1="240" x2="1092" y2="300"/>
+    <line x1="908" y1="320" x2="1092" y2="300"/>
+  </g>
+  
+  <!-- Blueprint overlay elements -->
+  <g opacity="0.1" stroke="#FFFFFF" stroke-width="1">
+    <line x1="0" y1="100" x2="200" y2="100"/>
+    <line x1="0" y1="300" x2="150" y2="300"/>
+    <line x1="1000" y1="50" x2="1200" y2="50"/>
+    <line x1="1050" y1="350" x2="1200" y2="350"/>
+    <rect x="50" y="150" width="80" height="40" fill="none"/>
+    <circle cx="1150" cy="200" r="30" fill="none"/>
+  </g>
+  
+  <!-- Title area (for overlay) -->
+  <rect x="700" y="160" width="0" height="0"/>
+</svg>
