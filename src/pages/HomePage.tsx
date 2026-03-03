@@ -93,7 +93,9 @@ export default function HomePage() {
   }, [menuOpenId]);
 
   return (
-    <PageWrapper>
+    <>
+      <WelcomeModal />
+      <PageWrapper>
       {/* Gradient Header - PermitPath 2.0 */}
       <header className="bg-gradient-to-br from-primary via-primary to-blue-700 px-4 pt-6 pb-8 safe-area-inset-top">
         <h1 className="text-2xl font-bold text-primary-foreground leading-tight">
@@ -300,5 +302,6 @@ export default function HomePage() {
         variant="danger"
       />
     </PageWrapper>
+    </>
   );
 }

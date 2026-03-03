@@ -199,6 +199,25 @@ const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
   { value: 'PALM_HARBOR', label: 'Palm Harbor area' }
 ];
 
+// Storage keys for smart defaults
+const STORAGE_KEY_JURISDICTION = 'permitpath:lastJurisdiction';
+
+function getStoredJurisdiction(): Jurisdiction | undefined {
+  try {
+    return localStorage.getItem(STORAGE_KEY_JURISDICTION) as Jurisdiction | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function storeJurisdiction(jurisdiction: Jurisdiction) {
+  try {
+    localStorage.setItem(STORAGE_KEY_JURISDICTION, jurisdiction);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export default function SmartWizard({
   onComplete,
   createState = 'idle',
@@ -216,9 +235,13 @@ export default function SmartWizard({
   const [step, setStep] = useState(getInitialStep);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isJobTypeOpen, setIsJobTypeOpen] = useState(false);
+  
+  // Use stored jurisdiction as default, fallback to initialData or PINELLAS_COUNTY
+  const defaultJurisdiction = initialData?.jurisdiction || getStoredJurisdiction() || 'PINELLAS_COUNTY';
+  
   const [data, setData] = useState<Partial<WizardData>>({
     jobType: initialData?.jobType,
-    jurisdiction: initialData?.jurisdiction,
+    jurisdiction: defaultJurisdiction,
     address: initialData?.address || '',
     description: initialData?.description || ''
   });
@@ -448,11 +471,19 @@ export default function SmartWizard({
             <p>Pick the area where the work is happening. Different cities have different permit rules.</p>
           </div>
 
+          {/* Smart default indicator */}
+          {getStoredJurisdiction() && (
+            <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800 flex items-center gap-2">
+              <Check className="h-4 w-4" />
+              <span>Using your last location. Tap below to change if needed.</span>
+            </div>
+          )}
+
           <div className="space-y-3">
             {JURISDICTIONS.map((j) => (
               <button
                 key={j.value}
-                onClick={() => setData({ ...data, jurisdiction: j.value })}
+                onClick={() => handleJurisdictionSelect(j.value)}
                 className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                   data.jurisdiction === j.value ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                 }`}

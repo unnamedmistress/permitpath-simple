@@ -8,6 +8,8 @@ import RequirementsDisplay from '@/components/requirements/RequirementsDisplay';
 import CostCalculator from '@/components/pinellas/CostCalculator';
 import FormDownloader from '@/components/pinellas/FormDownloader';
 import TimelineViewer from '@/components/pinellas/TimelineViewer';
+import NextActionCard from '@/components/shared/NextActionCard';
+import ProgressCelebration from '@/components/shared/ProgressCelebration';
 import { getJobFromMemory } from './NewJobPage';
 import { Job, Requirement } from '@/types/permit';
 import { calculateProgress, categorizeRequirements } from '@/services/requirements';
@@ -214,6 +216,7 @@ export default function WizardPage() {
   const [loading, setLoading] = useState(true);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
   const [capturedPhotos, setCapturedPhotos] = useState<string[]>([]);
+  const [previousProgress, setPreviousProgress] = useState<number>(0);
 
   useEffect(() => {
     if (!jobId) {
@@ -233,6 +236,9 @@ export default function WizardPage() {
 
   const handleRequirementStatusChange = (reqId: string, status: Requirement['status']) => {
     if (!job) return;
+
+    // Store current progress before update
+    setPreviousProgress(calculateProgress(job.requirements));
 
     const updatedRequirements = job.requirements.map((r) => (r.id === reqId ? { ...r, status } : r));
     const updatedJob = { ...job, requirements: updatedRequirements };
@@ -454,6 +460,23 @@ export default function WizardPage() {
                 )}
               </div>
             )}
+
+            {/* Progress Celebration */}
+            <ProgressCelebration progress={progress} />
+
+            {/* Next Action Card */}
+            <NextActionCard 
+              requirements={job.requirements}
+              onAction={(action, requirementId) => {
+                if (action === 'upload' && requirementId) {
+                  // Scroll to the requirement
+                  const element = document.getElementById(`req-${requirementId}`);
+                  element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (action === 'submit') {
+                  window.open(department.onlinePortal || department.website, '_blank');
+                }
+              }}
+            />
 
             {/* Photo Capture Section */}
             <div className="p-4 rounded-xl border bg-card">
