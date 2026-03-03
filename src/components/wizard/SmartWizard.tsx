@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Info,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { JobType, Jurisdiction, Requirement } from '@/types/permit';
@@ -253,22 +254,29 @@ export default function SmartWizard({
   const [requirements, setRequirements] = useState<Requirement[]>(initialData?.requirements || []);
   const [guidedAnswers, setGuidedAnswers] = useState<Record<string, string>>({});
   const selectedJobType = JOB_TYPE_OPTIONS.find((option) => option.value === data.jobType);
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   const requiredCount = requirements.filter((req) => req.isRequired).length;
   const optionalCount = requirements.length - requiredCount;
 
   const handleNext = async () => {
+    console.log('handleNext called, current step:', step);
     // Check if user can proceed, if not show validation error
     if (!canProceed()) {
+      console.log('Cannot proceed, validation failed');
       setShowValidationError(true);
       return;
     }
     
+    console.log('Proceeding from step', step, 'to', step + 1);
+    
     if (step === 3) {
+      // Step 3 is Details → analyze requirements and go to Requirements step
+      console.log('Step 3 - analyzing requirements');
       await analyzeRequirements();
       return;
     }
+    
     setStep(step + 1);
     setShowValidationError(false);
   };
@@ -301,7 +309,8 @@ export default function SmartWizard({
       toast.success('Requirements analyzed', {
         description: `Found ${reqs.length} checklist items`
       });
-    } catch {
+    } catch (error) {
+      console.error('Failed to analyze requirements:', error);
       toast.error('Failed to analyze requirements');
     } finally {
       setIsAnalyzing(false);
@@ -330,9 +339,11 @@ export default function SmartWizard({
       case 2:
         return !!data.jurisdiction;
       case 3:
-        return (data.address || '').length > 5;
+        return (data.address || '').trim().length >= 3;
       case 4:
         return requirements.length > 0;
+      case 5:
+        return true;
       default:
         return false;
     }
@@ -357,7 +368,7 @@ export default function SmartWizard({
 
       <div className="mb-8">
         <div className="flex justify-between mb-2">
-          {['Job Type', 'Location', 'Details', 'Requirements'].map((label, index) => (
+          {['Job Type', 'Location', 'Details', 'Requirements', 'Review'].map((label, index) => (
             <div
               key={label}
               className={`text-xs font-medium ${index + 1 <= step ? 'text-primary' : 'text-muted-foreground'}`}
@@ -572,7 +583,8 @@ export default function SmartWizard({
               type="text"
               value={data.address}
               onChange={(e) => setData({ ...data, address: e.target.value })}
-              placeholder="123 Main St, St Petersburg, FL 33710"
+              placeholder="Enter property address..."
+              required
               className="w-full px-4 py-3 rounded-xl border bg-background"
             />
             <p className="text-xs text-muted-foreground mt-1.5">
@@ -684,13 +696,15 @@ export default function SmartWizard({
 
       {step === 4 && (
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">AI-Generated Requirements</h2>
-          <p className="text-muted-foreground">Based on your job details, here are the requirements:</p>
+          <div>
+            <h2 className="text-xl font-semibold">AI-Generated Requirements</h2>
+            <p className="text-muted-foreground">Based on your job details, here are the requirements:</p>
+          </div>
 
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-            <div className="font-medium text-primary">Click Create Job to open your checklist page.</div>
+            <div className="font-medium text-primary">Requirements Analysis Complete</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              {requiredCount} required, {optionalCount} optional
+              {requiredCount} required, {optionalCount} optional items found
             </p>
           </div>
 
@@ -717,6 +731,77 @@ export default function SmartWizard({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {step === 5 && (
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold">Review & Submit</h2>
+            <p className="text-muted-foreground">Review your job details before creating</p>
+          </div>
+
+          <div className="rounded-xl border bg-card p-4 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <selectedJobType?.icon className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="font-medium text-sm text-muted-foreground">Job Type</div>
+                <div className="font-semibold">{selectedJobType?.label}</div>
+                <div className="text-sm text-muted-foreground">{selectedJobType?.plainEnglishDescription}</div>
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <div className="font-medium text-sm text-muted-foreground mb-2">Location</div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} className="text-muted-foreground" />
+                  <span>{data.address}</span>
+                </div>
+                <div className="text-sm text-muted-foreground ml-6">
+                  {JURISDICTIONS.find(j => j.value === data.jurisdiction)?.label}
+                </div>
+              </div>
+            </div>
+
+            {data.description && (
+              <div className="border-t pt-4">
+                <div className="font-medium text-sm text-muted-foreground mb-2">Description</div>
+                <p className="text-sm">{data.description}</p>
+              </div>
+            )}
+
+            <div className="border-t pt-4">
+              <div className="font-medium text-sm text-muted-foreground mb-2">Requirements</div>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                  <span>{requirements.length} total items</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 text-red-700">
+                  <span>{requiredCount} required</span>
+                </span>
+                {optionalCount > 0 && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+                    <span>{optionalCount} optional</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+            <div className="flex items-start gap-3">
+              <Check size={20} className="text-green-600 shrink-0 mt-0.5" />
+              <div>
+                <div className="font-medium text-green-900">Ready to create your job</div>
+                <p className="text-sm text-green-700 mt-1">
+                  We'll save your job to My Jobs and create a personalized checklist to help you get your permit.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
