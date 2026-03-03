@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, ClipboardList, HelpCircle, UserCircle } from "lucide-react";
+import { Home, ClipboardList, HelpCircle } from "lucide-react";
 
 const navItems = [
   { path: "/", icon: Home, label: "Home" },
   { path: "/jobs", icon: ClipboardList, label: "My Jobs" },
   { path: "/help", icon: HelpCircle, label: "Help" },
-  { path: "/settings", icon: UserCircle, label: "Account" },
+  // Account button removed - users can complete checklists without signing in
 ];
 
 export default function BottomNav() {
