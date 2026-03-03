@@ -354,23 +354,6 @@ export default function NewJobPage() {
           </Link>
         </motion.div>
 
-        {/* Trust Signal Banner */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-4 sm:mb-6 bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3"
-        >
-          <Shield size={18} className="text-green-600 shrink-0 mt-0.5" aria-hidden="true" />
-          <div>
-            <p className="text-xs sm:text-sm font-medium text-green-800">PermitPath is completely FREE</p>
-            <p className="text-xs text-green-700 mt-0.5">
-              We help you navigate the permit process. You pay permit fees directly to your county when you apply.
-            </p>
-          </div>
-        </motion.div>
-
-
 
         <SmartWizard
           onComplete={handleWizardComplete}

@@ -733,21 +733,6 @@ export default function PreviewPage() {
           </Button>
         </motion.div>
 
-        {/* Trust Signal Footer */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <Shield size={16} className="text-green-600" />
-            <p className="text-xs text-green-700">
-              <strong>PermitPath is FREE.</strong> Permit fees go directly to your county.
-            </p>
-          </div>
-        </motion.div>
-
         {/* Disclaimer */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
