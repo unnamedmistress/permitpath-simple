@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useScroll } from "@/hooks/useScroll";
 import { toast } from "sonner";
 import { Plus, FileText, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, MapPin, Gift, CheckCircle, Shield, Clock, ArrowRight, Home, ClipboardCheck, Award } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -123,9 +124,9 @@ function HeroIllustration() {
 // Trust Badge Component
 function TrustBadge({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 text-xs text-slate-600">
+    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-sm">
       <Icon size={14} className="text-primary flex-shrink-0" />
-      <span>{label}</span>
+      <span className="text-xs font-medium text-slate-700">{label}</span>
     </div>
   );
 }
@@ -170,6 +171,46 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
         Start Your First Job
       </motion.button>
     </motion.div>
+  );
+}
+
+// Sticky CTA Component
+function StickyCTA() {
+  const navigate = useNavigate();
+  const { scrollY } = useScroll();
+  const [isVisible, setIsVisible] = useState(false);
+  const heroRef = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // Show sticky CTA after scrolling past hero (roughly 400px)
+    setIsVisible(scrollY > 400);
+  }, [scrollY]);
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="fixed bottom-16 left-0 right-0 z-40 px-4 sm:px-6 pointer-events-none"
+        >
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate("/new")}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-white font-bold rounded-xl shadow-2xl shadow-primary/40 hover:bg-primary/90 transition-colors"
+            >
+              <Plus size={20} />
+              Start Your Project
+              <ArrowRight size={18} />
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -292,12 +333,10 @@ export default function HomePage() {
             {/* Trust Badges */}
             <motion.div 
               variants={fadeInUp}
-              className="mt-6 flex flex-wrap items-center justify-center gap-4 text-white/70 text-xs"
+              className="mt-6 flex flex-wrap items-center justify-center gap-3"
             >
               <TrustBadge icon={Shield} label="Official County Data" />
-              <span className="hidden sm:inline">•</span>
               <TrustBadge icon={CheckCircle} label="Always Free" />
-              <span className="hidden sm:inline">•</span>
               <TrustBadge icon={Clock} label="Saves Hours" />
             </motion.div>
           </motion.div>
@@ -505,16 +544,19 @@ export default function HomePage() {
       />
 
       {/* Legal Footer */}
-      <motion.footer 
+      <motion.footer
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="px-4 py-6 mt-4 border-t border-slate-100"
+        className="px-4 py-8 mt-4 border-t border-slate-200 bg-slate-50/50"
       >
-        <p className="text-[10px] text-slate-400 text-center leading-relaxed max-w-xs mx-auto">
+        <p className="text-xs text-slate-600 text-center leading-relaxed max-w-sm mx-auto">
           This tool provides general information only and does not constitute legal advice. Always consult your local building department.
         </p>
       </motion.footer>
+
+      {/* Sticky CTA */}
+      <StickyCTA />
     </PageWrapper>
   );
 }
