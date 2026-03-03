@@ -9,8 +9,16 @@ export default defineConfig({
     globals: true,
     setupFiles: ["src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    deps: {
+      inline: [/@testing-library/],
+    },
   },
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
+  },
+  esbuild: {
+    jsx: "transform",
+    jsxFactory: "React.createElement",
+    jsxFragment: "React.Fragment",
   },
 });

@@ -333,11 +333,11 @@ describe("Job Questions - Unit Tests", () => {
 
     it("should accept detailed descriptions", () => {
       expect(
-        isDescriptionVague("Replace shingles on north side of 2000 sq ft home")
+        isDescriptionVague("Replace shingles on north side of 2000 square foot single story home")
       ).toBe(false);
       expect(
         isDescriptionVague(
-          "Install 3-ton high efficiency AC unit with new ductwork"
+          "Install three ton high efficiency AC unit with new ductwork throughout home"
         )
       ).toBe(false);
     });
@@ -378,7 +378,7 @@ describe("Job Questions - Unit Tests", () => {
 
     it("should return empty array when all fields are valid", () => {
       const prompts = getClarificationPrompts({
-        description: "Complete roof replacement for 2000 sq ft home",
+        description: "Complete roof replacement for 2000 square foot single story home with multiple details",
         address: "123 Main St, St Pete, FL 33710",
       });
 
