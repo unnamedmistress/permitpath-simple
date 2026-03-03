@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { getSupabaseClient, isSupabaseConfigured } from '@/config/supabase';
+import { getSupabaseClient, isSupabaseConfigured as checkSupabaseConfig } from '@/config/supabase';
+
+// Re-export for convenience
+export { checkSupabaseConfig as isSupabaseConfigured };
 
 interface AuthContextValue {
   user: User | null;
@@ -23,7 +26,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
+    if (!checkSupabaseConfig()) {
       setLoading(false);
       setInitialized(true);
       return;
@@ -52,7 +55,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const signIn = useCallback(async (email: string) => {
-    if (!isSupabaseConfigured()) {
+    if (!checkSupabaseConfig()) {
       setError('Authentication is not configured');
       return;
     }
@@ -76,7 +79,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    if (!isSupabaseConfigured()) {
+    if (!checkSupabaseConfig()) {
       setError('Authentication is not configured');
       return;
     }

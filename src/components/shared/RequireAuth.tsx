@@ -1,20 +1,30 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabaseAuth, isSupabaseConfigured } from "@/context/SupabaseAuthContext";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
 
-export default function RequireAuth({ children }: { children: JSX.Element }) {
-  const { user, loading, ready } = useAuth();
+interface RequireAuthProps {
+  children: React.ReactNode;
+}
 
-  if (!ready || loading) {
+export default function RequireAuth({ children }: RequireAuthProps) {
+  const { isAuthenticated, loading } = useSupabaseAuth();
+  
+  // If Supabase is not configured, allow access anyway (demo mode)
+  if (!isSupabaseConfigured()) {
+    return <>{children}</>;
+  }
+
+  if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
-        Checking authentication...
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingSpinner text="Checking authentication..." />
       </div>
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 }

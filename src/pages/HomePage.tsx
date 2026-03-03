@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin, Sparkles, Shield, Gift, AlertTriangle } from "lucide-react";
+import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin, Sparkles, Shield, Gift, AlertTriangle, Info } from "lucide-react";
+import { motion } from "framer-motion";
 import PageWrapper from "@/components/layout/PageWrapper";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import { useJob } from "@/hooks/useJob";
-import { Job, JobType } from "@/types";
+import { useJobs } from "@/hooks/useJobs";
+import { Job, JobType } from "@/types/permit";
+import { formatJobTypeLabel } from "@/lib/utils";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import WelcomeModal from "@/components/shared/WelcomeModal";
 
@@ -19,18 +21,15 @@ const JOB_ICONS: Record<JobType, typeof Zap> = {
   GENERATOR_INSTALL: BatteryCharging,
   EV_CHARGER: Car,
   SMALL_BATH_REMODEL: Bath,
-};
-
-const JOB_LABELS: Record<JobType, string> = {
-  AC_HVAC_CHANGEOUT: "AC/HVAC",
-  WATER_HEATER: "Water Heater",
-  RE_ROOFING: "Re-Roofing",
-  ELECTRICAL_PANEL: "Electrical Panel",
-  WINDOW_DOOR_REPLACEMENT: "Window/Door",
-  POOL_BARRIER: "Pool Barrier",
-  GENERATOR_INSTALL: "Generator",
-  EV_CHARGER: "EV Charger",
-  SMALL_BATH_REMODEL: "Bath Remodel",
+  ROOF_REPAIR: SquareStack,
+  ELECTRICAL_REWIRING: Zap,
+  PLUMBING_MAIN_LINE: Droplet,
+  KITCHEN_REMODEL: Home,
+  SIDING_EXTERIOR: SquareStack,
+  DECK_INSTALLATION: Fence,
+  FENCE_INSTALLATION: Fence,
+  ROOM_ADDITION: Home,
+  FOUNDATION_REPAIR: Home,
 };
 
 const QUICK_JOB_CARDS = [
@@ -40,15 +39,26 @@ const QUICK_JOB_CARDS = [
   { type: "AC_HVAC_CHANGEOUT" as JobType, label: "AC/HVAC", icon: Sun, color: "bg-green-500" },
 ];
 
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
+
 export default function HomePage() {
   const navigate = useNavigate();
-  const { jobs, isLoading, fetchJobs, deleteJob } = useJob();
+  const { jobs, isLoading, deleteJob } = useJobs();
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
-
-  useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -58,23 +68,37 @@ export default function HomePage() {
   };
 
   const getStatusColor = (status: Job["status"]) => {
-    return status === "READY_FOR_PREVIEW" ? "text-success" : "text-warning";
+    return status === "approved" || status === "ready_to_submit" ? "text-green-600" : "text-amber-600";
   };
 
   const getStatusLabel = (status: Job["status"]) => {
-    return status === "READY_FOR_PREVIEW" ? "Ready" : "In Progress";
+    const labels: Record<string, string> = {
+      approved: "Approved",
+      ready_to_submit: "Ready",
+      submitted: "Submitted",
+      under_review: "In Review",
+      requirements_pending: "Requirements Pending",
+      documents_pending: "Documents Pending",
+      draft: "Draft",
+      rejected: "Needs Revision",
+      closed: "Closed",
+    };
+    return labels[status] || status;
   };
 
   const handleDeleteJob = async () => {
     if (!jobToDelete) return;
     try {
+      setDeleteLoading(true);
       await deleteJob(jobToDelete.id);
       toast.success("Job deleted", {
-        description: `"${jobToDelete.title || JOB_LABELS[jobToDelete.jobType]}" has been removed.`,
+        description: `"${formatJobTypeLabel(jobToDelete.jobType)}" has been removed.`,
       });
       setJobToDelete(null);
     } catch (error) {
       toast.error("Failed to delete job");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -93,6 +117,30 @@ export default function HomePage() {
     }
   }, [menuOpenId]);
 
+  // Empty state component
+  const EmptyState = useCallback(() => (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center py-12 bg-gradient-to-b from-muted/50 to-muted rounded-2xl border border-border"
+    >
+      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+        <MapPin size={32} className="text-primary/50" />
+      </div>
+      <h3 className="text-lg font-semibold text-foreground mb-2">No jobs yet</h3>
+      <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
+        Tap "Start New Job" to get your permit checklist
+      </p>
+      <Link
+        to="/new"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+      >
+        <Plus size={16} />
+        Start Your First Job
+      </Link>
+    </motion.div>
+  ), []);
+
   return (
     <>
       <WelcomeModal />
@@ -108,266 +156,49 @@ export default function HomePage() {
       </div>
 
       {/* Gradient Header - PermitPath 2.0 */}
-      <header className="bg-gradient-to-br from-primary via-primary to-blue-700 px-3 sm:px-4 pt-4 sm:pt-6 pb-6 sm:pb-8 safe-area-inset-top" role="banner">
+      <motion.header 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-br from-primary via-primary to-blue-700 px-3 sm:px-4 pt-4 sm:pt-6 pb-6 sm:pb-8 safe-area-inset-top" 
+        role="banner"
+      >
         <h1 className="text-xl sm:text-2xl font-bold text-primary-foreground leading-tight">
           Get Your Permit
         </h1>
         <p className="text-base sm:text-lg text-primary-foreground/90 mt-1 font-medium">
           We'll Help You Every Step
         </p>
-      </header>
+      </motion.header>
 
       {/* FREE Banner */}
-      <div className="px-3 -mt-2">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="px-3 -mt-2"
+      >
         <div className="bg-green-100 border border-green-300 rounded-xl p-2 sm:p-3 flex items-center justify-center gap-2">
           <Gift size={16} className="text-green-700" />
           <p className="text-xs sm:text-sm font-medium text-green-800">
             PermitPath is <strong>FREE</strong> — We help you get permits, county fees are paid separately
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Content */}
-      <div className="px-3 -mt-4 pt-2">
+      <motion.div 
+        className="px-3 -mt-4 pt-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         
         {/* Quick Job Type Banner */}
-        <div className="bg-card rounded-xl p-3 sm:p-4 shadow-md border border-border mb-4">
+        <motion.div variants={itemVariants} className="bg-card rounded-xl p-3 sm:p-4 shadow-md border border-border mb-4">
           <p className="text-xs text-muted-foreground mb-3 text-center">Popular Jobs - Tap to Start</p>
           <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {QUICK_JOB_CARDS.map(({ type, label, icon: Icon, color }) => (
               <button
                 key={type}
                 onClick={() => navigate(`/new?jobType=${type}`)}
-                className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-lg hover:bg-muted active:scale-95 transition-all min-h-[80px] sm:min-h-[90px] justify-center"
-              >
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${color} flex items-center justify-center shadow-md`}>
-                  <Icon size={20} className="text-white sm:hidden" />
-                  <Icon size={24} className="text-white hidden sm:block" />
-                </div>
-                <span className="text-[10px] sm:text-xs font-medium text-foreground text-center leading-tight">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* What You'll Need Panel */}
-        <div className="bg-card rounded-xl p-3 sm:p-4 shadow-md border border-border mb-4">
-          <h2 className="text-sm font-semibold text-foreground mb-3">What You'll Need</h2>
-          <div className="space-y-2 sm:space-y-2.5">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <Home size={16} className="text-blue-600" />
-              </div>
-              <span className="text-sm text-foreground">Your property address</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                <Briefcase size={16} className="text-green-600" />
-              </div>
-              <span className="text-sm text-foreground">Your contractor information</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-                <DollarSign size={16} className="text-yellow-600" />
-              </div>
-              <span className="text-sm text-foreground">A description of the work</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 pt-1">
-              <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 size={16} className="text-white" />
-              </div>
-              <span className="text-sm font-semibold text-green-600">That's it! We'll tell you everything else.</span>
-            </div>
-          </div>
-        </div>
-
-        {/* New Job Card - Primary CTA */}
-        <Link
-          to="/new"
-          className="w-full bg-primary rounded-xl p-3 sm:p-4 shadow-md flex items-center gap-2 sm:gap-3 mb-3 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer block min-h-[72px] sm:min-h-[80px]"
-        >
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Plus size={20} className="text-white sm:hidden" />
-            <Plus size={24} className="text-white hidden sm:block" />
-          </div>
-          <div className="flex-1 text-left min-w-0">
-            <h2 className="text-base sm:text-lg font-bold text-white">Start New Job</h2>
-            <p className="text-xs sm:text-sm text-white/80 truncate">
-              We'll make your permit checklist
-            </p>
-          </div>
-          <ChevronRight size={20} className="text-white/60 sm:hidden flex-shrink-0" />
-          <ChevronRight size={24} className="text-white/60 hidden sm:block flex-shrink-0" />
-        </Link>
-
-        {/* AI Assistant Option */}
-        <Link
-          to="/ai-assistant"
-          className="w-full bg-card border border-primary/20 rounded-xl p-3 sm:p-4 shadow-sm flex items-center gap-2 sm:gap-3 mb-4 hover:shadow-md hover:bg-primary/5 transition-all active:scale-[0.98] cursor-pointer block min-h-[72px] sm:min-h-[80px]"
-        >
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Sparkles size={20} className="text-primary sm:hidden" />
-            <Sparkles size={24} className="text-primary hidden sm:block" />
-          </div>
-          <div className="flex-1 text-left min-w-0">
-            <h2 className="text-base sm:text-lg font-bold text-foreground">AI Permit Assistant</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">
-              Chat and upload photos. We'll figure out permits.
-            </p>
-          </div>
-          <ChevronRight size={20} className="text-muted-foreground/60 sm:hidden flex-shrink-0" />
-          <ChevronRight size={24} className="text-muted-foreground/60 hidden sm:block flex-shrink-0" />
-        </Link>
-
-        {/* Recent Jobs */}
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">Your Jobs</h2>
-          <span className="text-xs text-muted-foreground">{jobs.length} total</span>
-        </div>
-
-        {isLoading ? (
-          <div className="py-8">
-            <LoadingSpinner text="Loading jobs..." />
-          </div>
-        ) : jobs.length === 0 ? (
-          <div className="text-center py-8 bg-muted rounded-xl">
-            <MapPin size={40} className="mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-sm font-medium text-foreground">No jobs yet</p>
-            <p className="text-xs text-muted-foreground mt-1 px-6">
-              Tap "Start New Job" to get your permit checklist
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2 pb-20">
-            {jobs
-              .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-              .map((job) => {
-                const Icon = JOB_ICONS[job.jobType];
-                const isMenuOpen = menuOpenId === job.id;
-                return (
-                  <div key={job.id} className="relative">
-                    <button
-                      onClick={() => navigate(`/wizard/${job.id}`)}
-                      className="job-card w-full text-left focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Icon size={16} className="text-primary" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium text-foreground truncate">
-                            {job.title || JOB_LABELS[job.jobType]}
-                          </h3>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {job.address || job.jurisdiction}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1 text-xs">
-                            <span className={`font-medium ${getStatusColor(job.status)}`}>
-                              {getStatusLabel(job.status)}
-                            </span>
-                            <span className="text-muted-foreground flex items-center gap-0.5">
-                              <Clock size={12} aria-hidden="true" />
-                              {formatDate(job.updatedAt)}
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={(e) => handleMenuClick(e, job.id)}
-                          className="p-2 -mr-1 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                          aria-label={`Options for ${job.title || JOB_LABELS[job.jobType]}`}
-                          aria-haspopup="menu"
-                          aria-expanded={isMenuOpen}
-                        >
-                          <MoreVertical size={18} className="text-muted-foreground" aria-hidden="true" />
-                        </button>
-                      </div>
-                    </button>
-                    
-                    {/* Dropdown menu */}
-                    {isMenuOpen && (
-                      <div
-                        className="absolute right-2 top-12 z-10 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px] animate-in fade-in zoom-in-95 duration-100"
-                        onClick={(e) => e.stopPropagation()}
-                        role="menu"
-                        aria-label={`Options for ${job.title || JOB_LABELS[job.jobType]}`}
-                      >
-                        <button
-                          onClick={() => {
-                            navigate(`/wizard/${job.id}`);
-                            setMenuOpenId(null);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-foreground hover:bg-muted transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                          role="menuitem"
-                          aria-label="Edit job"
-                        >
-                          <Edit3 size={16} aria-hidden="true" />
-                          Edit Job
-                        </button>
-                        <button
-                          onClick={() => {
-                            setJobToDelete(job);
-                            setMenuOpenId(null);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                          role="menuitem"
-                          aria-label="Delete job"
-                        >
-                          <Trash2 size={16} aria-hidden="true" />
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-          </div>
-        )}
-        {/* Trust Signal Footer */}
-        <div className="mt-6 mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
-          <div className="flex items-start gap-3">
-            <Shield size={18} className="text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
-            <div>
-              <p className="text-sm font-medium text-blue-900">PermitPath is FREE</p>
-              <p className="text-xs text-blue-700 mt-0.5">
-                Permit fees go directly to your county. We help you navigate the process at no cost.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Data Policy Notice */}
-        <div className="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4">
-          <div className="flex items-start gap-3">
-            <Info size={18} className="text-gray-600 shrink-0 mt-0.5" aria-hidden="true" />
-            <div>
-              <p className="text-sm font-medium text-gray-900">Data Privacy</p>
-              <p className="text-xs text-gray-700 mt-0.5">
-                We store your job information locally on your device. We do not sell your data.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Disclaimer */}
-        <footer className="mb-4 text-center" role="contentinfo">
-          <p className="text-xs text-muted-foreground">
-            This tool provides general information only and does not constitute legal advice.
-          </p>
-        </footer>
-      </div>
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={!!jobToDelete}
-          onClose={() => setJobToDelete(null)}
-          onConfirm={handleDeleteJob}
-          title="Delete Job?"
-        description={`"${jobToDelete?.title || (jobToDelete && JOB_LABELS[jobToDelete.jobType])}" and all its data will be permanently deleted.`}
-          confirmLabel="Delete"
-          cancelLabel="Cancel"
-        variant="danger"
-      />
-    </PageWrapper>
-    </>
-  );
-}
+                className="flex flex-col items-center
