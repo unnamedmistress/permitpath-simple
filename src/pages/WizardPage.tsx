@@ -5,6 +5,9 @@ import { ArrowLeft, FileText, CheckCircle, Clock, AlertCircle, ExternalLink, Pho
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import RequirementsDisplay from '@/components/requirements/RequirementsDisplay';
+import CostCalculator from '@/components/pinellas/CostCalculator';
+import FormDownloader from '@/components/pinellas/FormDownloader';
+import TimelineViewer from '@/components/pinellas/TimelineViewer';
 import { getJobFromMemory } from './NewJobPage';
 import { Job, Requirement } from '@/types/permit';
 import { calculateProgress, categorizeRequirements } from '@/services/requirements';
@@ -725,6 +728,27 @@ export default function WizardPage() {
                 <p className="text-xs text-blue-600 font-medium mb-2">County Hours: {department.hours}</p>
               </div>
             </div>
+
+            {/* Cost Calculator - NEW */}
+            <CostCalculator 
+              jobType={job.jobType} 
+              jurisdiction={job.jurisdiction}
+            />
+
+            {/* Form Downloader - NEW */}
+            <FormDownloader 
+              jobType={job.jobType}
+              contractorProfile={{
+                businessName: 'Your Company', // Would come from user profile
+                licenseNumber: 'FL-12345',
+              }}
+            />
+
+            {/* Timeline Viewer - NEW */}
+            <TimelineViewer 
+              jobType={job.jobType}
+              isExpress={['RE_ROOFING', 'WINDOW_DOOR_REPLACEMENT', 'WATER_HEATER', 'AC_HVAC_CHANGEOUT'].includes(job.jobType)}
+            />
 
             {/* Common Questions */}
             <div className="p-4 rounded-xl border bg-card">
