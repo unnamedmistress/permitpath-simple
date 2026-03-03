@@ -53,25 +53,25 @@ export default function ConfirmDialog({
     : null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
     >
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
-      
+
       {/* Dialog */}
-      <div className="relative bg-card rounded-2xl shadow-xl max-w-sm w-full p-5 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-card rounded-2xl shadow-xl max-w-sm w-full mx-2 p-4 sm:p-5 space-y-3 sm:space-y-4 animate-in fade-in zoom-in-95 duration-200">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-muted transition-colors"
+          className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 min-h-[44px] min-w-[44px] rounded-lg hover:bg-muted transition-colors flex items-center justify-center"
           aria-label="Close dialog"
         >
           <X size={18} className="text-muted-foreground" />
@@ -79,14 +79,14 @@ export default function ConfirmDialog({
 
         {/* Icon */}
         {(icon || defaultIcon) && (
-          <div className={`w-12 h-12 rounded-full ${styles.iconBg} flex items-center justify-center mx-auto`}>
+          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${styles.iconBg} flex items-center justify-center mx-auto`}>
             {icon || defaultIcon}
           </div>
         )}
 
         {/* Content */}
         <div className="text-center space-y-2">
-          <h2 id="confirm-dialog-title" className="text-lg font-semibold text-foreground">
+          <h2 id="confirm-dialog-title" className="text-base sm:text-lg font-semibold text-foreground">
             {title}
           </h2>
           {description && (
@@ -97,12 +97,12 @@ export default function ConfirmDialog({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
           <Button
             onClick={onClose}
             variant="outline"
             size="md"
-            className="flex-1"
+            className="w-full sm:flex-1"
             disabled={isLoading}
           >
             {cancelLabel}
@@ -111,7 +111,7 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             variant={styles.confirmVariant}
             size="md"
-            className={`flex-1 ${variant === "danger" ? "bg-destructive hover:bg-destructive/90" : ""}`}
+            className={`w-full sm:flex-1 ${variant === "danger" ? "bg-destructive hover:bg-destructive/90" : ""}`}
             loading={isLoading}
           >
             {confirmLabel}

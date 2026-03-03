@@ -98,11 +98,11 @@ export default function HomePage() {
       <WelcomeModal />
       <PageWrapper>
       {/* Gradient Header - PermitPath 2.0 */}
-      <header className="bg-gradient-to-br from-primary via-primary to-blue-700 px-4 pt-6 pb-8 safe-area-inset-top">
-        <h1 className="text-2xl font-bold text-primary-foreground leading-tight">
+      <header className="bg-gradient-to-br from-primary via-primary to-blue-700 px-3 sm:px-4 pt-4 sm:pt-6 pb-6 sm:pb-8 safe-area-inset-top">
+        <h1 className="text-xl sm:text-2xl font-bold text-primary-foreground leading-tight">
           Get Your Permit
         </h1>
-        <p className="text-lg text-primary-foreground/90 mt-1 font-medium">
+        <p className="text-base sm:text-lg text-primary-foreground/90 mt-1 font-medium">
           We'll Help You Every Step
         </p>
       </header>
@@ -111,47 +111,48 @@ export default function HomePage() {
       <div className="px-3 -mt-4">
         
         {/* Quick Job Type Banner */}
-        <div className="bg-card rounded-xl p-4 shadow-md border border-border mb-4">
+        <div className="bg-card rounded-xl p-3 sm:p-4 shadow-md border border-border mb-4">
           <p className="text-xs text-muted-foreground mb-3 text-center">Popular Jobs - Tap to Start</p>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {QUICK_JOB_CARDS.map(({ type, label, icon: Icon, color }) => (
               <button
                 key={type}
                 onClick={() => navigate(`/new?jobType=${type}`)}
-                className="flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-muted active:scale-95 transition-all"
+                className="flex flex-col items-center gap-1.5 p-1.5 sm:p-2 rounded-lg hover:bg-muted active:scale-95 transition-all min-h-[80px] sm:min-h-[90px] justify-center"
               >
-                <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center shadow-md`}>
-                  <Icon size={24} className="text-white" />
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl ${color} flex items-center justify-center shadow-md`}>
+                  <Icon size={20} className="text-white sm:hidden" />
+                  <Icon size={24} className="text-white hidden sm:block" />
                 </div>
-                <span className="text-[10px] font-medium text-foreground text-center leading-tight">{label}</span>
+                <span className="text-[10px] sm:text-xs font-medium text-foreground text-center leading-tight">{label}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* What You'll Need Panel */}
-        <div className="bg-card rounded-xl p-4 shadow-md border border-border mb-4">
+        <div className="bg-card rounded-xl p-3 sm:p-4 shadow-md border border-border mb-4">
           <h2 className="text-sm font-semibold text-foreground mb-3">What You'll Need</h2>
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-3">
+          <div className="space-y-2 sm:space-y-2.5">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                 <Home size={16} className="text-blue-600" />
               </div>
               <span className="text-sm text-foreground">Your property address</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
                 <Briefcase size={16} className="text-green-600" />
               </div>
               <span className="text-sm text-foreground">Your contractor information</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
                 <DollarSign size={16} className="text-yellow-600" />
               </div>
-              <span className="text-sm text-foreground">A description of the work (we'll help translate it)</span>
+              <span className="text-sm text-foreground">A description of the work</span>
             </div>
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex items-center gap-2 sm:gap-3 pt-1">
               <div className="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 size={16} className="text-white" />
               </div>
@@ -163,35 +164,39 @@ export default function HomePage() {
         {/* New Job Card - Primary CTA */}
         <Link
           to="/new"
-          className="w-full bg-primary rounded-xl p-4 shadow-md flex items-center gap-3 mb-3 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer block"
+          className="w-full bg-primary rounded-xl p-3 sm:p-4 shadow-md flex items-center gap-2 sm:gap-3 mb-3 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer block min-h-[72px] sm:min-h-[80px]"
         >
-          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-            <Plus size={24} className="text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            <Plus size={20} className="text-white sm:hidden" />
+            <Plus size={24} className="text-white hidden sm:block" />
           </div>
-          <div className="flex-1 text-left">
-            <h2 className="text-lg font-bold text-white">Start New Job</h2>
-            <p className="text-sm text-white/80">
+          <div className="flex-1 text-left min-w-0">
+            <h2 className="text-base sm:text-lg font-bold text-white">Start New Job</h2>
+            <p className="text-xs sm:text-sm text-white/80 truncate">
               We'll make your permit checklist
             </p>
           </div>
-          <ChevronRight size={24} className="text-white/60" />
+          <ChevronRight size={20} className="text-white/60 sm:hidden flex-shrink-0" />
+          <ChevronRight size={24} className="text-white/60 hidden sm:block flex-shrink-0" />
         </Link>
 
         {/* AI Assistant Option */}
         <Link
           to="/ai-assistant"
-          className="w-full bg-card border border-primary/20 rounded-xl p-4 shadow-sm flex items-center gap-3 mb-4 hover:shadow-md hover:bg-primary/5 transition-all active:scale-[0.98] cursor-pointer block"
+          className="w-full bg-card border border-primary/20 rounded-xl p-3 sm:p-4 shadow-sm flex items-center gap-2 sm:gap-3 mb-4 hover:shadow-md hover:bg-primary/5 transition-all active:scale-[0.98] cursor-pointer block min-h-[72px] sm:min-h-[80px]"
         >
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sparkles size={24} className="text-primary" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Sparkles size={20} className="text-primary sm:hidden" />
+            <Sparkles size={24} className="text-primary hidden sm:block" />
           </div>
-          <div className="flex-1 text-left">
-            <h2 className="text-lg font-bold text-foreground">AI Permit Assistant</h2>
-            <p className="text-sm text-muted-foreground">
+          <div className="flex-1 text-left min-w-0">
+            <h2 className="text-base sm:text-lg font-bold text-foreground">AI Permit Assistant</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
               Chat and upload photos. We'll figure out permits.
             </p>
           </div>
-          <ChevronRight size={24} className="text-muted-foreground/60" />
+          <ChevronRight size={20} className="text-muted-foreground/60 sm:hidden flex-shrink-0" />
+          <ChevronRight size={24} className="text-muted-foreground/60 hidden sm:block flex-shrink-0" />
         </Link>
 
         {/* Recent Jobs */}
@@ -248,17 +253,17 @@ export default function HomePage() {
                         </div>
                         <button
                           onClick={(e) => handleMenuClick(e, job.id)}
-                          className="p-1 -mr-1 rounded-lg hover:bg-muted transition-colors"
+                          className="p-2 -mr-1 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                           aria-label={`Options for ${job.title || JOB_LABELS[job.jobType]}`}
                         >
-                          <MoreVertical size={16} className="text-muted-foreground" />
+                          <MoreVertical size={18} className="text-muted-foreground" />
                         </button>
                       </div>
                     </button>
                     
                     {/* Dropdown menu */}
                     {isMenuOpen && (
-                      <div 
+                      <div
                         className="absolute right-2 top-12 z-10 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px] animate-in fade-in zoom-in-95 duration-100"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -267,9 +272,9 @@ export default function HomePage() {
                             navigate(`/wizard/${job.id}`);
                             setMenuOpenId(null);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-foreground hover:bg-muted transition-colors min-h-[44px]"
                         >
-                          <Edit3 size={14} />
+                          <Edit3 size={16} />
                           Edit Job
                         </button>
                         <button
@@ -277,9 +282,9 @@ export default function HomePage() {
                             setJobToDelete(job);
                             setMenuOpenId(null);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors min-h-[44px]"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={16} />
                           Delete
                         </button>
                       </div>

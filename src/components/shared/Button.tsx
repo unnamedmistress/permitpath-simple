@@ -26,8 +26,8 @@ export default function Button({
   icon,
   "aria-label": ariaLabel,
 }: ButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none";
-  
+  const baseStyles = "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none min-h-[44px] min-w-[44px]";
+
   const variants = {
     primary: "bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-secondary",
@@ -38,9 +38,9 @@ export default function Button({
   };
 
   const sizes = {
-    sm: "text-sm px-3 py-2",
-    md: "text-base px-4 py-3",
-    lg: "text-lg px-6 py-4",
+    sm: "text-sm px-3 py-2 min-h-[36px]",
+    md: "text-base px-4 py-3 min-h-[44px] w-full sm:w-auto",
+    lg: "text-lg px-6 py-4 min-h-[48px] w-full sm:w-auto",
   };
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {

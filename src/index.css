@@ -74,9 +74,33 @@
     @apply border-border;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea, button {
+    font-size: 16px;
+  }
+
+  @media (min-width: 640px) {
+    input, select, textarea, button {
+      font-size: inherit;
+    }
+  }
+
+  /* Minimum touch target sizing */
+  button, a, [role="button"], input, select, textarea {
+    min-height: 44px;
   }
 }
 
@@ -227,6 +251,58 @@
 /* iOS keyboard handling */
 :root {
   --keyboard-height: 0px;
+}
+
+/* Mobile-specific utilities */
+@layer utilities {
+  /* Responsive container padding */
+  .container-mobile {
+    @apply px-3 sm:px-4 md:px-6;
+  }
+
+  /* Mobile-friendly spacing scale */
+  .gap-mobile {
+    @apply gap-2 sm:gap-3 md:gap-4;
+  }
+
+  .p-mobile {
+    @apply p-3 sm:p-4 md:p-6;
+  }
+
+  /* Responsive text sizes */
+  .text-mobile-base {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-mobile-lg {
+    @apply text-base sm:text-lg;
+  }
+
+  .text-mobile-xl {
+    @apply text-lg sm:text-xl;
+  }
+
+  /* Full width on mobile, auto on desktop */
+  .w-mobile-full {
+    @apply w-full sm:w-auto;
+  }
+}
+
+/* Modal and dialog mobile improvements */
+@media (max-width: 640px) {
+  [role="dialog"] > div:last-child {
+    max-width: calc(100vw - 1.5rem);
+    max-height: calc(100vh - 1.5rem);
+  }
+}
+
+/* Form input focus styles for mobile */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: hsl(var(--ring));
 }
 
 /* Screen reader only */

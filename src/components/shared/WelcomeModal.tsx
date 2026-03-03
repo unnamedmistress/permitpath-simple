@@ -75,32 +75,33 @@ export default function WelcomeModal() {
   const isLastStep = currentStep === WELCOME_STEPS.length - 1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 animate-in fade-in duration-200"
         onClick={handleClose}
       />
-      
+
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto overflow-x-hidden animate-in zoom-in-95 duration-200">
         {/* Close button */}
-        <button 
+        <button
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 min-h-[44px] min-w-[44px] rounded-full hover:bg-gray-100 transition-colors z-10 flex items-center justify-center"
+          aria-label="Close welcome modal"
         >
           <X size={20} className="text-gray-500" />
         </button>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="p-5 sm:p-8">
           {/* Step indicator */}
-          <div className="flex justify-center gap-2 mb-6">
+          <div className="flex justify-center gap-2 mb-4 sm:mb-6">
             {WELCOME_STEPS.map((_, index) => (
-              <div 
+              <div
                 key={index}
                 className={`h-2 rounded-full transition-all ${
-                  index === currentStep ? 'w-8 bg-primary' : 
+                  index === currentStep ? 'w-8 bg-primary' :
                   index < currentStep ? 'w-2 bg-primary/50' : 'w-2 bg-gray-200'
                 }`}
               />
@@ -108,29 +109,32 @@ export default function WelcomeModal() {
           </div>
 
           {/* Icon */}
-          <div className={`w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-6`}>
-            <Icon size={40} className={step.color} />
+          <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 sm:mb-6`}>
+            <Icon size={32} className={`${step.color} sm:hidden`} />
+            <Icon size={40} className={`${step.color} hidden sm:block`} />
           </div>
 
           {/* Text */}
-          <h2 className="text-2xl font-bold text-center mb-2">{step.title}</h2>
-          <p className="text-sm text-primary font-medium text-center mb-4">{step.subtitle}</p>
-          <p className="text-muted-foreground text-center">{step.description}</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-center mb-2">{step.title}</h2>
+          <p className="text-sm text-primary font-medium text-center mb-3 sm:mb-4">{step.subtitle}</p>
+          <p className="text-muted-foreground text-center text-sm sm:text-base px-1">{step.description}</p>
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-gray-50 flex items-center justify-between">
-          <button 
+        <div className="p-3 sm:p-4 bg-gray-50 flex items-center justify-between gap-3">
+          <button
             onClick={handleClose}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-2 min-h-[44px]"
           >
             Skip tour
           </button>
-          
-          <Button onClick={handleNext}>
-            {isLastStep ? 'Get Started' : 'Next'}
-            <ArrowRight size={16} className="ml-2" />
-          </Button>
+
+          <div className="w-full sm:w-auto">
+            <Button onClick={handleNext} className="w-full sm:w-auto">
+              {isLastStep ? 'Get Started' : 'Next'}
+              <ArrowRight size={16} className="ml-2" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

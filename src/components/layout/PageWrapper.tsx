@@ -6,14 +6,14 @@ interface PageWrapperProps {
   hasBottomNav?: boolean;
 }
 
-export default function PageWrapper({ 
-  children, 
+export default function PageWrapper({
+  children,
   className = "",
-  hasBottomNav = true 
+  hasBottomNav = true
 }: PageWrapperProps) {
   return (
-    <div 
-      className={`min-h-screen bg-background ${hasBottomNav ? "pb-16" : ""} ${className}`}
+    <div
+      className={`min-h-screen bg-background overflow-x-hidden ${hasBottomNav ? "pb-16 sm:pb-20" : ""} ${className}`}
     >
       {children}
     </div>
