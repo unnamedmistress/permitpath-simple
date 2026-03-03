@@ -14,7 +14,8 @@ import {
   Shield,
   AlertCircle,
   Info,
-  Loader2
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { JobType, Jurisdiction, Requirement } from '@/types/permit';
@@ -364,13 +365,20 @@ export default function SmartWizard({
 
       {step === 1 && (
         <div className="space-y-3 sm:space-y-4">
+          {/* UPL Disclaimer */}
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+            <p>
+              <strong>Notice:</strong> This tool provides general information only and does not constitute legal advice. Always consult with a qualified professional for your specific situation.
+            </p>
+          </div>
+
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg sm:text-xl font-semibold">What type of work?</h2>
               <HoverCard>
                 <HoverCardTrigger asChild>
-                  <button className="p-1 rounded-full hover:bg-muted transition-colors">
-                    <Info size={16} className="text-muted-foreground" />
+                  <button className="p-1 rounded-full hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-label="Job type selection help">
+                    <Info size={16} className="text-muted-foreground" aria-hidden="true" />
                   </button>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-72 p-3">
@@ -411,13 +419,14 @@ export default function SmartWizard({
                 type="button"
                 role="combobox"
                 aria-expanded={isJobTypeOpen}
-                className="w-full rounded-2xl border bg-background px-4 py-3 text-left transition-all hover:border-primary/50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label={selectedJobType ? `Selected job type: ${selectedJobType.label}` : "Choose job type"}
+                className="w-full rounded-2xl border bg-background px-4 py-3 text-left transition-all hover:border-primary/50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex items-center gap-3">
                     {selectedJobType ? (
                       <>
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${CATEGORY_STYLES[selectedJobType.category]}`}>
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${CATEGORY_STYLES[selectedJobType.category]}`} aria-hidden="true">
                           <selectedJobType.icon className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -427,7 +436,7 @@ export default function SmartWizard({
                       </>
                     ) : (
                       <>
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary" aria-hidden="true">
                           <ChevronDown className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -437,7 +446,7 @@ export default function SmartWizard({
                       </>
                     )}
                   </div>
-                  <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isJobTypeOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isJobTypeOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                 </div>
               </button>
             </PopoverTrigger>
@@ -489,8 +498,8 @@ export default function SmartWizard({
               <h2 className="text-lg sm:text-xl font-semibold">Where is this job?</h2>
               <HoverCard>
                 <HoverCardTrigger asChild>
-                  <button className="p-1 rounded-full hover:bg-muted transition-colors">
-                    <Info size={16} className="text-muted-foreground" />
+                  <button className="p-1 rounded-full hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" aria-label="Location selection help">
+                    <Info size={16} className="text-muted-foreground" aria-hidden="true" />
                   </button>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-64 p-3">
@@ -505,6 +514,14 @@ export default function SmartWizard({
           
           <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-800">
             <p>Pick the area where the work is happening. Different cities have different permit rules.</p>
+          </div>
+
+          {/* Jurisdiction Disclaimer */}
+          <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800 flex items-start gap-2">
+            <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+            <p>
+              <strong>Requirements vary by jurisdiction.</strong> Verify with your local building department for the most current requirements.
+            </p>
           </div>
 
           {/* Smart default indicator */}
@@ -711,9 +728,10 @@ export default function SmartWizard({
           variant="secondary" 
           onClick={handleBack} 
           disabled={step === 1 || createState === 'creating'}
-          className="transition-all active:scale-95"
+          className="transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          aria-label="Go back to previous step"
         >
-          <ArrowLeft size={18} className="mr-2" />
+          <ArrowLeft size={18} className="mr-2" aria-hidden="true" />
           Back
         </Button>
 
@@ -722,17 +740,18 @@ export default function SmartWizard({
             onClick={handleNext} 
             disabled={!canProceed() || isAnalyzing} 
             loading={isAnalyzing}
-            className={`transition-all ${!canProceed() ? 'opacity-50' : 'hover:scale-105 active:scale-95'}`}
+            className={`transition-all ${!canProceed() ? 'opacity-50' : 'hover:scale-105 active:scale-95'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}
+            aria-label="Continue to next step"
           >
             {isAnalyzing ? (
               <>
-                <Loader2 size={18} className="mr-2 animate-spin" />
+                <Loader2 size={18} className="mr-2 animate-spin" aria-hidden="true" />
                 Analyzing...
               </>
             ) : (
               <>
                 Next
-                <ArrowRight size={18} className="ml-2" />
+                <ArrowRight size={18} className="ml-2" aria-hidden="true" />
               </>
             )}
           </Button>
@@ -742,21 +761,22 @@ export default function SmartWizard({
             variant="primary" 
             loading={createState === 'creating'} 
             disabled={createState === 'created'}
-            className={`transition-all ${createState === 'created' ? 'bg-green-600 hover:bg-green-600' : 'hover:scale-105 active:scale-95'}`}
+            className={`transition-all ${createState === 'created' ? 'bg-green-600 hover:bg-green-600' : 'hover:scale-105 active:scale-95'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2`}
+            aria-label={createState === 'created' ? "Job created successfully" : "Create job and generate checklist"}
           >
             {createState === 'creating' ? (
               <>
-                <Loader2 size={18} className="mr-2 animate-spin" />
+                <Loader2 size={18} className="mr-2 animate-spin" aria-hidden="true" />
                 Creating...
               </>
             ) : createState === 'created' ? (
               <>
-                <Check size={18} className="mr-2" />
+                <Check size={18} className="mr-2" aria-hidden="true" />
                 Created!
               </>
             ) : (
               <>
-                <Check size={18} className="mr-2" />
+                <Check size={18} className="mr-2" aria-hidden="true" />
                 Create Job
               </>
             )}

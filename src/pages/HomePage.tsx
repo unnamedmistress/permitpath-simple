@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin, Sparkles, Shield, Gift } from "lucide-react";
+import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin, Sparkles, Shield, Gift, AlertTriangle } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useJob } from "@/hooks/useJob";
@@ -97,8 +97,18 @@ export default function HomePage() {
     <>
       <WelcomeModal />
       <PageWrapper>
+      {/* UPL Disclaimer Banner */}
+      <div className="bg-amber-50 border-b border-amber-200 px-3 py-2">
+        <div className="flex items-start gap-2 max-w-4xl mx-auto">
+          <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            <strong>Legal Notice:</strong> This tool provides general information only and does not constitute legal advice. Always consult with a qualified professional for your specific situation.
+          </p>
+        </div>
+      </div>
+
       {/* Gradient Header - PermitPath 2.0 */}
-      <header className="bg-gradient-to-br from-primary via-primary to-blue-700 px-3 sm:px-4 pt-4 sm:pt-6 pb-6 sm:pb-8 safe-area-inset-top">
+      <header className="bg-gradient-to-br from-primary via-primary to-blue-700 px-3 sm:px-4 pt-4 sm:pt-6 pb-6 sm:pb-8 safe-area-inset-top" role="banner">
         <h1 className="text-xl sm:text-2xl font-bold text-primary-foreground leading-tight">
           Get Your Permit
         </h1>
@@ -263,10 +273,12 @@ export default function HomePage() {
                         </div>
                         <button
                           onClick={(e) => handleMenuClick(e, job.id)}
-                          className="p-2 -mr-1 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                          className="p-2 -mr-1 rounded-lg hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                           aria-label={`Options for ${job.title || JOB_LABELS[job.jobType]}`}
+                          aria-haspopup="menu"
+                          aria-expanded={isMenuOpen}
                         >
-                          <MoreVertical size={18} className="text-muted-foreground" />
+                          <MoreVertical size={18} className="text-muted-foreground" aria-hidden="true" />
                         </button>
                       </div>
                     </button>
@@ -276,15 +288,19 @@ export default function HomePage() {
                       <div
                         className="absolute right-2 top-12 z-10 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[140px] animate-in fade-in zoom-in-95 duration-100"
                         onClick={(e) => e.stopPropagation()}
+                        role="menu"
+                        aria-label={`Options for ${job.title || JOB_LABELS[job.jobType]}`}
                       >
                         <button
                           onClick={() => {
                             navigate(`/wizard/${job.id}`);
                             setMenuOpenId(null);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-foreground hover:bg-muted transition-colors min-h-[44px]"
+                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-foreground hover:bg-muted transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                          role="menuitem"
+                          aria-label="Edit job"
                         >
-                          <Edit3 size={16} />
+                          <Edit3 size={16} aria-hidden="true" />
                           Edit Job
                         </button>
                         <button
@@ -292,9 +308,11 @@ export default function HomePage() {
                             setJobToDelete(job);
                             setMenuOpenId(null);
                           }}
-                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors min-h-[44px]"
+                          className="w-full flex items-center gap-2 px-3 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                          role="menuitem"
+                          aria-label="Delete job"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={16} aria-hidden="true" />
                           Delete
                         </button>
                       </div>
@@ -307,7 +325,7 @@ export default function HomePage() {
         {/* Trust Signal Footer */}
         <div className="mt-6 mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
           <div className="flex items-start gap-3">
-            <Shield size={18} className="text-blue-600 shrink-0 mt-0.5" />
+            <Shield size={18} className="text-blue-600 shrink-0 mt-0.5" aria-hidden="true" />
             <div>
               <p className="text-sm font-medium text-blue-900">PermitPath is FREE</p>
               <p className="text-xs text-blue-700 mt-0.5">
@@ -316,6 +334,26 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Data Policy Notice */}
+        <div className="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4">
+          <div className="flex items-start gap-3">
+            <Info size={18} className="text-gray-600 shrink-0 mt-0.5" aria-hidden="true" />
+            <div>
+              <p className="text-sm font-medium text-gray-900">Data Privacy</p>
+              <p className="text-xs text-gray-700 mt-0.5">
+                We store your job information locally on your device. We do not sell your data.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Disclaimer */}
+        <footer className="mb-4 text-center" role="contentinfo">
+          <p className="text-xs text-muted-foreground">
+            This tool provides general information only and does not constitute legal advice.
+          </p>
+        </footer>
       </div>
 
       {/* Delete Confirmation Dialog */}

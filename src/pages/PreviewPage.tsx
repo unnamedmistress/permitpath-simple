@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, FileText, RotateCcw, CheckCircle2, MapPin, ExternalLink, BookOpen, Download, Printer, Mail, Info, Shield, DollarSign } from "lucide-react";
+import { ArrowLeft, FileText, RotateCcw, CheckCircle2, MapPin, ExternalLink, BookOpen, Download, Printer, Mail, Info, Shield, DollarSign, AlertTriangle } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import Button from "@/components/shared/Button";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
@@ -59,6 +59,9 @@ export default function PreviewPage() {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailConsent, setEmailConsent] = useState(false);
+  const [consentTimestamp, setConsentTimestamp] = useState<Date | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!jobId) return;
@@ -104,16 +107,31 @@ export default function PreviewPage() {
   };
 
   const handleEmail = () => {
+    setEmailError(null);
+    
     if (!email || !email.includes('@')) {
+      setEmailError("Please enter a valid email address");
       toast.error("Please enter a valid email address");
       return;
     }
     
-    setSendingEmail(true);
+    if (!emailConsent) {
+      setEmailError("You must agree to receive emails");
+      toast.error("Please agree to receive emails");
+      return;
+    }
     
-    // Store email in job data
+    setSendingEmail(true);
+    const timestamp = new Date();
+    setConsentTimestamp(timestamp);
+    
+    // Store email and consent in job data
     if (currentJob && updateJob) {
-      updateJob(currentJob.id, { contactEmail: email });
+      updateJob(currentJob.id, { 
+        contactEmail: email,
+        emailConsent: true,
+        emailConsentTimestamp: timestamp.toISOString()
+      });
     }
     
     // Simulate sending email (in production this would call an API)
@@ -186,13 +204,14 @@ export default function PreviewPage() {
   return (
     <PageWrapper hasBottomNav={false}>
       {/* Header */}
-      <header className="bg-card border-b border-border px-3 py-3 flex items-center justify-between safe-area-inset-top sticky top-0 z-10">
+      <header className="bg-card border-b border-border px-3 py-3 flex items-center justify-between safe-area-inset-top sticky top-0 z-10" role="banner">
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(`/wizard/${jobId}`)}
-            className="p-1.5 -ml-1 rounded-lg hover:bg-muted transition-colors"
+            className="p-1.5 -ml-1 rounded-lg hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Go back to checklist"
           >
-            <ArrowLeft size={20} className="text-foreground" />
+            <ArrowLeft size={20} className="text-foreground" aria-hidden="true" />
           </button>
           <div>
             <h1 className="font-semibold text-sm text-foreground">Permit Summary</h1>
@@ -205,45 +224,97 @@ export default function PreviewPage() {
 
       {/* Content */}
       <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 pb-6">
-        {/* Email Capture & Delivery */}
-        <div className="bg-card rounded-lg border border-border p-4">
+        {/* UPL Disclaimer Banner */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-start gap-2">
+            <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-amber-800">
+              <strong>Legal Notice:</strong> This tool provides general information only and does not constitute legal advice. Always consult with a qualified professional for your specific situation.
+            </p>
+          </div>
+        </div>
+
+        {/* Email Capture & Delivery - CAN-SPAM Compliant */}
+        <div className="bg-card rounded-lg border border-border p-4" role="region" aria-label="Email checklist">
           <h3 className="font-semibold text-sm text-foreground mb-2 flex items-center gap-2">
-            <Mail size={16} className="text-primary" />
+            <Mail size={16} className="text-primary" aria-hidden="true" />
             Email Your Checklist
           </h3>
           
           {emailSent ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-green-600" />
+                <CheckCircle2 size={16} className="text-green-600" aria-hidden="true" />
                 <p className="text-sm text-green-700">
                   Your checklist has been emailed to <strong>{email}</strong>
                 </p>
               </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                You can unsubscribe at any time by contacting us.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 Send this checklist to your email for easy access on any device.
               </p>
-              <div className="flex gap-2">
+              
+              {/* Email Input */}
+              <div>
+                <label htmlFor="email-input" className="sr-only">Email address</label>
                 <input
+                  id="email-input"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError(null);
+                  }}
                   placeholder="your@email.com"
-                  className="flex-1 px-4 py-2 rounded-xl border bg-background text-sm"
+                  className={`w-full px-4 py-2 rounded-xl border bg-background text-sm ${emailError ? 'border-red-500' : ''}`}
+                  aria-describedby={emailError ? "email-error" : undefined}
+                  aria-invalid={emailError ? "true" : "false"}
+                  aria-required="true"
                 />
-                <Button
-                  onClick={handleEmail}
-                  variant="primary"
-                  size="sm"
-                  loading={sendingEmail}
-                  disabled={sendingEmail || !email}
-                >
-                  Send
-                </Button>
+                {emailError && (
+                  <p id="email-error" className="text-xs text-red-500 mt-1" role="alert">
+                    {emailError}
+                  </p>
+                )}
               </div>
+
+              {/* CAN-SPAM Consent Checkbox */}
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="email-consent"
+                  checked={emailConsent}
+                  onChange={(e) => setEmailConsent(e.target.checked)}
+                  className="mt-0.5 shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  aria-describedby="consent-description"
+                  aria-required="true"
+                />
+                <label htmlFor="email-consent" className="text-xs text-muted-foreground cursor-pointer">
+                  <span id="consent-description">
+                    I agree to receive my checklist via email. You can unsubscribe at any time. 
+                    <a href="#privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                      Privacy Policy
+                    </a>
+                  </span>
+                </label>
+              </div>
+
+              <Button
+                onClick={handleEmail}
+                variant="primary"
+                size="sm"
+                loading={sendingEmail}
+                disabled={sendingEmail || !email || !emailConsent}
+                className="w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label="Send checklist to email"
+              >
+                Send
+              </Button>
             </div>
           )}
         </div>

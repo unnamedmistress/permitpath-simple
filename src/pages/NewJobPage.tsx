@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock, Sparkles, Shield, DollarSign, Info } from 'lucide-react';
+import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock, Sparkles, Shield, DollarSign, Info, AlertTriangle } from 'lucide-react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import SmartWizard, { CreateJobState, WizardData } from '@/components/wizard/SmartWizard';
@@ -327,12 +327,24 @@ export default function NewJobPage() {
 
         {/* Trust Signal Banner */}
         <div className="mb-4 sm:mb-6 bg-green-50 border border-green-200 rounded-xl p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
-          <Shield size={18} className="text-green-600 shrink-0 mt-0.5" />
+          <Shield size={18} className="text-green-600 shrink-0 mt-0.5" aria-hidden="true" />
           <div>
             <p className="text-xs sm:text-sm font-medium text-green-800">PermitPath is completely FREE</p>
             <p className="text-xs text-green-700 mt-0.5">
               We help you navigate the permit process. You pay permit fees directly to your county when you apply.
             </p>
+          </div>
+        </div>
+
+        {/* UPL Legal Disclaimer */}
+        <div className="mb-4 sm:mb-6 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:p-4">
+          <div className="flex items-start gap-2 sm:gap-3">
+            <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+            <div>
+              <p className="text-xs text-amber-800">
+                <strong>Important:</strong> This tool provides general information only and does not constitute legal advice. Always consult with a qualified professional for your specific situation.
+              </p>
+            </div>
           </div>
         </div>
 
