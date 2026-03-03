@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock } from 'lucide-react';
+import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock, Sparkles } from 'lucide-react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import SmartWizard, { CreateJobState, WizardData } from '@/components/wizard/SmartWizard';
@@ -284,6 +284,23 @@ export default function NewJobPage() {
             <li>Type of work (roof, electrical, plumbing, etc.)</li>
             <li>Any photos or notes you already have</li>
           </ul>
+        </div>
+
+        {/* AI Assistant Option */}
+        <div className="mb-6">
+          <Link
+            to="/ai-assistant"
+            className="flex items-center gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Sparkles size={20} className="text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm">Try AI chat with photos</h3>
+              <p className="text-xs text-muted-foreground">Describe your job in plain words and upload photos. We'll figure out the permits.</p>
+            </div>
+            <ChevronRight size={18} className="text-muted-foreground" />
+          </Link>
         </div>
 
         <SmartWizard

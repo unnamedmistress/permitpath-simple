@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin } from "lucide-react";
+import { Plus, FileText, Clock, ChevronRight, Zap, Droplet, Bath, Sun, SquareStack, Fence, BatteryCharging, Car, MoreVertical, Trash2, Edit3, Home, Briefcase, DollarSign, CheckCircle2, MapPin, Sparkles } from "lucide-react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useJob } from "@/hooks/useJob";
@@ -160,7 +160,7 @@ export default function HomePage() {
         {/* New Job Card - Primary CTA */}
         <Link
           to="/new"
-          className="w-full bg-primary rounded-xl p-4 shadow-md flex items-center gap-3 mb-4 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer block"
+          className="w-full bg-primary rounded-xl p-4 shadow-md flex items-center gap-3 mb-3 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer block"
         >
           <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
             <Plus size={24} className="text-white" />
@@ -172,6 +172,23 @@ export default function HomePage() {
             </p>
           </div>
           <ChevronRight size={24} className="text-white/60" />
+        </Link>
+
+        {/* AI Assistant Option */}
+        <Link
+          to="/ai-assistant"
+          className="w-full bg-card border border-primary/20 rounded-xl p-4 shadow-sm flex items-center gap-3 mb-4 hover:shadow-md hover:bg-primary/5 transition-all active:scale-[0.98] cursor-pointer block"
+        >
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Sparkles size={24} className="text-primary" />
+          </div>
+          <div className="flex-1 text-left">
+            <h2 className="text-lg font-bold text-foreground">AI Permit Assistant</h2>
+            <p className="text-sm text-muted-foreground">
+              Chat and upload photos. We'll figure out permits.
+            </p>
+          </div>
+          <ChevronRight size={24} className="text-muted-foreground/60" />
         </Link>
 
         {/* Recent Jobs */}
