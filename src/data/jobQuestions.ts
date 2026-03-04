@@ -14,6 +14,8 @@ export interface JobQuestion {
   followUpQuestionId?: string; // ID of question to show when condition is met
   followUpCondition?: string; // Value that triggers follow-up
   warningMessage?: string; // Warning to show when this option is selected
+  // NEW: Context-aware question filtering
+  showIf?: (answers: Record<string, string | boolean | number>) => boolean;
 }
 
 export interface JobQuestionCategory {
@@ -59,6 +61,87 @@ export const bathroomQuestions: JobQuestion[] = [
   {
     id: 'flooringChange',
     question: 'Flooring being changed?',
+    type: 'toggle',
+    required: false
+  }
+];
+
+// Kitchen-Specific Questions - SEPARATE from bathroom
+export const kitchenQuestions: JobQuestion[] = [
+  {
+    id: 'installType',
+    question: 'Is this replacing existing or new installation?',
+    type: 'radio',
+    options: ['Replacing existing', 'New installation'],
+    required: true,
+    helpText: 'Replacements typically require fewer permits than new installations'
+  },
+  {
+    id: 'workScope',
+    question: 'What type of kitchen work are you doing?',
+    type: 'multiselect',
+    options: ['Cabinets only', 'Countertops', 'Appliances', 'Plumbing fixtures', 'Electrical', 'Full remodel'],
+    required: true,
+    helpText: 'Select all that apply to your project'
+  },
+  {
+    id: 'movingPlumbing',
+    question: 'Are you moving plumbing locations (sink, dishwasher, ice maker)?',
+    type: 'toggle',
+    required: true,
+    helpText: 'Moving plumbing requires additional permits and inspections'
+  },
+  {
+    id: 'plumbingDistance',
+    question: 'How many feet are you moving plumbing?',
+    type: 'number',
+    placeholder: 'Enter distance in feet...',
+    required: false,
+    followUpQuestionId: 'movingPlumbing',
+    followUpCondition: 'true'
+  },
+  {
+    id: 'electricalWork',
+    question: 'What electrical work is needed?',
+    type: 'multiselect',
+    options: ['None', 'Outlets/GFCI', 'Lighting', 'Appliance circuits', 'Range/cooktop', 'Panel upgrade'],
+    required: false,
+    helpText: 'Electrical work requires separate permits'
+  },
+  {
+    id: 'applianceChanges',
+    question: 'Installing or changing appliances?',
+    type: 'toggle',
+    required: false,
+    helpText: 'New gas lines or 240V circuits may require additional permits'
+  },
+  {
+    id: 'applianceTypes',
+    question: 'Which appliances?',
+    type: 'multiselect',
+    options: ['Gas range/cooktop', 'Electric range', 'Dishwasher', 'Refrigerator with ice maker', 'Built-in microwave', 'Garbage disposal'],
+    required: false,
+    followUpQuestionId: 'applianceChanges',
+    followUpCondition: 'true'
+  },
+  {
+    id: 'cabinetSpecs',
+    question: 'Are cabinets custom-built or pre-fabricated?',
+    type: 'radio',
+    options: ['Pre-fabricated (box store)', 'Custom built on-site', 'Semi-custom'],
+    required: false,
+    helpText: 'Custom cabinets may require additional inspections'
+  },
+  {
+    id: 'countertopMaterial',
+    question: 'Countertop material?',
+    type: 'radio',
+    options: ['Granite/Stone', 'Quartz', 'Laminate', 'Butcher block', 'Concrete', 'Not changing countertops'],
+    required: false
+  },
+  {
+    id: 'flooringChange',
+    question: 'Changing flooring?',
     type: 'toggle',
     required: false
   }
@@ -317,7 +400,7 @@ export const fenceQuestions: JobQuestion[] = [
 // Main export mapping job types to their questions
 export const jobQuestionsMap: Record<string, JobQuestion[]> = {
   'SMALL_BATH_REMODEL': bathroomQuestions,
-  'KITCHEN_REMODEL': bathroomQuestions, // Kitchen has similar plumbing/electrical concerns
+  'KITCHEN_REMODEL': kitchenQuestions, // NOW USING KITCHEN-SPECIFIC QUESTIONS
   'RE_ROOFING': roofQuestions,
   'ROOF_REPAIR': roofQuestions,
   'WATER_HEATER': waterHeaterQuestions,
@@ -340,6 +423,89 @@ export function getQuestionsForJobType(jobType: string): JobQuestion[] {
 // Helper function to check if a job type has specific questions
 export function hasJobSpecificQuestions(jobType: string): boolean {
   return jobType in jobQuestionsMap;
+}
+
+// NEW: Get requirements based on job type and answers
+export function getJobSpecificRequirements(
+  jobType: string,
+  answers: Record<string, string | boolean | number>
+): Array<{ category: string; title: string; description: string; isRequired: boolean }> {
+  const requirements: Array<{ category: string; title: string; description: string; isRequired: boolean }> = [];
+  
+  // Base requirements for all jobs
+  requirements.push(
+    { category: 'document', title: 'Permit Application', description: 'Completed permit application form', isRequired: true },
+    { category: 'license', title: 'Contractor License', description: 'Valid Florida contractor license', isRequired: true }
+  );
+  
+  // Kitchen-specific requirements
+  if (jobType === 'KITCHEN_REMODEL') {
+    const workScope = answers.workScope as string[] || [];
+    const electricalWork = answers.electricalWork as string[] || [];
+    const applianceTypes = answers.applianceTypes as string[] || [];
+    
+    if (workScope.includes('Cabinets only') && workScope.length === 1) {
+      // Cabinets-only is often cosmetic
+      requirements.push({ category: 'document', title: 'Cabinet Specifications', description: 'Manufacturer specs for pre-fab cabinets OR construction details for custom', isRequired: false });
+    } else {
+      // Full or partial kitchen remodel
+      requirements.push({ category: 'document', title: 'Kitchen Floor Plan', description: 'Scale drawing showing cabinet layout, appliances, and fixtures', isRequired: true });
+      
+      if (workScope.includes('Countertops')) {
+        requirements.push({ category: 'document', title: 'Countertop Specifications', description: 'Material specifications and load calculations if heavy materials', isRequired: true });
+      }
+      
+      if (answers.movingPlumbing === true) {
+        requirements.push({ category: 'drawing', title: 'Plumbing Plan', description: 'Plumbing riser diagram showing new locations', isRequired: true });
+        requirements.push({ category: 'inspection', title: 'Rough Plumbing Inspection', description: 'Before closing walls', isRequired: true });
+      }
+    }
+    
+    // Electrical requirements
+    if (electricalWork && electricalWork.length > 0 && !electricalWork.includes('None')) {
+      requirements.push({ category: 'document', title: 'Electrical Plan', description: 'Circuit diagram for new outlets, lighting, and appliances', isRequired: true });
+      requirements.push({ category: 'inspection', title: 'Rough Electrical Inspection', description: 'Before closing walls', isRequired: true });
+      
+      if (electricalWork.includes('Panel upgrade')) {
+        requirements.push({ category: 'document', title: 'Load Calculation', description: 'Electrical load calculation showing adequate capacity', isRequired: true });
+      }
+    }
+    
+    // Appliance-specific
+    if (applianceTypes?.includes('Gas range/cooktop')) {
+      requirements.push({ category: 'document', title: 'Gas Line Permit', description: 'If adding or extending gas lines', isRequired: true });
+      requirements.push({ category: 'inspection', title: 'Gas Line Inspection', description: 'Pressure test and inspection', isRequired: true });
+    }
+    
+    if (applianceTypes?.includes('Refrigerator with ice maker')) {
+      requirements.push({ category: 'document', title: 'Ice Maker Line Details', description: 'Plumbing connection for refrigerator ice maker', isRequired: false });
+    }
+    
+    // Final inspection always required for kitchen
+    requirements.push({ category: 'inspection', title: 'Final Inspection', description: 'Complete kitchen inspection after all work', isRequired: true });
+  }
+  
+  // Bathroom-specific requirements  
+  if (jobType === 'SMALL_BATH_REMODEL') {
+    if (answers.movingPlumbing === true) {
+      requirements.push({ category: 'drawing', title: 'Plumbing Plan', description: 'Plumbing riser diagram showing fixture locations', isRequired: true });
+      requirements.push({ category: 'inspection', title: 'Rough Plumbing Inspection', description: 'Before closing walls', isRequired: true });
+    }
+    
+    if (answers.electricalWork === true) {
+      requirements.push({ category: 'document', title: 'Electrical Plan', description: 'GFCI outlet and lighting locations', isRequired: true });
+      requirements.push({ category: 'inspection', title: 'Electrical Inspection', description: 'GFCI and lighting verification', isRequired: true });
+    }
+    
+    requirements.push({ category: 'inspection', title: 'Final Inspection', description: 'Complete bathroom inspection', isRequired: true });
+  }
+  
+  // Insurance for larger jobs
+  if (jobType === 'KITCHEN_REMODEL' || jobType === 'ROOM_ADDITION') {
+    requirements.push({ category: 'insurance', title: 'Insurance Certificate', description: 'General liability coverage', isRequired: true });
+  }
+  
+  return requirements;
 }
 
 // Validation helpers
@@ -465,6 +631,40 @@ export function getJobCategoryLabel(jobType: string): string {
   };
   
   return labelMap[jobType] || 'Project Details';
+}
+
+// NEW: Generate dynamic description based on answers
+export function generateJobDescription(
+  jobType: string,
+  answers: Record<string, string | boolean | number>
+): string {
+  if (jobType === 'KITCHEN_REMODEL') {
+    const workScope = answers.workScope as string[] || [];
+    
+    if (workScope.length === 0) {
+      return 'Kitchen remodel project';
+    }
+    
+    if (workScope.includes('Cabinets only') && workScope.length === 1) {
+      return 'Updating kitchen cabinets only - no plumbing or electrical changes';
+    }
+    
+    if (workScope.includes('Full remodel')) {
+      return 'Complete kitchen remodel including cabinets, countertops, and appliances';
+    }
+    
+    const scopeList = workScope.join(', ');
+    return `Kitchen project involving: ${scopeList}`;
+  }
+  
+  if (jobType === 'SMALL_BATH_REMODEL') {
+    const parts: string[] = ['Bathroom renovation'];
+    if (answers.movingPlumbing === true) parts.push('with plumbing relocation');
+    if (answers.electricalWork === true) parts.push('including electrical work');
+    return parts.join(' ');
+  }
+  
+  return '';
 }
 
 export default jobQuestionsMap;

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock, Sparkles, Shield, DollarSign, Info, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Video, FileText, Phone, ChevronRight, Home, MapPin, Clock, Sparkles, Shield, DollarSign, Info, AlertTriangle, WifiOff } from 'lucide-react';
 import PageWrapper from '@/components/layout/PageWrapper';
 import Button from '@/components/shared/Button';
 import SmartWizard, { CreateJobState, WizardData } from '@/components/wizard/SmartWizard';
@@ -205,6 +205,26 @@ function NewJobSkeleton() {
   );
 }
 
+// Network status hook
+function useNetworkStatus() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
+  return isOnline;
+}
+
 export default function NewJobPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -216,6 +236,7 @@ export default function NewJobPage() {
   const [createdJob, setCreatedJob] = useState<Job | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const timeoutRef = useRef<number | null>(null);
+  const isOnline = useNetworkStatus();
   const prefill = location.state?.prefill as Partial<WizardData> | undefined;
 
   useEffect(() => {
@@ -386,12 +407,32 @@ export default function NewJobPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-4 sm:mb-8"
         >
+          {/* FIXED: Accurate time estimate */}
           <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs sm:text-sm font-medium text-primary mb-3 sm:mb-4">
-            Takes about 3-5 minutes
+            Takes about 8-12 minutes
           </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Start a Permit Job</h1>
           <p className="text-sm text-muted-foreground">Tell us about your job. We will make your permit checklist.</p>
         </motion.div>
+
+        {/* FIXED: Offline warning shown BEFORE form */}
+        {!isOnline && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 sm:mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4"
+          >
+            <div className="flex items-start gap-3">
+              <WifiOff className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-amber-800">You're currently offline</p>
+                <p className="text-sm text-amber-700 mt-1">
+                  You can still fill out this form. Your job will be saved locally on this device and synced when you reconnect.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

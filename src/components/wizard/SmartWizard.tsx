@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   ArrowRight,
   ArrowLeft,
@@ -32,7 +32,8 @@ import {
   validateFLLicense,
   getClarificationPrompts,
   shouldShowQuestion,
-  JobQuestion
+  JobQuestion,
+  generateJobDescription
 } from '@/data/jobQuestions';
 
 export type CreateJobState = 'idle' | 'creating' | 'created' | 'failed';
@@ -75,14 +76,15 @@ interface JobTypeCategory {
   options: JobTypeOption[];
 }
 
+// CONSOLIDATED JOB TYPES - Removed ambiguous duplicates
 const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
   {
     key: 'roofing',
     label: 'Roofing',
     icon: House,
     options: [
-      { value: 'RE_ROOFING', label: 'Roof Replacement', description: 'Full roof replacement', plainEnglishDescription: 'Taking off old roof and putting on new one', timeline: '2-3 weeks', costEstimate: '$8,000 - $15,000', keywords: ['reroof', 'roofing'] },
-      { value: 'ROOF_REPAIR', label: 'Roof Repair', description: 'Patch or repair existing roof', plainEnglishDescription: 'Fixing leaks or damaged shingles', timeline: '1-2 days', costEstimate: '$300 - $1,500', keywords: ['shingle', 'leak', 'repair'] }
+      { value: 'RE_ROOFING', label: 'Roof Replacement', description: 'Full roof replacement - new shingles/tiles on entire roof', plainEnglishDescription: 'Taking off old roof and installing new shingles or tiles', timeline: '2-3 weeks', costEstimate: '$8,000 - $15,000', keywords: ['reroof', 'roofing', 'shingles', 'tiles', 'new roof'] },
+      { value: 'ROOF_REPAIR', label: 'Roof Repair', description: 'Patch or repair specific areas - fixes leaks and damage', plainEnglishDescription: 'Fixing leaks, damaged shingles, or small roof areas', timeline: '1-2 days', costEstimate: '$300 - $1,500', keywords: ['shingle', 'leak', 'repair', 'patch', 'fix'] }
     ]
   },
   {
@@ -98,9 +100,9 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Plumbing',
     icon: Droplets,
     options: [
-      { value: 'WATER_HEATER', label: 'Water Heater', description: 'Install or replace water heater', plainEnglishDescription: 'Putting in new hot water tank', timeline: '3-6 hours', costEstimate: '$800 - $2,500', keywords: ['tankless', 'heater'] },
+      { value: 'WATER_HEATER', label: 'Water Heater', description: 'Install or replace water heater (gas or electric)', plainEnglishDescription: 'Installing new hot water tank or tankless heater', timeline: '3-6 hours', costEstimate: '$800 - $2,500', keywords: ['tankless', 'heater', 'hot water'] },
       { value: 'PLUMBING_MAIN_LINE', label: 'Plumbing Main Line', description: 'Replace main water or sewer line', plainEnglishDescription: 'Fixing the main pipe to your house', timeline: '1-3 days', costEstimate: '$2,000 - $5,000', keywords: ['main line', 'sewer'] },
-      { value: 'SMALL_BATH_REMODEL', label: 'Bathroom Remodel', description: 'Bathroom renovation work', plainEnglishDescription: 'Updating bathroom fixtures and layout', timeline: '1-2 weeks', costEstimate: '$3,000 - $8,000', keywords: ['bath', 'bathroom'] }
+      { value: 'SMALL_BATH_REMODEL', label: 'Bathroom Remodel', description: 'Update bathroom fixtures, vanity, toilet, shower', plainEnglishDescription: 'Updating bathroom fixtures, vanity, or shower', timeline: '1-2 weeks', costEstimate: '$3,000 - $8,000', keywords: ['bath', 'bathroom', 'vanity', 'shower', 'toilet'] }
     ]
   },
   {
@@ -108,10 +110,10 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Electrical',
     icon: Zap,
     options: [
-      { value: 'ELECTRICAL_PANEL', label: 'Electrical Panel', description: 'Upgrade or replace panel', plainEnglishDescription: 'Upgrading your home\'s electrical box', timeline: '1 day', costEstimate: '$1,200 - $3,000', keywords: ['service', 'breaker'] },
-      { value: 'ELECTRICAL_REWIRING', label: 'Electrical Rewiring', description: 'Rewire circuits', plainEnglishDescription: 'Replacing old electrical wires', timeline: '3-7 days', costEstimate: '$3,000 - $8,000', keywords: ['rewire', 'wiring'] },
-      { value: 'EV_CHARGER', label: 'EV Charger', description: 'Install EV charging station', plainEnglishDescription: 'Adding plug for electric car', timeline: '4-8 hours', costEstimate: '$500 - $2,000', keywords: ['tesla', 'charger', '240v'] },
-      { value: 'GENERATOR_INSTALL', label: 'Generator', description: 'Install standby generator', plainEnglishDescription: 'Installing backup power for outages', timeline: '1-2 days', costEstimate: '$3,000 - $8,000', keywords: ['backup power', 'transfer switch'] }
+      { value: 'ELECTRICAL_PANEL', label: 'Electrical Panel', description: 'Upgrade or replace electrical panel/box', plainEnglishDescription: 'Upgrading your home\'s electrical box for more power', timeline: '1 day', costEstimate: '$1,200 - $3,000', keywords: ['service', 'breaker', 'panel', 'electrical box'] },
+      { value: 'ELECTRICAL_REWIRING', label: 'Electrical Rewiring', description: 'Rewire circuits or add new wiring', plainEnglishDescription: 'Replacing old electrical wires in your home', timeline: '3-7 days', costEstimate: '$3,000 - $8,000', keywords: ['rewire', 'wiring', 'circuits'] },
+      { value: 'EV_CHARGER', label: 'EV Charger', description: 'Install electric vehicle charging station', plainEnglishDescription: 'Adding 240V plug for electric car charging', timeline: '4-8 hours', costEstimate: '$500 - $2,000', keywords: ['tesla', 'charger', '240v', 'electric car'] },
+      { value: 'GENERATOR_INSTALL', label: 'Generator', description: 'Install standby backup generator', plainEnglishDescription: 'Installing backup power for outages', timeline: '1-2 days', costEstimate: '$3,000 - $8,000', keywords: ['backup power', 'transfer switch'] }
     ]
   },
   {
@@ -119,9 +121,9 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Exterior',
     icon: Fence,
     options: [
-      { value: 'WINDOW_DOOR_REPLACEMENT', label: 'Window/Door Replacement', description: 'Replace windows or doors', plainEnglishDescription: 'Installing new windows or doors', timeline: '1-3 days', costEstimate: '$300 - $1,000 per window', keywords: ['impact', 'hurricane'] },
+      { value: 'WINDOW_DOOR_REPLACEMENT', label: 'Window/Door Replacement', description: 'Replace windows or exterior doors', plainEnglishDescription: 'Installing new windows or exterior doors', timeline: '1-3 days', costEstimate: '$300 - $1,000 per window', keywords: ['impact', 'hurricane', 'windows', 'doors'] },
       { value: 'SIDING_EXTERIOR', label: 'Siding/Exterior', description: 'Replace siding or exterior cladding', plainEnglishDescription: 'New outside covering for your house', timeline: '1-2 weeks', costEstimate: '$5,000 - $15,000', keywords: ['cladding', 'facade'] },
-      { value: 'DECK_INSTALLATION', label: 'Deck Installation', description: 'Build a new deck', plainEnglishDescription: 'Building outdoor deck or patio', timeline: '3-7 days', costEstimate: '$4,000 - $12,000', keywords: ['deck', 'outdoor'] },
+      { value: 'DECK_INSTALLATION', label: 'Deck Installation', description: 'Build a new deck or replace existing', plainEnglishDescription: 'Building outdoor deck or patio structure', timeline: '3-7 days', costEstimate: '$4,000 - $12,000', keywords: ['deck', 'outdoor', 'patio'] },
       { value: 'FENCE_INSTALLATION', label: 'Fence Installation', description: 'Install perimeter fencing', plainEnglishDescription: 'Putting up fence around property', timeline: '1-3 days', costEstimate: '$2,000 - $6,000', keywords: ['fence', 'gate'] }
     ]
   },
@@ -130,8 +132,8 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Remodeling',
     icon: Paintbrush,
     options: [
-      { value: 'KITCHEN_REMODEL', label: 'Kitchen Remodel', description: 'Renovate kitchen', plainEnglishDescription: 'Updating kitchen cabinets and counters', timeline: '2-6 weeks', costEstimate: '$10,000 - $30,000', keywords: ['kitchen', 'remodel'] },
-      { value: 'ROOM_ADDITION', label: 'Room Addition', description: 'Add square footage', plainEnglishDescription: 'Adding new room to your house', timeline: '4-8 weeks', costEstimate: '$20,000 - $60,000', keywords: ['addition', 'expansion'] }
+      { value: 'KITCHEN_REMODEL', label: 'Kitchen Remodel', description: 'Update cabinets, countertops, appliances, or full kitchen', plainEnglishDescription: 'Updating kitchen cabinets, counters, or appliances', timeline: '2-6 weeks', costEstimate: '$10,000 - $30,000', keywords: ['kitchen', 'remodel', 'cabinets', 'countertops'] },
+      { value: 'ROOM_ADDITION', label: 'Room Addition', description: 'Add new room or expand square footage', plainEnglishDescription: 'Adding new room to your house', timeline: '4-8 weeks', costEstimate: '$20,000 - $60,000', keywords: ['addition', 'expansion'] }
     ]
   },
   {
@@ -139,7 +141,7 @@ const JOB_TYPE_CATEGORIES: JobTypeCategory[] = [
     label: 'Safety',
     icon: Shield,
     options: [
-      { value: 'POOL_BARRIER', label: 'Pool Barrier', description: 'Install pool safety fence or barrier', plainEnglishDescription: 'Safety fence around swimming pool', timeline: '1-2 days', costEstimate: '$1,500 - $4,000', keywords: ['pool', 'barrier', 'safety'] }
+      { value: 'POOL_BARRIER', label: 'Pool Barrier', description: 'Install pool safety fence or barrier', plainEnglishDescription: 'Safety fence around swimming pool', timeline: '1-2 days', costEstimate: '$1,500 - $4,000', keywords: ['pool', 'barrier', 'safety', 'fence'] }
     ]
   },
   {
@@ -167,12 +169,13 @@ const CATEGORY_STYLES: Record<string, string> = {
   Structural: 'bg-steel/10 text-steel border-steel/20'
 };
 
-const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
-  { value: 'PINELLAS_COUNTY', label: 'Pinellas County - areas outside cities' },
-  { value: 'ST_PETERSBURG', label: 'City of St. Petersburg' },
-  { value: 'CLEARWATER', label: 'City of Clearwater' },
-  { value: 'LARGO', label: 'City of Largo' },
-  { value: 'PALM_HARBOR', label: 'Palm Harbor area' }
+// CLARIFIED JURISDICTIONS - Better descriptions
+const JURISDICTIONS: { value: Jurisdiction; label: string; description: string }[] = [
+  { value: 'PINELLAS_COUNTY', label: 'Unincorporated Pinellas County', description: 'Areas outside city limits (subdivisions, rural areas)' },
+  { value: 'ST_PETERSBURG', label: 'City of St. Petersburg', description: 'Within St. Petersburg city limits' },
+  { value: 'CLEARWATER', label: 'City of Clearwater', description: 'Within Clearwater city limits' },
+  { value: 'LARGO', label: 'City of Largo', description: 'Within Largo city limits' },
+  { value: 'PALM_HARBOR', label: 'Palm Harbor / East Lake area', description: 'Unincorporated Pinellas County near Palm Harbor' }
 ];
 
 // Storage keys for smart defaults
@@ -339,22 +342,61 @@ export default function SmartWizard({
     address: data.address
   });
 
+  // NEW: Filter questions based on job context
+  const getFilteredQuestions = () => {
+    const answers = data.jobSpecificAnswers || {};
+    
+    return jobSpecificQuestions.filter(q => {
+      // Skip electrical question if work scope doesn't include electrical
+      if (q.id === 'electricalWork' && data.jobType === 'KITCHEN_REMODEL') {
+        const workScope = answers.workScope as string[] || [];
+        // Only show electrical if not doing cabinets-only
+        if (workScope.includes('Cabinets only') && workScope.length === 1) {
+          return false;
+        }
+      }
+      
+      // Skip appliance questions if no appliances selected
+      if (q.id === 'applianceTypes' && data.jobType === 'KITCHEN_REMODEL') {
+        return answers.applianceChanges === true;
+      }
+      
+      return shouldShowQuestion(q, answers);
+    });
+  };
+
   const renderJobQuestion = (question: JobQuestion) => {
     const answers = data.jobSpecificAnswers || {};
     
-    if (!shouldShowQuestion(question, answers)) {
+    // Check if question should be shown based on context
+    if (!getFilteredQuestions().find(q => q.id === question.id)) {
       return null;
     }
 
     const value = answers[question.id];
 
-    const updateAnswer = (val: string | boolean | number) => {
+    const updateAnswer = (val: string | boolean | number | string[]) => {
+      const newAnswers = {
+        ...answers,
+        [question.id]: val
+      };
+      
+      // Auto-update description when work scope changes
+      if (question.id === 'workScope' && data.jobType) {
+        const newDescription = generateJobDescription(data.jobType, newAnswers);
+        if (newDescription) {
+          setData({
+            ...data,
+            jobSpecificAnswers: newAnswers,
+            description: newDescription
+          });
+          return;
+        }
+      }
+      
       setData({
         ...data,
-        jobSpecificAnswers: {
-          ...answers,
-          [question.id]: val
-        }
+        jobSpecificAnswers: newAnswers
       });
     };
 
@@ -362,6 +404,7 @@ export default function SmartWizard({
       <div key={question.id} className="space-y-2">
         <div className="flex items-center gap-2">
           <label className="block text-sm font-medium text-charcoal">{question.question}</label>
+          {question.required && <span className="text-crimson">*</span>}
           {question.helpText && (
             <HoverCard>
               <HoverCardTrigger asChild>
@@ -391,6 +434,33 @@ export default function SmartWizard({
                 {option}
               </button>
             ))}
+          </div>
+        )}
+
+        {question.type === 'multiselect' && question.options && (
+          <div className="flex flex-wrap gap-2">
+            {question.options.map((option) => {
+              const values = (value as string[]) || [];
+              const isSelected = values.includes(option);
+              return (
+                <button
+                  key={option}
+                  onClick={() => {
+                    const newValues = isSelected
+                      ? values.filter(v => v !== option)
+                      : [...values, option];
+                    updateAnswer(newValues);
+                  }}
+                  className={`px-3 py-2 rounded-lg text-sm border transition-all ${
+                    isSelected
+                      ? 'bg-blueprint text-white border-blueprint'
+                      : 'bg-white text-charcoal border-lightGray hover:border-blueprint/50'
+                  }`}
+                >
+                  {isSelected ? '✓ ' : ''}{option}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -455,6 +525,58 @@ export default function SmartWizard({
         )}
       </div>
     );
+  };
+
+  // Get examples based on selected job type
+  const getDescriptionExamples = () => {
+    const jobType = data.jobType;
+    
+    if (jobType?.includes('KITCHEN')) {
+      return [
+        'Replacing cabinets and countertops. Keeping existing appliances and plumbing locations.',
+        'Full kitchen remodel: new cabinets, quartz counters, gas range, and island.',
+        'Updating to shaker cabinets and granite counters. No plumbing changes.'
+      ];
+    }
+    
+    if (jobType?.includes('BATH')) {
+      return [
+        'Replacing vanity, toilet, and flooring. Keeping shower in same location.',
+        'Full bathroom gut: moving plumbing for new layout, new tub, tile.',
+        'Updating vanity and mirror only. Painting existing cabinets.'
+      ];
+    }
+    
+    if (jobType?.includes('ROOF')) {
+      return [
+        'Old roof is leaking. Need new asphalt shingles. House is 2 stories, about 3000 sq ft',
+        'Full roof replacement with architectural shingles. Wind mitigation upgrade.',
+        'Repairing damaged shingles from storm. About 200 sq ft area.'
+      ];
+    }
+    
+    if (jobType?.includes('ELECTRICAL')) {
+      return [
+        'Electrical panel too old. Need 200 amp upgrade for AC unit',
+        'Adding EV charger circuit in garage. Panel has space.',
+        'Rewiring kitchen circuits for new appliances and outlets.'
+      ];
+    }
+    
+    if (jobType?.includes('DECK')) {
+      return [
+        'Building new 12x16 deck attached to house. Wood composite decking.',
+        'Replacing existing deck boards. Keeping existing structure.',
+        'Adding covered deck with roof tie-in to existing house.'
+      ];
+    }
+    
+    // Default examples
+    return [
+      'Old roof is leaking. Need new asphalt shingles. House is 2 stories, about 3000 sq ft',
+      'Gas water heater failing. 40 gallons. Upstairs bathroom',
+      'Electrical panel too old. Need 200 amp upgrade for AC unit'
+    ];
   };
 
   return (
@@ -602,7 +724,6 @@ export default function SmartWizard({
               <Command>
                 <CommandInput placeholder="Search job type or keyword..." className="h-12 text-base" />
                 <CommandList className="max-h-[60vh] overflow-y-auto">
-                  <CommandEmpty>No job type found.</CommandEmpty>
                   {JOB_TYPE_CATEGORIES.map((category) => {
                     const CategoryIcon = category.icon;
                     return (
@@ -632,6 +753,14 @@ export default function SmartWizard({
                       </CommandGroup>
                     );
                   })}
+                  {/* FIXED: Only show empty state when no categories match */}
+                  <CommandEmpty className="py-6 text-center text-sm text-steel">
+                    <div className="flex flex-col items-center gap-2">
+                      <SearchX className="h-8 w-8 text-steel/50" />
+                      <p>No job type found matching your search.</p>
+                      <p className="text-xs text-steel/70">Try different keywords like "roof", "electrical", or "kitchen"</p>
+                    </div>
+                  </CommandEmpty>
                 </CommandList>
               </Command>
             </PopoverContent>
@@ -650,18 +779,18 @@ export default function SmartWizard({
                     <Info size={16} className="text-steel" aria-hidden="true" />
                   </button>
                 </HoverCardTrigger>
-                <HoverCardContent className="w-64 p-3">
+                <HoverCardContent className="w-72 p-3">
                   <p className="text-sm text-charcoal">
-                    <strong>Not within city limits?</strong> If you pay city taxes, pick your city. Otherwise, select "Pinellas County" for areas outside cities.
+                    <strong>Not sure?</strong> Check your property tax bill or enter your address at <a href="https://www.pinellas.gov/topic/what-jurisdiction/" target="_blank" rel="noopener noreferrer" className="text-blueprint underline">pinellas.gov/what-jurisdiction</a>
                   </p>
                 </HoverCardContent>
               </HoverCard>
             </div>
-            <p className="text-steel text-sm sm:text-base">This tells us which city's rules to follow</p>
+            <p className="text-steel text-sm sm:text-base">This tells us which building department handles your permits</p>
           </div>
           
           <div className="rounded-lg bg-blueprint/5 border border-blueprint/20 p-3 text-sm text-blueprint">
-            <p>Pick the area where the work is happening. Different cities have different permit rules.</p>
+            <p><strong>How to choose:</strong> If you pay city taxes to St. Pete, Clearwater, or Largo, pick your city. Otherwise, select "Unincorporated Pinellas County" for areas outside cities.</p>
           </div>
 
           {/* Jurisdiction Disclaimer */}
@@ -690,9 +819,7 @@ export default function SmartWizard({
                 }`}
               >
                 <div className="font-medium text-sm sm:text-base text-charcoal">{j.label}</div>
-                {j.value === 'PINELLAS_COUNTY' && (
-                  <div className="text-xs text-steel mt-1">Areas outside city limits</div>
-                )}
+                <div className="text-xs text-steel mt-1">{j.description}</div>
               </button>
             ))}
           </div>
@@ -703,12 +830,14 @@ export default function SmartWizard({
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold text-charcoal">Tell us about the job</h2>
-            <p className="text-steel">The more we know, the better we can help</p>
+            <p className="text-steel">The more we know, the better we can help <span className="text-steel/60">— all fields are optional except address</span></p>
           </div>
 
           {/* Property Address */}
           <div>
-            <label className="block text-sm font-medium text-charcoal mb-2">Property Address *</label>
+            <label className="block text-sm font-medium text-charcoal mb-2">
+              Property Address <span className="text-crimson">*</span>
+            </label>
             <input
               type="text"
               value={data.address}
@@ -743,7 +872,7 @@ export default function SmartWizard({
           <div className="p-5 bg-sky rounded-xl border border-lightGray">
             <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-blueprint text-white text-xs flex items-center justify-center">1</span>
-              Contractor Information
+              Contractor Information <span className="text-steel text-sm font-normal">— optional</span>
             </h3>
             
             <div className="space-y-4">
@@ -854,7 +983,7 @@ export default function SmartWizard({
           <div className="p-5 bg-sky rounded-xl border border-lightGray">
             <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-blueprint text-white text-xs flex items-center justify-center">2</span>
-              Budget & Timeline
+              Budget & Timeline <span className="text-steel text-sm font-normal">— optional</span>
             </h3>
             
             <div className="space-y-4">
@@ -933,7 +1062,7 @@ export default function SmartWizard({
           <div className="p-5 bg-forest/5 rounded-xl border border-forest/20">
             <h3 className="font-semibold text-forest mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-forest text-white text-xs flex items-center justify-center">3</span>
-              Building Details
+              Building Details <span className="text-forest/70 text-sm font-normal">— optional</span>
             </h3>
             
             <div className="space-y-4">
@@ -1031,7 +1160,7 @@ export default function SmartWizard({
           <div className="p-5 bg-safetyOrange/5 rounded-xl border border-safetyOrange/20">
             <h3 className="font-semibold text-safetyOrange mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-safetyOrange text-white text-xs flex items-center justify-center">4</span>
-              Permit History
+              Permit History <span className="text-safetyOrange/70 text-sm font-normal">— optional</span>
             </h3>
             
             <div className="space-y-4">
@@ -1084,7 +1213,7 @@ export default function SmartWizard({
           {/* Project Description */}
           <div>
             <label className="block text-sm font-medium text-charcoal mb-2">
-              Project Description
+              Project Description <span className="text-steel/60 font-normal">— optional but helpful</span>
             </label>
             <textarea
               value={data.description}
@@ -1096,18 +1225,12 @@ export default function SmartWizard({
             <div className="mt-3 rounded-lg bg-sky p-3 text-sm">
               <p className="font-medium text-steel mb-2">Here's what good descriptions look like:</p>
               <ul className="space-y-1.5 text-steel">
-                <li className="flex items-start gap-2">
-                  <span className="text-forest">✓</span>
-                  <span>"Old roof is leaking. Need new asphalt shingles. House is 2 stories, about 3000 sq ft"</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-forest">✓</span>
-                  <span>"Gas water heater failing. 40 gallons. Upstairs bathroom"</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-forest">✓</span>
-                  <span>"Electrical panel too old. Need 200 amp upgrade for AC unit"</span>
-                </li>
+                {getDescriptionExamples().map((example, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-forest">✓</span>
+                    <span>"{example}"</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -1144,7 +1267,8 @@ export default function SmartWizard({
                     <div className="text-sm text-steel">{req.description}</div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs px-2 py-0.5 rounded bg-sky capitalize text-steel">{req.category}</span>
-                      {req.isRequired && <span className="text-xs text-crimson">Required</span>}
+                      {req.isRequired && <span className="text-xs text-crimson font-medium">Required</span>}
+                      {!req.isRequired && <span className="text-xs text-steel">Optional</span>}
                       <span className="text-xs text-steel">{Math.round(req.confidence * 100)}% confidence</span>
                     </div>
                   </div>
@@ -1275,7 +1399,12 @@ export default function SmartWizard({
                   {Object.entries(data.jobSpecificAnswers).map(([key, value]) => (
                     <div key={key}>
                       <span className="text-steel capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>{' '}
-                      {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+                      {Array.isArray(value) 
+                        ? value.join(', ') 
+                        : typeof value === 'boolean' 
+                          ? (value ? 'Yes' : 'No') 
+                          : String(value)
+                      }
                     </div>
                   ))}
                 </div>
@@ -1333,6 +1462,7 @@ export default function SmartWizard({
         </div>
       )}
 
+      {/* CONSISTENT BUTTON STYLING - All buttons use blueprint color */}
       <div className="flex justify-between mt-8">
         <Button 
           variant="outline" 
@@ -1365,7 +1495,7 @@ export default function SmartWizard({
         ) : (
           <Button 
             onClick={handleComplete} 
-            className="bg-safetyOrange hover:bg-orange-600"
+            className="bg-blueprint hover:bg-blueprint-700"
             disabled={createState === 'created'}
           >
             {createState === 'creating' ? (
@@ -1390,3 +1520,6 @@ export default function SmartWizard({
     </div>
   );
 }
+
+// Import SearchX for empty state
+import { SearchX } from 'lucide-react';
