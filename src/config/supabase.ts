@@ -2,7 +2,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '@/types/database';
 
 // LOCALSTORAGE-ONLY MODE: Set to true to disable Supabase and use localStorage only
-export const isLocalStorageMode = true;
+// Set to false for production with real Supabase
+export const isLocalStorageMode = false;
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
