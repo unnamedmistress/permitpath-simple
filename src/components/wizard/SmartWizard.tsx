@@ -20,7 +20,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { JobType, Jurisdiction, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory } from '@/types/permit';
+import { JobType, Jurisdiction, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory, WorkerType } from '@/types/permit';
 import { getRequirementsForJob } from '@/services/requirements';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -52,6 +52,7 @@ export interface WizardData {
   address: string;
   description: string;
   requirements: Requirement[];
+  workerType?: WorkerType;
   contractorInfo?: ContractorInfo;
   budgetTimeline?: BudgetTimeline;
   buildingDetails?: BuildingDetails;
@@ -229,6 +230,7 @@ export default function SmartWizard({
     jurisdiction: defaultJurisdiction,
     address: initialData?.address || '',
     description: initialData?.description || '',
+    workerType: initialData?.workerType || 'homeowner-diy',
     contractorInfo: initialData?.contractorInfo || {},
     budgetTimeline: initialData?.budgetTimeline || {},
     buildingDetails: initialData?.buildingDetails || {},
@@ -308,6 +310,7 @@ export default function SmartWizard({
       address: data.address,
       description: data.description || '',
       requirements,
+      workerType: data.workerType || 'homeowner-diy',
       contractorInfo: data.contractorInfo,
       budgetTimeline: data.budgetTimeline,
       buildingDetails: data.buildingDetails,
@@ -830,7 +833,44 @@ export default function SmartWizard({
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold text-charcoal">Tell us about the job</h2>
-            <p className="text-steel">The more we know, the better we can help <span className="text-steel/60">— all fields are optional except address</span></p>
+            <p className="text-steel">
+              {data.workerType === 'homeowner-diy' 
+                ? 'Just the basics — about 9 fields' 
+                : 'Complete project details'}
+              <span className="text-steel/60"> — all fields are optional except address</span>
+            </p>
+          </div>
+
+          {/* Worker Type Selection - FIRST QUESTION */}
+          <div className="p-5 bg-blueprint/5 rounded-xl border border-blueprint/20">
+            <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-blueprint text-white text-xs flex items-center justify-center">1</span>
+              Who's doing this work? <span className="text-crimson">*</span>
+            </h3>
+            <p className="text-sm text-steel mb-4">
+              This helps us show you only the fields that matter for your situation.
+            </p>
+            
+            <div className="space-y-2">
+              {[
+                { value: 'homeowner-diy', label: "I'm a homeowner doing this work myself", desc: "Skip contractor fields — just the basics" },
+                { value: 'homeowner-hiring', label: "I'm a homeowner hiring a contractor", desc: "Include contractor details and timeline" },
+                { value: 'contractor', label: "I'm a contractor", desc: "Full form with business details" }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setData({ ...data, workerType: option.value as WorkerType })}
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                    data.workerType === option.value
+                      ? 'border-blueprint bg-blueprint/10'
+                      : 'border-lightGray hover:border-blueprint/50'
+                  }`}
+                >
+                  <div className="font-medium text-charcoal">{option.label}</div>
+                  <div className="text-sm text-steel mt-1">{option.desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Property Address */}
@@ -868,200 +908,191 @@ export default function SmartWizard({
             </div>
           )}
 
-          {/* Contractor Information */}
-          <div className="p-5 bg-sky rounded-xl border border-lightGray">
-            <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-blueprint text-white text-xs flex items-center justify-center">1</span>
-              Contractor Information <span className="text-steel text-sm font-normal">— optional</span>
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Contractor/Business Name</label>
-                <input
-                  type="text"
-                  value={data.contractorInfo?.contractorName || ''}
-                  onChange={(e) => setData({ 
-                    ...data, 
-                    contractorInfo: { ...data.contractorInfo, contractorName: e.target.value }
-                  })}
-                  placeholder="Your business name..."
-                  className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
-                />
-              </div>
+          {/* Contractor Information - ONLY SHOW IF HIRING OR CONTRACTOR */}
+          {(data.workerType === 'homeowner-hiring' || data.workerType === 'contractor') && (
+            <div className="p-5 bg-sky rounded-xl border border-lightGray">
+              <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-blueprint text-white text-xs flex items-center justify-center">
+                  {data.workerType === 'homeowner-hiring' ? '2' : '2'}
+                </span>
+                Contractor Information <span className="text-steel text-sm font-normal">— optional</span>
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Contractor/Business Name</label>
+                  <input
+                    type="text"
+                    value={data.contractorInfo?.contractorName || ''}
+                    onChange={(e) => setData({ 
+                      ...data, 
+                      contractorInfo: { ...data.contractorInfo, contractorName: e.target.value }
+                    })}
+                    placeholder="Your business name..."
+                    className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
+                  />
+                </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <label className="block text-sm font-medium text-charcoal">FL License Number</label>
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <button className="p-0.5 rounded-full hover:bg-sky transition-colors">
-                        <HelpCircle size={14} className="text-steel" />
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label className="block text-sm font-medium text-charcoal">FL License Number</label>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <button className="p-0.5 rounded-full hover:bg-sky transition-colors">
+                          <HelpCircle size={14} className="text-steel" />
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72 p-3">
+                        <p className="text-sm text-charcoal">
+                          FL contractor licenses are 7-10 digits with 1-3 letter prefix.<br/>
+                          Examples: <code className="bg-sky px-1 rounded">C1234567</code>, <code className="bg-sky px-1 rounded">EC12345678</code>, <code className="bg-sky px-1 rounded">CBC1234567</code>
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+                  <input
+                    type="text"
+                    value={data.contractorInfo?.licenseNumber || ''}
+                    onChange={(e) => setData({ 
+                      ...data, 
+                      contractorInfo: { ...data.contractorInfo, licenseNumber: e.target.value.toUpperCase() }
+                    })}
+                    placeholder="e.g., C1234567 or CBC1234567"
+                    className={`w-full px-4 py-3 rounded-xl border bg-white text-charcoal focus:ring-2 ${
+                      !licenseValidation.valid && data.contractorInfo?.licenseNumber
+                        ? 'border-crimson focus:border-crimson focus:ring-crimson/20'
+                        : data.contractorInfo?.licenseNumber && licenseValidation.valid
+                          ? 'border-forest focus:border-forest focus:ring-forest/20'
+                          : 'border-lightGray focus:border-blueprint focus:ring-blueprint/20'
+                    }`}
+                  />
+                  {!licenseValidation.valid && data.contractorInfo?.licenseNumber && (
+                    <p className="text-xs text-crimson mt-1 flex items-center gap-1">
+                      <AlertCircle size={12} />
+                      {licenseValidation.message}
+                    </p>
+                  )}
+                  {licenseValidation.valid && data.contractorInfo?.licenseNumber && (
+                    <p className="text-xs text-forest mt-1 flex items-center gap-1">
+                      <Check size={12} />
+                      Valid FL license format
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Years of Experience</label>
+                  <select
+                    value={data.contractorInfo?.yearsExperience || ''}
+                    onChange={(e) => setData({ 
+                      ...data, 
+                      contractorInfo: { ...data.contractorInfo, yearsExperience: e.target.value as any }
+                    })}
+                    className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
+                  >
+                    <option value="">Select experience level...</option>
+                    <option value="0-2">0-2 years</option>
+                    <option value="3-5">3-5 years</option>
+                    <option value="5-10">5-10 years</option>
+                    <option value="10+">10+ years</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Do you have liability insurance?</label>
+                  <div className="flex gap-2">
+                    {['yes', 'no'].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setData({ 
+                          ...data, 
+                          contractorInfo: { ...data.contractorInfo, hasInsurance: option === 'yes' }
+                        })}
+                        className={`flex-1 px-4 py-3 rounded-xl border transition-all ${
+                          data.contractorInfo?.hasInsurance === (option === 'yes')
+                            ? 'bg-blueprint text-white border-blueprint'
+                            : 'bg-white text-charcoal border-lightGray hover:border-blueprint/50'
+                        }`}
+                      >
+                        {option === 'yes' ? '✓ Yes' : '✗ No'}
                       </button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-72 p-3">
-                      <p className="text-sm text-charcoal">
-                        FL contractor licenses are 7-10 digits with 1-3 letter prefix.<br/>
-                        Examples: <code className="bg-sky px-1 rounded">C1234567</code>, <code className="bg-sky px-1 rounded">EC12345678</code>, <code className="bg-sky px-1 rounded">CBC1234567</code>
-                      </p>
-                    </HoverCardContent>
-                  </HoverCard>
-                </div>
-                <input
-                  type="text"
-                  value={data.contractorInfo?.licenseNumber || ''}
-                  onChange={(e) => setData({ 
-                    ...data, 
-                    contractorInfo: { ...data.contractorInfo, licenseNumber: e.target.value.toUpperCase() }
-                  })}
-                  placeholder="e.g., C1234567 or CBC1234567"
-                  className={`w-full px-4 py-3 rounded-xl border bg-white text-charcoal focus:ring-2 ${
-                    !licenseValidation.valid && data.contractorInfo?.licenseNumber
-                      ? 'border-crimson focus:border-crimson focus:ring-crimson/20'
-                      : data.contractorInfo?.licenseNumber && licenseValidation.valid
-                        ? 'border-forest focus:border-forest focus:ring-forest/20'
-                        : 'border-lightGray focus:border-blueprint focus:ring-blueprint/20'
-                  }`}
-                />
-                {!licenseValidation.valid && data.contractorInfo?.licenseNumber && (
-                  <p className="text-xs text-crimson mt-1 flex items-center gap-1">
-                    <AlertCircle size={12} />
-                    {licenseValidation.message}
-                  </p>
-                )}
-                {licenseValidation.valid && data.contractorInfo?.licenseNumber && (
-                  <p className="text-xs text-forest mt-1 flex items-center gap-1">
-                    <Check size={12} />
-                    Valid FL license format
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Years of Experience</label>
-                <select
-                  value={data.contractorInfo?.yearsExperience || ''}
-                  onChange={(e) => setData({ 
-                    ...data, 
-                    contractorInfo: { ...data.contractorInfo, yearsExperience: e.target.value as any }
-                  })}
-                  className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
-                >
-                  <option value="">Select experience level...</option>
-                  <option value="0-2">0-2 years</option>
-                  <option value="3-5">3-5 years</option>
-                  <option value="5-10">5-10 years</option>
-                  <option value="10+">10+ years</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Do you have liability insurance?</label>
-                <div className="flex gap-2">
-                  {['yes', 'no'].map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => setData({ 
-                        ...data, 
-                        contractorInfo: { ...data.contractorInfo, hasInsurance: option === 'yes' }
-                      })}
-                      className={`flex-1 px-4 py-3 rounded-xl border transition-all ${
-                        data.contractorInfo?.hasInsurance === (option === 'yes')
-                          ? 'bg-blueprint text-white border-blueprint'
-                          : 'bg-white text-charcoal border-lightGray hover:border-blueprint/50'
-                      }`}
-                    >
-                      {option === 'yes' ? '✓ Yes' : '✗ No'}
-                    </button>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Budget & Timeline */}
-          <div className="p-5 bg-sky rounded-xl border border-lightGray">
-            <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-blueprint text-white text-xs flex items-center justify-center">2</span>
-              Budget & Timeline <span className="text-steel text-sm font-normal">— optional</span>
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Estimated Project Cost</label>
-                <select
-                  value={data.budgetTimeline?.estimatedCost || ''}
-                  onChange={(e) => setData({ 
-                    ...data, 
-                    budgetTimeline: { ...data.budgetTimeline, estimatedCost: e.target.value as any }
-                  })}
-                  className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
-                >
-                  <option value="">Select cost range...</option>
-                  <option value="<$1k">Under $1,000</option>
-                  <option value="$1k-$5k">$1,000 - $5,000</option>
-                  <option value="$5k-$10k">$5,000 - $10,000</option>
-                  <option value="$10k-$25k">$10,000 - $25,000</option>
-                  <option value="$25k+">$25,000+</option>
-                </select>
-              </div>
+          {/* Budget & Timeline - ONLY SHOW IF HIRING OR CONTRACTOR */}
+          {(data.workerType === 'homeowner-hiring' || data.workerType === 'contractor') && (
+            <div className="p-5 bg-sky rounded-xl border border-lightGray">
+              <h3 className="font-semibold text-charcoal mb-4 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-blueprint text-white text-xs flex items-center justify-center">3</span>
+                Budget & Timeline <span className="text-steel text-sm font-normal">— optional</span>
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Estimated Project Cost</label>
+                  <select
+                    value={data.budgetTimeline?.estimatedCost || ''}
+                    onChange={(e) => setData({ 
+                      ...data, 
+                      budgetTimeline: { ...data.budgetTimeline, estimatedCost: e.target.value as any }
+                    })}
+                    className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
+                  >
+                    <option value="">Select cost range...</option>
+                    <option value="<$1k">Under $1,000</option>
+                    <option value="$1k-$5k">$1,000 - $5,000</option>
+                    <option value="$5k-$10k">$5,000 - $10,000</option>
+                    <option value="$10k-$25k">$10,000 - $25,000</option>
+                    <option value="$25k+">$25,000+</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Who's paying for this project?</label>
-                <select
-                  value={data.budgetTimeline?.whosPaying || ''}
-                  onChange={(e) => setData({ 
-                    ...data, 
-                    budgetTimeline: { ...data.budgetTimeline, whosPaying: e.target.value as any }
-                  })}
-                  className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
-                >
-                  <option value="">Select who's paying...</option>
-                  <option value="Homeowner">Homeowner</option>
-                  <option value="Contractor">Contractor</option>
-                  <option value="Split">Split between both</option>
-                </select>
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Desired Start Date</label>
+                  <input
+                    type="date"
+                    value={data.budgetTimeline?.desiredStartDate || ''}
+                    onChange={(e) => setData({ 
+                      ...data, 
+                      budgetTimeline: { ...data.budgetTimeline, desiredStartDate: e.target.value }
+                    })}
+                    className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Desired Start Date</label>
-                <input
-                  type="date"
-                  value={data.budgetTimeline?.desiredStartDate || ''}
-                  onChange={(e) => setData({ 
-                    ...data, 
-                    budgetTimeline: { ...data.budgetTimeline, desiredStartDate: e.target.value }
-                  })}
-                  className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
-                  min={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-2">Expected Project Duration</label>
-                <select
-                  value={data.budgetTimeline?.projectDuration || ''}
-                  onChange={(e) => setData({ 
-                    ...data, 
-                    budgetTimeline: { ...data.budgetTimeline, projectDuration: e.target.value as any }
-                  })}
-                  className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
-                >
-                  <option value="">Select duration...</option>
-                  <option value="<1 week">Less than 1 week</option>
-                  <option value="1-2 weeks">1-2 weeks</option>
-                  <option value="2-4 weeks">2-4 weeks</option>
-                  <option value="1-2 months">1-2 months</option>
-                  <option value="2+ months">2+ months</option>
-                </select>
+                <div>
+                  <label className="block text-sm font-medium text-charcoal mb-2">Expected Project Duration</label>
+                  <select
+                    value={data.budgetTimeline?.projectDuration || ''}
+                    onChange={(e) => setData({ 
+                      ...data, 
+                      budgetTimeline: { ...data.budgetTimeline, projectDuration: e.target.value as any }
+                    })}
+                    className="w-full px-4 py-3 rounded-xl border border-lightGray bg-white text-charcoal focus:border-blueprint focus:ring-2 focus:ring-blueprint/20"
+                  >
+                    <option value="">Select duration...</option>
+                    <option value="<1 week">Less than 1 week</option>
+                    <option value="1-2 weeks">1-2 weeks</option>
+                    <option value="2-4 weeks">2-4 weeks</option>
+                    <option value="1-2 months">1-2 months</option>
+                    <option value="2+ months">2+ months</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Building Details */}
           <div className="p-5 bg-forest/5 rounded-xl border border-forest/20">
             <h3 className="font-semibold text-forest mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-forest text-white text-xs flex items-center justify-center">3</span>
+              <span className="w-6 h-6 rounded-full bg-forest text-white text-xs flex items-center justify-center">
+                {data.workerType === 'homeowner-diy' ? '2' : '4'}
+              </span>
               Building Details <span className="text-forest/70 text-sm font-normal">— optional</span>
             </h3>
             
@@ -1159,7 +1190,9 @@ export default function SmartWizard({
           {/* Permit History */}
           <div className="p-5 bg-safetyOrange/5 rounded-xl border border-safetyOrange/20">
             <h3 className="font-semibold text-safetyOrange mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-safetyOrange text-white text-xs flex items-center justify-center">4</span>
+              <span className="w-6 h-6 rounded-full bg-safetyOrange text-white text-xs flex items-center justify-center">
+                {data.workerType === 'homeowner-diy' ? '3' : '5'}
+              </span>
               Permit History <span className="text-safetyOrange/70 text-sm font-normal">— optional</span>
             </h3>
             
@@ -1313,8 +1346,20 @@ export default function SmartWizard({
               </div>
             </div>
 
-            {/* Contractor Information Summary */}
-            {(data.contractorInfo?.contractorName || data.contractorInfo?.licenseNumber) && (
+            {/* Worker Type Summary */}
+            {data.workerType && (
+              <div className="border-t border-lightGray pt-4">
+                <div className="font-medium text-sm text-steel mb-2">Who's Doing the Work</div>
+                <div className="text-sm text-charcoal">
+                  {data.workerType === 'homeowner-diy' && "Homeowner doing work themselves"}
+                  {data.workerType === 'homeowner-hiring' && "Homeowner hiring a contractor"}
+                  {data.workerType === 'contractor' && "Licensed contractor"}
+                </div>
+              </div>
+            )}
+
+            {/* Contractor Information Summary - Only show if hiring or contractor */}
+            {(data.workerType === 'homeowner-hiring' || data.workerType === 'contractor') && (data.contractorInfo?.contractorName || data.contractorInfo?.licenseNumber) && (
               <div className="border-t border-lightGray pt-4">
                 <div className="font-medium text-sm text-steel mb-2">Contractor Information</div>
                 <div className="space-y-1 text-sm text-charcoal">
@@ -1334,16 +1379,13 @@ export default function SmartWizard({
               </div>
             )}
 
-            {/* Budget & Timeline Summary */}
-            {(data.budgetTimeline?.estimatedCost || data.budgetTimeline?.whosPaying) && (
+            {/* Budget & Timeline Summary - Only show if hiring or contractor */}
+            {(data.workerType === 'homeowner-hiring' || data.workerType === 'contractor') && (data.budgetTimeline?.estimatedCost || data.budgetTimeline?.desiredStartDate) && (
               <div className="border-t border-lightGray pt-4">
                 <div className="font-medium text-sm text-steel mb-2">Budget & Timeline</div>
                 <div className="space-y-1 text-sm text-charcoal">
                   {data.budgetTimeline?.estimatedCost && (
                     <div><span className="text-steel">Estimated Cost:</span> {data.budgetTimeline.estimatedCost}</div>
-                  )}
-                  {data.budgetTimeline?.whosPaying && (
-                    <div><span className="text-steel">Who's Paying:</span> {data.budgetTimeline.whosPaying}</div>
                   )}
                   {data.budgetTimeline?.desiredStartDate && (
                     <div><span className="text-steel">Start Date:</span> {new Date(data.budgetTimeline.desiredStartDate).toLocaleDateString()}</div>

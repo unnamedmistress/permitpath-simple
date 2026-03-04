@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient, isSupabaseConfigured, isLocalStorageMode } from '@/config/supabase';
 import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
-import { Job, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory } from '@/types/permit';
+import { Job, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory, WorkerType } from '@/types/permit';
 import { JobType, Jurisdiction } from '@/types';
 
 export interface JobInput {
@@ -10,6 +10,7 @@ export interface JobInput {
   address?: string;
   description?: string;
   // Phase 2: New fields
+  workerType?: WorkerType;
   contractorInfo?: ContractorInfo;
   budgetTimeline?: BudgetTimeline;
   buildingDetails?: BuildingDetails;
@@ -160,6 +161,7 @@ export function useJobs() {
         createdAt: now,
         updatedAt: now,
         // Phase 2: New fields
+        workerType: input.workerType || 'homeowner-diy',
         contractorInfo: input.contractorInfo,
         budgetTimeline: input.budgetTimeline,
         buildingDetails: input.buildingDetails,

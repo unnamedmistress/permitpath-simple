@@ -407,9 +407,9 @@ export default function NewJobPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-4 sm:mb-8"
         >
-          {/* FIXED: Accurate time estimate */}
+          {/* FIXED: Accurate time estimate based on worker type */}
           <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs sm:text-sm font-medium text-primary mb-3 sm:mb-4">
-            Takes about 8-12 minutes
+            DIY: ~3-4 min • With contractor: ~6-8 min
           </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Start a Permit Job</h1>
           <p className="text-sm text-muted-foreground">Tell us about your job. We will make your permit checklist.</p>

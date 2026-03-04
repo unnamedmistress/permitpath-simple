@@ -12,8 +12,8 @@ const WELCOME_STEPS = [
   },
   {
     title: "1. Tell Us About Your Job",
-    subtitle: "Takes 2 minutes",
-    description: "Pick your job type and location. We'll figure out exactly what the county needs from you.",
+    subtitle: "Takes 3-4 minutes",
+    description: "Pick your job type and location. For DIY homeowners, just 9 simple fields.",
     icon: FileText,
     color: "text-blue-500"
   },

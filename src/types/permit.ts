@@ -17,10 +17,12 @@ export interface ContractorInfo {
   hasInsurance?: boolean;
 }
 
+// Worker Type
+export type WorkerType = 'homeowner-diy' | 'homeowner-hiring' | 'contractor';
+
 // Budget & Timeline
 export interface BudgetTimeline {
   estimatedCost?: '<$1k' | '$1k-$5k' | '$5k-$10k' | '$10k-$25k' | '$25k+';
-  whosPaying?: 'Homeowner' | 'Contractor' | 'Split';
   desiredStartDate?: string; // ISO date string
   projectDuration?: '<1 week' | '1-2 weeks' | '2-4 weeks' | '1-2 months' | '2+ months';
 }
@@ -53,6 +55,7 @@ export interface Job {
   createdAt: Date;
   updatedAt: Date;
   // Phase 2: New fields
+  workerType?: WorkerType;
   contractorInfo?: ContractorInfo;
   budgetTimeline?: BudgetTimeline;
   buildingDetails?: BuildingDetails;
