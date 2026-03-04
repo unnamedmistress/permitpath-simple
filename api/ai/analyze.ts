@@ -15,18 +15,12 @@ const AnalyzeRequestSchema = z.object({
 });
 
 function setCorsHeaders(res: any, origin?: string) {
-  const allowedOrigins = [
-    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '',
-    'http://localhost:3000',
-    'http://localhost:5173',
-  ].filter(Boolean);
-
+  // Allow all origins in local development and production for offline mode
   const requestOrigin = origin || '*';
-  if (allowedOrigins.includes(requestOrigin)) {
-    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Id');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 }
 
 function checkRateLimit(userId: string): { allowed: boolean; remaining: number } {

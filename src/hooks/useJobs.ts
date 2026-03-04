@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { getSupabaseClient, isSupabaseConfigured } from '@/config/supabase';
+import { getSupabaseClient, isSupabaseConfigured, isLocalStorageMode } from '@/config/supabase';
 import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
 import { Job, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory } from '@/types/permit';
 import { JobType, Jurisdiction } from '@/types';
@@ -17,23 +16,93 @@ export interface JobInput {
   permitHistory?: PermitHistory;
 }
 
+// localStorage keys
+const STORAGE_KEY_JOBS = 'permitpath:jobs';
+const STORAGE_KEY_REQUIREMENTS = 'permitpath:requirements';
+
+// localStorage quota helper
+function checkLocalStorageQuota(): { hasSpace: boolean; available: number } {
+  try {
+    const used = new Blob(Object.values(localStorage)).size;
+    const limit = 5 * 1024 * 1024; // 5MB typical limit
+    return { hasSpace: used < limit * 0.9, available: limit - used };
+  } catch {
+    return { hasSpace: true, available: 0 };
+  }
+}
+
+// localStorage job helpers
+function getJobsFromStorage(): Job[] {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY_JOBS);
+    if (!data) return [];
+    const jobs = JSON.parse(data);
+    return jobs.map((j: any) => ({
+      ...j,
+      createdAt: new Date(j.createdAt),
+      updatedAt: new Date(j.updatedAt),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function saveJobsToStorage(jobs: Job[]): void {
+  try {
+    const quota = checkLocalStorageQuota();
+    if (!quota.hasSpace) {
+      console.warn('[useJobs] LocalStorage quota nearly exceeded');
+    }
+    localStorage.setItem(STORAGE_KEY_JOBS, JSON.stringify(jobs));
+  } catch (err) {
+    console.error('[useJobs] Failed to save jobs to localStorage:', err);
+  }
+}
+
+function getRequirementsFromStorage(jobId: string): Requirement[] {
+  try {
+    const data = localStorage.getItem(`${STORAGE_KEY_REQUIREMENTS}:${jobId}`);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRequirementsToStorage(jobId: string, requirements: Requirement[]): void {
+  try {
+    localStorage.setItem(`${STORAGE_KEY_REQUIREMENTS}:${jobId}`, JSON.stringify(requirements));
+  } catch (err) {
+    console.error('[useJobs] Failed to save requirements to localStorage:', err);
+  }
+}
+
 export function useJobs() {
   const { user, isAuthenticated } = useSupabaseAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [channel, setChannel] = useState<RealtimeChannel | null>(null);
 
+  // Load jobs from localStorage on mount
   const fetchJobs = useCallback(async () => {
-    if (!isSupabaseConfigured() || !isAuthenticated) {
-      setJobs([]);
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
     try {
+      // Always use localStorage for jobs in localStorage mode
+      if (isLocalStorageMode) {
+        const storedJobs = getJobsFromStorage();
+        setJobs(storedJobs);
+        setIsLoading(false);
+        return;
+      }
+
+      // Fallback to Supabase if not in localStorage mode
+      if (!isSupabaseConfigured() || !isAuthenticated) {
+        setJobs([]);
+        setIsLoading(false);
+        return;
+      }
+
       const supabase = getSupabaseClient();
       const { data, error: fetchError } = await supabase
         .from('jobs')
@@ -70,75 +139,26 @@ export function useJobs() {
   const createJob = useCallback(async (input: JobInput, requirements: Requirement[]): Promise<Job> => {
     console.log('[useJobs] Starting createJob:', { jobType: input.jobType, jurisdiction: input.jurisdiction });
     
-    if (!isSupabaseConfigured()) {
-      console.error('[useJobs] Supabase not configured');
-      throw new Error('Database connection not available. Please check your internet connection and try again.');
-    }
-    
-    if (!isAuthenticated) {
-      console.error('[useJobs] User not authenticated');
-      throw new Error('Authentication required. Please sign in to create a job.');
-    }
-
     setIsLoading(true);
     setError(null);
 
     try {
-      const supabase = getSupabaseClient();
-      console.log('[useJobs] Inserting job into Supabase...');
+      const now = new Date();
+      const jobId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      const { data: jobData, error: jobError } = await supabase
-        .from('jobs')
-        .insert({
-          user_id: user?.id,
-          job_type: input.jobType,
-          jurisdiction: input.jurisdiction,
-          address: input.address,
-          description: input.description,
-          status: 'requirements_pending',
-        })
-        .select()
-        .single();
-
-      if (jobError) {
-        console.error('[useJobs] Supabase insert error:', jobError);
-        throw new Error(`Database error: ${jobError.message}`);
-      }
-
-      console.log('[useJobs] Job created with ID:', jobData.id);
-
-      if (requirements.length > 0) {
-        console.log('[useJobs] Inserting', requirements.length, 'requirements...');
-        const requirementsData = requirements.map((req) => ({
-          job_id: jobData.id,
-          category: req.category,
-          title: req.title,
-          description: req.description,
-          is_required: req.isRequired,
-          status: 'pending',
-        }));
-
-        const { error: reqError } = await supabase.from('requirements').insert(requirementsData);
-        if (reqError) {
-          console.error('[useJobs] Failed to insert requirements:', reqError);
-          // Don't fail the whole job creation if requirements fail
-          // Job is already created, user can retry adding requirements
-        }
-      }
-
       const newJob: Job = {
-        id: jobData.id,
-        contractorId: jobData.user_id,
-        jobType: jobData.job_type,
-        jurisdiction: jobData.jurisdiction,
-        address: jobData.address || '',
-        description: jobData.description || '',
-        status: jobData.status,
-        requirements: requirements.map(r => ({ ...r, jobId: jobData.id })),
+        id: jobId,
+        contractorId: user?.id || 'local-user',
+        jobType: input.jobType,
+        jurisdiction: input.jurisdiction,
+        address: input.address || '',
+        description: input.description || '',
+        status: 'requirements_pending',
+        requirements: requirements.map(r => ({ ...r, jobId })),
         documents: [],
         inspections: [],
-        createdAt: new Date(jobData.created_at),
-        updatedAt: new Date(jobData.updated_at),
+        createdAt: now,
+        updatedAt: now,
         // Phase 2: New fields
         contractorInfo: input.contractorInfo,
         budgetTimeline: input.budgetTimeline,
@@ -146,67 +166,68 @@ export function useJobs() {
         permitHistory: input.permitHistory,
       };
 
-      setJobs(prev => [newJob, ...prev]);
+      // Check quota before saving
+      const quota = checkLocalStorageQuota();
+      if (!quota.hasSpace) {
+        throw new Error('Storage limit reached. Please delete some old jobs to create new ones.');
+      }
+
+      // Save to localStorage
+      const currentJobs = getJobsFromStorage();
+      const updatedJobs = [newJob, ...currentJobs];
+      saveJobsToStorage(updatedJobs);
+      
+      // Save requirements separately
+      if (requirements.length > 0) {
+        saveRequirementsToStorage(jobId, requirements.map(r => ({ ...r, jobId })));
+      }
+
+      setJobs(updatedJobs);
       console.log('[useJobs] Job created successfully:', newJob.id);
       return newJob;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create job';
       console.error('[useJobs] createJob failed:', message);
       setError(message);
-      throw err; // Re-throw so caller can handle it
+      throw err;
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id, isAuthenticated]);
+  }, [user?.id]);
 
   const updateJob = useCallback(async (jobId: string, updates: Partial<Job>): Promise<void> => {
-    if (!isSupabaseConfigured() || !isAuthenticated) return;
-
     try {
-      const supabase = getSupabaseClient();
-      await supabase
-        .from('jobs')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', jobId)
-        .eq('user_id', user?.id);
-
-      setJobs(prev => prev.map(job => 
-        job.id === jobId ? { ...job, ...updates, updatedAt: new Date() } : job
-      ));
+      const currentJobs = getJobsFromStorage();
+      const updatedJobs = currentJobs.map(job => 
+        job.id === jobId 
+          ? { ...job, ...updates, updatedAt: new Date() } 
+          : job
+      );
+      saveJobsToStorage(updatedJobs);
+      setJobs(updatedJobs);
     } catch (err) {
       console.error('Error updating job:', err);
     }
-  }, [user?.id, isAuthenticated]);
+  }, []);
 
   const deleteJob = useCallback(async (jobId: string): Promise<void> => {
-    if (!isSupabaseConfigured() || !isAuthenticated) return;
-
     try {
-      const supabase = getSupabaseClient();
-      await supabase.from('jobs').delete().eq('id', jobId).eq('user_id', user?.id);
-      setJobs(prev => prev.filter(job => job.id !== jobId));
+      const currentJobs = getJobsFromStorage();
+      const updatedJobs = currentJobs.filter(job => job.id !== jobId);
+      saveJobsToStorage(updatedJobs);
+      
+      // Also clean up requirements
+      try {
+        localStorage.removeItem(`${STORAGE_KEY_REQUIREMENTS}:${jobId}`);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      
+      setJobs(updatedJobs);
     } catch (err) {
       console.error('Error deleting job:', err);
     }
-  }, [user?.id, isAuthenticated]);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured() || !isAuthenticated) return;
-
-    const supabase = getSupabaseClient();
-    const newChannel = supabase
-      .channel('jobs-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'jobs',
-        filter: `user_id=eq.${user?.id}`,
-      }, () => fetchJobs())
-      .subscribe();
-
-    setChannel(newChannel);
-    return () => { newChannel.unsubscribe(); };
-  }, [user?.id, isAuthenticated, fetchJobs]);
+  }, []);
 
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
@@ -220,7 +241,7 @@ export function useJob(jobId: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchJob = useCallback(async () => {
-    if (!jobId || !isSupabaseConfigured() || !isAuthenticated) {
+    if (!jobId) {
       setJob(null);
       return;
     }
@@ -229,6 +250,27 @@ export function useJob(jobId: string | null) {
     setError(null);
 
     try {
+      // Always use localStorage in localStorage mode
+      if (isLocalStorageMode) {
+        const jobs = getJobsFromStorage();
+        const foundJob = jobs.find(j => j.id === jobId);
+        if (foundJob) {
+          const requirements = getRequirementsFromStorage(jobId);
+          setJob({ ...foundJob, requirements });
+        } else {
+          setJob(null);
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      // Fallback to Supabase if not in localStorage mode
+      if (!isSupabaseConfigured() || !isAuthenticated) {
+        setJob(null);
+        setIsLoading(false);
+        return;
+      }
+
       const supabase = getSupabaseClient();
       const { data: jobData, error: jobError } = await supabase
         .from('jobs')
@@ -292,9 +334,24 @@ export function useJob(jobId: string | null) {
   }, [jobId, user?.id, isAuthenticated]);
 
   const updateRequirementStatus = useCallback(async (requirementId: string, status: string) => {
-    if (!jobId || !isSupabaseConfigured()) return;
+    if (!jobId) return;
 
     try {
+      if (isLocalStorageMode) {
+        const requirements = getRequirementsFromStorage(jobId);
+        const updatedRequirements = requirements.map(r => 
+          r.id === requirementId ? { ...r, status } as any : r
+        );
+        saveRequirementsToStorage(jobId, updatedRequirements);
+        setJob(prev => prev ? {
+          ...prev,
+          requirements: prev.requirements.map(r => r.id === requirementId ? { ...r, status } as any : r)
+        } : null);
+        return;
+      }
+
+      if (!isSupabaseConfigured()) return;
+
       const supabase = getSupabaseClient();
       await supabase.from('requirements').update({ status }).eq('id', requirementId);
       setJob(prev => prev ? {
