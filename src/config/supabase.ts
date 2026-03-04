@@ -3,7 +3,7 @@ import { Database } from '@/types/database';
 
 // LOCALSTORAGE-ONLY MODE: Set to true to disable Supabase and use localStorage only
 // Set to false for production with real Supabase
-export const isLocalStorageMode = false;
+export const isLocalStorageMode = true;
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
