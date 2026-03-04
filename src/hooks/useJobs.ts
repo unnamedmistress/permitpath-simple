@@ -137,7 +137,7 @@ export function useJobs() {
     }
   }, [user?.id, isAuthenticated]);
 
-  const createJob = useCallback(async (input: JobInput, requirements: Requirement[]): Promise<Job> => {
+  const createJob = useCallback(async (input: JobInput, requirements?: Requirement[]): Promise<Job> => {
     console.log('[useJobs] Starting createJob:', { jobType: input.jobType, jurisdiction: input.jurisdiction });
     
     setIsLoading(true);
@@ -155,7 +155,7 @@ export function useJobs() {
         address: input.address || '',
         description: input.description || '',
         status: 'requirements_pending',
-        requirements: requirements.map(r => ({ ...r, jobId })),
+        requirements: (requirements || []).map(r => ({ ...r, jobId })),
         documents: [],
         inspections: [],
         createdAt: now,
