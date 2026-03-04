@@ -10,7 +10,7 @@ import { useJobs } from '@/hooks/useJobs';
 export default function SimplifiedDetailsPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const { getJob, updateJob, generateRequirements } = useJobs();
+  const { getJob, updateJob } = useJobs();
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [initialAddress, setInitialAddress] = useState('');
@@ -43,33 +43,20 @@ export default function SimplifiedDetailsPage() {
     setIsGenerating(true);
     try {
       // Update job with address and property type
-      const updateResult = await updateJob(jobId, {
+      await updateJob(jobId, {
         address: data.address,
         buildingDetails: {
           propertyType: data.propertyType,
         },
       });
 
-      if (!updateResult.success) {
-        toast.error(updateResult.error || 'Failed to save details');
-        setIsGenerating(false);
-        return;
-      }
-
-      // Generate requirements using AI
-      const genResult = await generateRequirements(jobId);
-
-      if (genResult.success) {
-        toast.success('Permit checklist created!');
-        // Navigate to the simplified checklist/wizard page
-        navigate(`/simple/wizard/${jobId}`);
-      } else {
-        toast.error(genResult.error || 'Failed to generate requirements');
-        // Still navigate to wizard even if generation fails
-        navigate(`/simple/wizard/${jobId}`);
-      }
+      toast.success('Details saved!');
+      // Navigate to the simplified checklist/wizard page
+      // Note: Requirements generation happens on the backend when job is created
+      navigate(`/simple/wizard/${jobId}`);
     } catch (err) {
-      toast.error('Something went wrong');
+      console.error('Failed to save details:', err);
+      toast.error(err instanceof Error ? err.message : 'Something went wrong');
       setIsGenerating(false);
     }
   };

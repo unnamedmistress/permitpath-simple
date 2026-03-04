@@ -24,22 +24,23 @@ export default function SimplifiedJobTypePage() {
     setIsCreating(true);
     try {
       // Create job with just the job type
-      const result = await createJob({
+      const newJob = await createJob({
         jobType: selectedJobType.id,
         // Will fill in location and details in next steps
         jurisdiction: 'PINELLAS_COUNTY', // Default, will be selectable
         address: '', // Will be filled in later
-      });
+      }, []); // Empty requirements initially
 
-      if (result.success && result.jobId) {
+      if (newJob && newJob.id) {
         toast.success('Job created!');
         // Navigate to location selection
-        navigate(`/simple/location/${result.jobId}`);
+        navigate(`/simple/location/${newJob.id}`);
       } else {
-        toast.error(result.error || 'Failed to create job');
+        toast.error('Failed to create job');
       }
     } catch (err) {
-      toast.error('Something went wrong');
+      console.error('Failed to create job:', err);
+      toast.error(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setIsCreating(false);
     }

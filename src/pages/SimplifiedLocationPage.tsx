@@ -52,19 +52,16 @@ export default function SimplifiedLocationPage() {
     
     setIsSaving(true);
     try {
-      const result = await updateJob(jobId, {
+      await updateJob(jobId, {
         jurisdiction: selectedLocation.id,
       });
 
-      if (result.success) {
-        toast.success('Location saved!');
-        // Navigate to details page
-        navigate(`/simple/details/${jobId}`);
-      } else {
-        toast.error(result.error || 'Failed to save location');
-      }
+      toast.success('Location saved!');
+      // Navigate to details page
+      navigate(`/simple/details/${jobId}`);
     } catch (err) {
-      toast.error('Something went wrong');
+      console.error('Failed to save location:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to save location');
     } finally {
       setIsSaving(false);
     }

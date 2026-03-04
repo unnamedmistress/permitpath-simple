@@ -233,7 +233,52 @@ export function useJobs() {
 
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
-  return { jobs, isLoading, error, fetchJobs, createJob, updateJob, deleteJob };
+  // Get a single job by ID
+  const getJob = useCallback(async (jobId: string): Promise<Job | null> => {
+    try {
+      if (isLocalStorageMode) {
+        const jobs = getJobsFromStorage();
+        const foundJob = jobs.find(j => j.id === jobId);
+        if (foundJob) {
+          const requirements = getRequirementsFromStorage(jobId);
+          return { ...foundJob, requirements };
+        }
+        return null;
+      }
+
+      if (!isSupabaseConfigured()) return null;
+
+      const supabase = getSupabaseClient();
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('id', jobId)
+        .single();
+
+      if (error) throw error;
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        contractorId: data.user_id,
+        jobType: data.job_type,
+        jurisdiction: data.jurisdiction,
+        address: data.address || '',
+        description: data.description || '',
+        status: data.status,
+        requirements: [],
+        documents: [],
+        inspections: [],
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+      };
+    } catch (err) {
+      console.error('Error getting job:', err);
+      return null;
+    }
+  }, []);
+
+  return { jobs, isLoading, error, fetchJobs, createJob, updateJob, deleteJob, getJob };
 }
 
 export function useJob(jobId: string | null) {
