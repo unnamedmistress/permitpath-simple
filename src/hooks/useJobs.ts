@@ -3,6 +3,12 @@ import { getSupabaseClient, isSupabaseConfigured, isLocalStorageMode } from '@/c
 import { useSupabaseAuth } from '@/context/SupabaseAuthContext';
 import { Job, Requirement, ContractorInfo, BudgetTimeline, BuildingDetails, PermitHistory, WorkerType } from '@/types/permit';
 import { JobType, Jurisdiction } from '@/types';
+// FIXED: Use consistent storage functions from jobStorage.ts
+import { 
+  getJobs as getJobsFromStorage, 
+  saveJob as saveJobToStorage,
+  getJob as getJobFromStorage 
+} from '@/services/jobStorage';
 
 export interface JobInput {
   jobType: JobType;
@@ -15,66 +21,6 @@ export interface JobInput {
   budgetTimeline?: BudgetTimeline;
   buildingDetails?: BuildingDetails;
   permitHistory?: PermitHistory;
-}
-
-// localStorage keys
-const STORAGE_KEY_JOBS = 'permitpath:jobs';
-const STORAGE_KEY_REQUIREMENTS = 'permitpath:requirements';
-
-// localStorage quota helper
-function checkLocalStorageQuota(): { hasSpace: boolean; available: number } {
-  try {
-    const used = new Blob(Object.values(localStorage)).size;
-    const limit = 5 * 1024 * 1024; // 5MB typical limit
-    return { hasSpace: used < limit * 0.9, available: limit - used };
-  } catch {
-    return { hasSpace: true, available: 0 };
-  }
-}
-
-// localStorage job helpers
-function getJobsFromStorage(): Job[] {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY_JOBS);
-    if (!data) return [];
-    const jobs = JSON.parse(data);
-    return jobs.map((j: any) => ({
-      ...j,
-      createdAt: new Date(j.createdAt),
-      updatedAt: new Date(j.updatedAt),
-    }));
-  } catch {
-    return [];
-  }
-}
-
-function saveJobsToStorage(jobs: Job[]): void {
-  try {
-    const quota = checkLocalStorageQuota();
-    if (!quota.hasSpace) {
-      console.warn('[useJobs] LocalStorage quota nearly exceeded');
-    }
-    localStorage.setItem(STORAGE_KEY_JOBS, JSON.stringify(jobs));
-  } catch (err) {
-    console.error('[useJobs] Failed to save jobs to localStorage:', err);
-  }
-}
-
-function getRequirementsFromStorage(jobId: string): Requirement[] {
-  try {
-    const data = localStorage.getItem(`${STORAGE_KEY_REQUIREMENTS}:${jobId}`);
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveRequirementsToStorage(jobId: string, requirements: Requirement[]): void {
-  try {
-    localStorage.setItem(`${STORAGE_KEY_REQUIREMENTS}:${jobId}`, JSON.stringify(requirements));
-  } catch (err) {
-    console.error('[useJobs] Failed to save requirements to localStorage:', err);
-  }
 }
 
 export function useJobs() {
