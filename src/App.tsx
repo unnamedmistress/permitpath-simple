@@ -12,6 +12,7 @@ import { PhotoProvider } from "@/context/PhotoContext";
 import BottomNav from "@/components/layout/BottomNav";
 import NotFound from "@/pages/NotFound";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import ConciergeChatWidget from "@/components/ConciergeChatWidget";
 
 // Simplified pages
 const HomePageSimple = lazy(() => import("@/pages/HomePageSimple"));
@@ -165,6 +166,7 @@ function App() {
                   </AnimatePresence>
                 </main>
                 <Analytics />
+                <ConciergeChatWidget />
               </BrowserRouter>
             </TooltipProvider>
           </PhotoProvider>

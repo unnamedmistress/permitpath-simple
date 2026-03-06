@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, ArrowRight, X, Building2, Hammer, Home, AlertCircle, Check } from 'lucide-react';
+import { MapPin, ArrowRight, X, Building2, Hammer, Home, AlertCircle, Check, Sparkles, Brain } from 'lucide-react';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ import { Job, JobType, Jurisdiction, WorkerType } from '@/types/permit';
 import { saveJob } from '@/services/jobStorage';
 import { analyzeJobRequirements } from '@/services/ai-backend';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { generatePrediction, detectIntent, Prediction } from '@/services/predictionEngine';
+import AIPredictionsPanel from '@/components/AIPredictionsPanel';
 
 const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
   { value: 'PINELLAS_COUNTY', label: 'Pinellas County' },
@@ -111,18 +113,60 @@ export default function QuickStartPage() {
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 640px)');
   
-  const [step, setStep] = useState<'type' | 'details' | 'generating'>('type');
+  const [step, setStep] = useState<'type' | 'details' | 'ai-predict' | 'generating'>('type');
   const [selectedType, setSelectedType] = useState<JobType | null>(null);
   const [formData, setFormData] = useState<Partial<QuickStartInput>>({
     jurisdiction: 'PINELLAS_COUNTY',
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [showAIPredictions, setShowAIPredictions] = useState(false);
 
   const handleSelectJobType = useCallback((jobType: JobType) => {
     setSelectedType(jobType);
     setFormData(prev => ({ ...prev, jobType }));
     setStep('details');
+  }, []);
+
+  const handleAIPrediction = useCallback(() => {
+    if (!formData.description && !selectedType) {
+      toast.error('Please describe your project or select a job type first');
+      return;
+    }
+    
+    setShowAIPredictions(true);
+    
+    // Generate predictions based on description or selected type
+    if (selectedType && formData.jurisdiction) {
+      const prediction = generatePrediction(
+        selectedType,
+        formData.jurisdiction,
+        formData,
+        formData.description
+      );
+      setPredictions([prediction]);
+    } else if (formData.description && formData.jurisdiction) {
+      const detected = detectIntent(formData.description);
+      if (detected.primaryIntent) {
+        const prediction = generatePrediction(
+          detected.primaryIntent,
+          formData.jurisdiction,
+          formData,
+          formData.description
+        );
+        setPredictions([prediction]);
+      }
+    }
+  }, [formData, selectedType]);
+
+  const handlePredictionSelect = useCallback((prediction: Prediction) => {
+    setSelectedType(prediction.permitType as JobType);
+    setFormData(prev => ({ 
+      ...prev, 
+      jobType: prediction.permitType as JobType 
+    }));
+    toast.success(`Selected: ${prediction.permitType.replace(/_/g, ' ')}`);
   }, []);
 
   const handleInputChange = (field: keyof QuickStartInput, value: any) => {
@@ -216,7 +260,7 @@ export default function QuickStartPage() {
           {step === 'type' ? <X size={20} /> : <ArrowRight size={20} className="rotate-180" />}
         </button>
         <span className="text-sm font-medium text-gray-500">
-          {step === 'type' ? 'Step 1 of 2' : 'Step 2 of 2'}
+          {step === 'type' ? 'Step 1 of 3' : step === 'details' ? 'Step 2 of 3' : step === 'ai-predict' ? 'Step 3 of 3' : ''}
         </span>
         <button
           onClick={handleCancel}
@@ -230,8 +274,12 @@ export default function QuickStartPage() {
       <div className="h-1 bg-gray-200 rounded-full mb-6 overflow-hidden">
         <motion.div
           className="h-full bg-blue-500"
-          initial={{ width: step === 'type' ? '50%' : '0%' }}
-          animate={{ width: step === 'type' ? '50%' : '100%' }}
+          initial={{ width: '0%' }}
+          animate={{ 
+            width: step === 'type' ? '33%' : 
+                   step === 'details' ? '66%' : 
+                   step === 'ai-predict' ? '80%' : '100%' 
+          }}
           transition={{ duration: 0.3 }}
         />
       </div>
@@ -415,6 +463,49 @@ export default function QuickStartPage() {
                 ))}
               </div>
             )}
+
+            {/* AI Prediction Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                  <Sparkles size={20} className="text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-slate-900">Not sure what you need?</h4>
+                  <p className="text-sm text-slate-600">Get AI-powered permit predictions</p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAIPrediction}
+                className="w-full bg-white hover:bg-blue-50 border-blue-200"
+              >
+                <Brain size={16} className="mr-2" />
+                Analyze My Project
+              </Button>
+            </motion.div>
+
+            {/* AI Predictions Panel */}
+            <AnimatePresence>
+              {showAIPredictions && predictions.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  <AIPredictionsPanel
+                    predictions={predictions}
+                    onSelect={handlePredictionSelect}
+                    onRegenerate={handleAIPrediction}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Submit button */}
             <Button

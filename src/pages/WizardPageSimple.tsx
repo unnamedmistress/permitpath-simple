@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, DollarSign, Clock, FileText, MessageCircle, Download, Phone, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, DollarSign, Clock, FileText, MessageCircle, Download, Phone, CheckCircle2, Theater, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,8 @@ import { useJob } from '@/hooks/useJobs';
 import { useDocumentUpload } from '@/services/storage';
 import type { Job, Requirement } from '@/types/permit';
 import { calculateProgress } from '@/services/requirements';
+import TheaterVisualization from '@/components/TheaterVisualization';
+import TimeMachineAnalytics from '@/components/TimeMachineAnalytics';
 
 export default function WizardPageSimple() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -166,6 +168,16 @@ export default function WizardPageSimple() {
             color="bg-purple-500"
           />
         </div>
+      </div>
+
+      {/* Theater Visualization - Progress Rings */}
+      <div className="max-w-2xl mx-auto mb-6">
+        <TheaterVisualization currentStatus={job.status} />
+      </div>
+
+      {/* Time Machine Analytics */}
+      <div className="max-w-2xl mx-auto mb-6">
+        <TimeMachineAnalytics job={job} />
       </div>
 
       {/* Checklist */}
