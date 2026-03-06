@@ -1,7 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Filter, Clock, CheckCircle, AlertCircle, ChevronRight, Trash2, RefreshCw } from "lucide-react";
+import { Plus, Search, Filter, Clock, CheckCircle, AlertCircle, ChevronRight, Trash2, RefreshCw, HelpCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import PageWrapper from "@/components/layout/PageWrapper";
 import { Button } from "@/components/ui/button";
 import { useJobs } from "@/hooks/useJobs";
@@ -11,7 +17,7 @@ import { toast } from "sonner";
 
 const statusConfig = {
   draft: { icon: Clock, color: "text-steel", bg: "bg-sky", label: "Draft" },
-  requirements_pending: { icon: AlertCircle, color: "text-safetyOrange", bg: "bg-safetyOrange/10", label: "Needs Documents" },
+  requirements_pending: { icon: AlertCircle, color: "text-safetyOrange", bg: "bg-safetyOrange/10", label: "Needs Documents", description: "We're generating your personalized checklist. This usually takes 30 seconds." },
   documents_pending: { icon: Clock, color: "text-blueprint", bg: "bg-sky", label: "Gathering Docs" },
   ready_to_submit: { icon: CheckCircle, color: "text-forest", bg: "bg-forest/10", label: "Ready to Submit" },
   submitted: { icon: Clock, color: "text-purple-600", bg: "bg-purple-50", label: "Submitted" },
@@ -134,9 +140,19 @@ export default function MyJobsPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold truncate text-charcoal">{job.jobType.replace(/_/g, " ")}</h3>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color}`}>
-                  {status.label}
-                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color} cursor-help flex items-center gap-1`}>
+                      {status.label}
+                      {status.description && <HelpCircle size={10} />}
+                    </span>
+                  </TooltipTrigger>
+                  {status.description && (
+                    <TooltipContent side="top">
+                      <p className="max-w-xs text-xs">{status.description}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
               </div>
               <p className="text-sm text-steel truncate">{job.address}</p>
               <p className="text-xs text-steel mt-1">{job.jurisdiction.replace(/_/g, " ")}</p>
@@ -207,6 +223,7 @@ export default function MyJobsPage() {
   }
 
   return (
+    <TooltipProvider>
     <PageWrapper>
       {/* Header */}
       <motion.div
@@ -305,5 +322,6 @@ export default function MyJobsPage() {
         </div>
       )}
     </PageWrapper>
+    </TooltipProvider>
   );
 }

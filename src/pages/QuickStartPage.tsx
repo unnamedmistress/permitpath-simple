@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, ArrowRight, X, Building2, Hammer, Home, AlertCircle, Check, Sparkles, Brain } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import PageWrapper from '@/components/layout/PageWrapper';
 import { JobTypeGrid, JobTypeList } from '@/components/new-ui/JobTypeGrid';
 import { validateQuickStart, QuickStartInput } from '@/types/validation';
 import { Job, JobType, Jurisdiction, WorkerType } from '@/types/permit';
-import { saveJob } from '@/services/jobStorage';
+import { saveJob, getJobs } from '@/services/jobStorage';
 import { analyzeJobRequirements } from '@/services/ai-backend';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { generatePrediction, detectIntent, Prediction } from '@/services/predictionEngine';
@@ -111,6 +111,7 @@ const JOB_CONDITIONAL_QUESTIONS: Record<JobType, Array<{
 
 export default function QuickStartPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 640px)');
   
   const [step, setStep] = useState<'type' | 'details' | 'ai-predict' | 'generating'>('type');
@@ -118,15 +119,36 @@ export default function QuickStartPage() {
   const [formData, setFormData] = useState<Partial<QuickStartInput>>({
     jurisdiction: 'PINELLAS_COUNTY',
   });
+  
+  // FIX #1: Read jobType from navigation state and pre-select
+  useEffect(() => {
+    const passedJobType = location.state?.jobType as JobType | undefined;
+    if (passedJobType) {
+      setSelectedType(passedJobType);
+      setFormData(prev => ({ ...prev, jobType: passedJobType }));
+      setStep('details');
+      // Clear the state so refresh doesn't re-trigger
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.jobType]);
   const [errors, setErrors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [showAIPredictions, setShowAIPredictions] = useState(false);
 
+  const [isSelecting, setIsSelecting] = useState(false);
+  
   const handleSelectJobType = useCallback((jobType: JobType) => {
+    // FIX #3: Show visual feedback before navigation
+    setIsSelecting(true);
     setSelectedType(jobType);
-    setFormData(prev => ({ ...prev, jobType }));
-    setStep('details');
+    
+    // Brief delay to show selection animation
+    setTimeout(() => {
+      setFormData(prev => ({ ...prev, jobType }));
+      setStep('details');
+      setIsSelecting(false);
+    }, 300);
   }, []);
 
   const handleAIPrediction = useCallback(() => {
@@ -198,6 +220,21 @@ export default function QuickStartPage() {
 
     try {
       const data = validation.data;
+      
+      // FIX #2: Check for duplicate jobs (same type + address)
+      const existingJobs = getJobs();
+      const normalizedAddress = data.address.toLowerCase().trim();
+      const duplicate = existingJobs.find(j => 
+        j.jobType === data.jobType && 
+        j.address.toLowerCase().trim() === normalizedAddress
+      );
+      
+      if (duplicate) {
+        toast.info('A job for this address already exists. Redirecting to existing job...');
+        navigate(`/wizard/${duplicate.id}`);
+        return;
+      }
+      
       const jobId = uuidv4();
 
       // Create job object

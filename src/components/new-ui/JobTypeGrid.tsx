@@ -124,7 +124,7 @@ export function JobTypeGrid({ onSelect, selectedType }: JobTypeGridProps) {
             whileTap={{ scale: 0.97 }}
             className={`
               relative p-4 rounded-xl text-left transition-all duration-200
-              border-2 overflow-hidden
+              border-2 overflow-visible
               ${isSelected 
                 ? 'border-blue-500 bg-blue-50 shadow-md' 
                 : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
