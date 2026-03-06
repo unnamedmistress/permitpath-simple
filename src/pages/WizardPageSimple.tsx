@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, DollarSign, Clock, FileText, MessageCircle, Download, Phone, CheckCircle2, Theater, History } from 'lucide-react';
+import { ArrowLeft, DollarSign, Clock, FileText, Download, Phone, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { Button } from '@/components/ui/button';

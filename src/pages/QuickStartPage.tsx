@@ -260,7 +260,7 @@ export default function QuickStartPage() {
           {step === 'type' ? <X size={20} /> : <ArrowRight size={20} className="rotate-180" />}
         </button>
         <span className="text-sm font-medium text-gray-500">
-          {step === 'type' ? 'Step 1 of 3' : step === 'details' ? 'Step 2 of 3' : step === 'ai-predict' ? 'Step 3 of 3' : ''}
+          {step === 'type' ? 'Step 1 of 2' : 'Step 2 of 2'}
         </span>
         <button
           onClick={handleCancel}
@@ -276,9 +276,7 @@ export default function QuickStartPage() {
           className="h-full bg-blue-500"
           initial={{ width: '0%' }}
           animate={{ 
-            width: step === 'type' ? '33%' : 
-                   step === 'details' ? '66%' : 
-                   step === 'ai-predict' ? '80%' : '100%' 
+            width: step === 'type' ? '50%' : '100%'
           }}
           transition={{ duration: 0.3 }}
         />
@@ -310,7 +308,14 @@ export default function QuickStartPage() {
               <p className="text-sm text-gray-500 text-center mb-3">
                 Don't see what you need?
               </p>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setStep('details');
+                  toast.info('Enter your project details below and click "Analyze My Project" for AI recommendations');
+                }}
+              >
                 Describe your project in your own words
               </Button>
             </div>
