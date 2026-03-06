@@ -12,7 +12,7 @@ import PageWrapper from '@/components/layout/PageWrapper';
 import { JobTypeGrid, JobTypeList } from '@/components/new-ui/JobTypeGrid';
 import { validateQuickStart, QuickStartInput } from '@/types/validation';
 import { Job, JobType, Jurisdiction, WorkerType } from '@/types/permit';
-import { saveJob, getJobs } from '@/services/jobStorage';
+import { saveJob, getJobs, deleteJob } from '@/services/jobStorage';
 import { analyzeJobRequirements } from '@/services/ai-backend';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { generatePrediction, detectIntent, Prediction } from '@/services/predictionEngine';
@@ -221,18 +221,29 @@ export default function QuickStartPage() {
     try {
       const data = validation.data;
       
-      // FIX #2: Check for duplicate jobs (same type + address)
+      // FIX #2: Check for duplicate jobs (same type + address) - only if it has requirements
       const existingJobs = getJobs();
       const normalizedAddress = data.address.toLowerCase().trim();
       const duplicate = existingJobs.find(j => 
         j.jobType === data.jobType && 
-        j.address.toLowerCase().trim() === normalizedAddress
+        j.address.toLowerCase().trim() === normalizedAddress &&
+        j.requirements && j.requirements.length > 0  // Only consider it a duplicate if it has requirements
       );
       
       if (duplicate) {
         toast.info('A job for this address already exists. Redirecting to existing job...');
         navigate(`/wizard/${duplicate.id}`);
         return;
+      }
+      
+      // If there's an old "stuck" job without requirements, remove it
+      const stuckJob = existingJobs.find(j => 
+        j.jobType === data.jobType && 
+        j.address.toLowerCase().trim() === normalizedAddress &&
+        (!j.requirements || j.requirements.length === 0)
+      );
+      if (stuckJob) {
+        deleteJob(stuckJob.id);  // Clean up old stuck jobs
       }
       
       const jobId = uuidv4();
