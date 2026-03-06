@@ -126,6 +126,31 @@ export function clearAllJobs(): void {
   }
 }
 
+// Requirements storage key
+export const STORAGE_KEY_REQUIREMENTS = 'permitpath_requirements';
+
+// Get requirements for a specific job
+export function getRequirementsFromStorage(jobId: string): any[] {
+  try {
+    const key = `${STORAGE_KEY_REQUIREMENTS}:${jobId}`;
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error loading requirements from localStorage:', error);
+    return [];
+  }
+}
+
+// Save requirements for a specific job
+export function saveRequirementsToStorage(jobId: string, requirements: any[]): void {
+  try {
+    const key = `${STORAGE_KEY_REQUIREMENTS}:${jobId}`;
+    localStorage.setItem(key, JSON.stringify(requirements));
+  } catch (error) {
+    console.error('Error saving requirements to localStorage:', error);
+  }
+}
+
 // Export memory functions for backward compatibility
 // These are used by NewJobPage.tsx currently
 let memoryJobs: Job[] = [];

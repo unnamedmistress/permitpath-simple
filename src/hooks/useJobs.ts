@@ -7,7 +7,10 @@ import { JobType, Jurisdiction } from '@/types';
 import { 
   getJobs as getJobsFromStorage, 
   saveJob as saveJobToStorage,
-  getJob as getJobFromStorage 
+  getJob as getJobFromStorage,
+  getRequirementsFromStorage,
+  saveRequirementsToStorage,
+  STORAGE_KEY_REQUIREMENTS
 } from '@/services/jobStorage';
 
 export interface JobInput {
