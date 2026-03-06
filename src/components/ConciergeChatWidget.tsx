@@ -132,7 +132,8 @@ export default function ConciergeChatWidget({ jobType, jurisdiction, className =
         id: Date.now().toString(),
         role: 'assistant',
         content: currentJobType
-          ? `Permit fees for **${formatJobType(currentJobType)}** typically range from $50-300 depending on project value and jurisdiction within Pinellas County.\n\nYou can get an exact estimate after completing your checklist.`,
+          ? `Permit fees for **${formatJobType(currentJobType)}** typically range from $50-300 depending on project value and jurisdiction within Pinellas County.\n\nYou can get an exact estimate after completing your checklist.`
+          : 'Permit fees vary by project type:\n\n• Simple permits (roof, water heater): $50-150\n• Standard permits (electrical, HVAC): $100-300\n• Complex permits (remodels, additions): $300-800+\n\nTell me about your project for a more specific estimate.',
         timestamp: new Date(),
         suggestions: QUICK_REPLIES.map(q => q.label),
       };
@@ -143,7 +144,8 @@ export default function ConciergeChatWidget({ jobType, jurisdiction, className =
         id: Date.now().toString(),
         role: 'assistant',
         content: currentJobType
-          ? `For **${formatJobType(currentJobType)}**, you'll typically need:\n\n• Permit application\n• Contractor license (if applicable)\n• Project specifications\n• Site plans (for larger projects)\n\nI can generate a complete checklist tailored to your specific project.`,
+          ? `For **${formatJobType(currentJobType)}**, you'll typically need:\n\n• Permit application\n• Contractor license (if applicable)\n• Project specifications\n• Site plans (for larger projects)\n\nI can generate a complete checklist tailored to your specific project.`
+          : 'Required documents vary by project, but generally include:\n\n• Completed permit application\n• Proof of ownership or authorization\n• Contractor license & insurance (if applicable)\n• Project plans or specifications\n• Site survey (for larger projects)\n\nWhat type of project are you working on? I can give you a specific list.',
         timestamp: new Date(),
         suggestions: ['Generate my checklist', 'What if I DIY?', QUICK_REPLIES[0].label],
       };
