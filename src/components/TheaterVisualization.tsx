@@ -164,9 +164,10 @@ export default function TheaterVisualization({ currentStatus, className = '' }: 
                 transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
                 className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center mx-auto mb-1"
               >
-                {STAGES[currentIndex]?.icon && (
-                  <STAGES[currentIndex].icon size={28} className="text-white" />
-                )}
+                {STAGES[currentIndex]?.icon && (() => {
+                  const IconComponent = STAGES[currentIndex].icon;
+                  return <IconComponent size={28} className="text-white" />;
+                })()}
               </motion.div>
               <p className="text-sm font-semibold text-slate-800">{STAGES[currentIndex]?.label}</p>
               <p className="text-xs text-slate-500">{STAGES[currentIndex]?.description}</p>
