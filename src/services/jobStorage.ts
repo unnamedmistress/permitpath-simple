@@ -134,7 +134,19 @@ export function getRequirementsFromStorage(jobId: string): any[] {
   try {
     const key = `${STORAGE_KEY_REQUIREMENTS}:${jobId}`;
     const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
+    if (data) {
+      return JSON.parse(data);
+    }
+    
+    // Fallback: check if requirements are stored in the job object itself
+    const job = getJob(jobId);
+    if (job?.requirements && job.requirements.length > 0) {
+      // Save to separate storage for future lookups
+      localStorage.setItem(key, JSON.stringify(job.requirements));
+      return job.requirements;
+    }
+    
+    return [];
   } catch (error) {
     console.error('Error loading requirements from localStorage:', error);
     return [];
