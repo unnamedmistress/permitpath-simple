@@ -126,13 +126,18 @@ export default async function handler(req: any, res: any) {
     });
   } catch (error) {
     console.error('AI analysis error:', error);
-    return res.status(500).json({
-      error: 'AI analysis failed',
-      requirements: [],
+    // Return fallback requirements instead of empty array
+    return res.status(200).json({
+      requirements: [
+        { id: `req-${Date.now()}-1`, jobId: '', category: 'document', title: 'Permit Application', description: 'Completed permit application form', isRequired: true, confidence: 1, status: 'pending', actionType: 'Fill out and upload', sourceUrl: 'https://pinellas.gov/topic/building-development/permits/', minimumCriteria: 'Signed form with full property address', whoCanHelp: 'County permit desk', plainLanguageWhy: 'This starts your permit review.', acceptedFormats: ['PDF'], allowsMultipleUploads: false, goodUploadExample: 'Signed permit form PDF' },
+        { id: `req-${Date.now()}-2`, jobId: '', category: 'license', title: 'Contractor License', description: 'Valid Florida contractor license', isRequired: true, confidence: 1, status: 'pending', actionType: 'Upload proof', sourceUrl: 'https://www.myfloridalicense.com/', minimumCriteria: 'Active license with matching business name', whoCanHelp: 'Florida DBPR support', plainLanguageWhy: 'County checks licensed workers for permit jobs.', acceptedFormats: ['PDF', 'JPG', 'PNG'], allowsMultipleUploads: false, goodUploadExample: 'License image showing expiration date' },
+        { id: `req-${Date.now()}-3`, jobId: '', category: 'insurance', title: 'Insurance Certificate', description: 'General liability insurance certificate', isRequired: true, confidence: 1, status: 'pending', actionType: 'Request from insurer and upload', minimumCriteria: 'Coverage dates include permit period', whoCanHelp: 'Insurance agent', plainLanguageWhy: 'County wants active coverage during work.', acceptedFormats: ['PDF'], allowsMultipleUploads: true, goodUploadExample: 'Certificate with policy dates and limits' }
+      ],
       estimatedTimeline: '5-10 business days',
       estimatedCost: '$150-500',
       confidenceScore: 0.5,
-      fallback: true
+      fallback: true,
+      rateLimit
     });
   }
 }
