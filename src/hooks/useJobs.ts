@@ -31,6 +31,39 @@ export function useJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Determine next actionable step for a job
+  const getNextAction = useCallback((job: Job) => {
+    if (!job) return null;
+    
+    // Check requirements first
+    const incompleteReq = job.requirements?.filter(r => r.status !== 'completed');
+    if (incompleteReq?.length > 0) {
+      return {
+        title: `Complete: ${incompleteReq[0].title}`,
+        description: incompleteReq[0].description || 'Required for permit submission'
+      };
+    }
+    
+    // Then check documents
+    const missingDocs = job.documents?.filter(d => d.status !== 'uploaded');
+    if (missingDocs?.length > 0) {
+      return {
+        title: `Upload: ${missingDocs[0].name}`,
+        description: 'Required document for your permit'
+      };
+    }
+    
+    // Then check submission status
+    if (job.status !== 'submitted') {
+      return {
+        title: 'Submit to county',
+        description: 'Ready for official submission'
+      };
+    }
+    
+    return null;
+  }, []);
 
   // Load jobs from localStorage on mount
   const fetchJobs = useCallback(async () => {
@@ -227,7 +260,17 @@ export function useJobs() {
     }
   }, []);
 
-  return { jobs, isLoading, error, fetchJobs, createJob, updateJob, deleteJob, getJob };
+  return { 
+    jobs, 
+    isLoading, 
+    error, 
+    fetchJobs, 
+    createJob, 
+    updateJob, 
+    deleteJob, 
+    getJob,
+    getNextAction
+  };
 }
 
 export function useJob(jobId: string | null) {
