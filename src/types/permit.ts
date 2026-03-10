@@ -98,6 +98,17 @@ export type Jurisdiction =
   | 'ST_PETERSBURG'
   | 'CLEARWATER'
   | 'LARGO'
+  | 'DUNEDIN'
+  | 'TARPON_SPRINGS'
+  | 'SEMINOLE'
+  | 'PINELLAS_PARK'
+  | 'GULFPORT'
+  | 'ST_PETE_BEACH'
+  | 'TREASURE_ISLAND'
+  | 'MADEIRA_BEACH'
+  | 'INDIAN_SHORES'
+  | 'SOUTH_PASADENA'
+  | 'BELLEAIR'
   | 'PALM_HARBOR';
 
 export interface Requirement {

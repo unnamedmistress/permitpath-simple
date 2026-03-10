@@ -19,11 +19,22 @@ import { generatePrediction, detectIntent, Prediction } from '@/services/predict
 import AIPredictionsPanel from '@/components/AIPredictionsPanel';
 
 const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
-  { value: 'PINELLAS_COUNTY', label: 'Pinellas County' },
+  { value: 'PINELLAS_COUNTY', label: 'Unincorporated Pinellas County' },
   { value: 'ST_PETERSBURG', label: 'St. Petersburg' },
   { value: 'CLEARWATER', label: 'Clearwater' },
   { value: 'LARGO', label: 'Largo' },
-  { value: 'PALM_HARBOR', label: 'Palm Harbor' },
+  { value: 'DUNEDIN', label: 'Dunedin' },
+  { value: 'TARPON_SPRINGS', label: 'Tarpon Springs' },
+  { value: 'SEMINOLE', label: 'Seminole' },
+  { value: 'PINELLAS_PARK', label: 'Pinellas Park' },
+  { value: 'GULFPORT', label: 'Gulfport' },
+  { value: 'ST_PETE_BEACH', label: 'St. Pete Beach' },
+  { value: 'TREASURE_ISLAND', label: 'Treasure Island' },
+  { value: 'MADEIRA_BEACH', label: 'Madeira Beach' },
+  { value: 'INDIAN_SHORES', label: 'Indian Shores' },
+  { value: 'SOUTH_PASADENA', label: 'South Pasadena' },
+  { value: 'BELLEAIR', label: 'Belleair' },
+  { value: 'PALM_HARBOR', label: 'Palm Harbor (Unincorporated)' },
 ];
 
 // Job-specific follow-up questions
