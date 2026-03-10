@@ -60,6 +60,10 @@ export interface Job {
   budgetTimeline?: BudgetTimeline;
   buildingDetails?: BuildingDetails;
   permitHistory?: PermitHistory;
+  // Checklist fields
+  estimatedCost?: string;
+  estimatedTimeline?: string;
+  permitNotRequired?: boolean;
 }
 
 export type JobStatus = 

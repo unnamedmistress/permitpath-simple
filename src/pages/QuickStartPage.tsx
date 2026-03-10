@@ -121,7 +121,26 @@ const JOB_CONDITIONAL_QUESTIONS: Record<JobType, Array<{
   EV_CHARGER: [],
   GENERATOR_INSTALL: [],
   PLUMBING_MAIN_LINE: [],
-  SMALL_BATH_REMODEL: [],
+  SMALL_BATH_REMODEL: [
+    {
+      id: 'bathMovingPlumbing',
+      label: 'Are you moving or adding any drains, pipes, or water lines?',
+      type: 'boolean',
+      field: 'bathMovingPlumbing' as keyof QuickStartInput,
+    },
+    {
+      id: 'bathMovingElectric',
+      label: 'Are you moving, adding, or upgrading any electrical wiring or outlets?',
+      type: 'boolean',
+      field: 'bathMovingElectric' as keyof QuickStartInput,
+    },
+    {
+      id: 'bathStructural',
+      label: 'Are you moving or removing any walls?',
+      type: 'boolean',
+      field: 'bathStructural' as keyof QuickStartInput,
+    },
+  ],
   KITCHEN_REMODEL: [],
   WINDOW_DOOR_REPLACEMENT: [],
   SIDING_EXTERIOR: [],
@@ -355,6 +374,9 @@ export default function QuickStartPage() {
         status: 'pending',
         confidence: r.confidence || 0.8,
       }));
+      job.estimatedCost = analysis.estimatedCost;
+      job.estimatedTimeline = analysis.estimatedTimeline;
+      job.permitNotRequired = (analysis as any).permitNotRequired ?? false;
 
       // Save to storage
       saveJob(job);
@@ -585,11 +607,11 @@ export default function QuickStartPage() {
             {/* Optional description */}
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium">
-                Anything else we should know? <span className="text-gray-400 font-normal">(optional)</span>
+                Anything else to add? <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
               <textarea
                 id="description"
-                placeholder="e.g. 2,000 sq ft roof, 3-tab shingles, built in 1985..."
+                placeholder="e.g. Replacing toilet, tub, and tile. No walls being moved."
                 value={formData.description || ''}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 className="w-full h-20 px-3 py-2 rounded-md border border-input bg-background text-sm resize-none"
@@ -607,49 +629,6 @@ export default function QuickStartPage() {
                 ))}
               </div>
             )}
-
-            {/* AI Prediction Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                  <Sparkles size={20} className="text-white" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-900">Not sure what you need?</h4>
-                  <p className="text-sm text-slate-600">Get AI-powered permit predictions</p>
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAIPrediction}
-                className="w-full bg-white hover:bg-blue-50 border-blue-200"
-              >
-                <Brain size={16} className="mr-2" />
-                Analyze My Project
-              </Button>
-            </motion.div>
-
-            {/* AI Predictions Panel */}
-            <AnimatePresence>
-              {showAIPredictions && predictions.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <AIPredictionsPanel
-                    predictions={predictions}
-                    onSelect={handlePredictionSelect}
-                    onRegenerate={handleAIPrediction}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
 
             {/* Submit button */}
             <Button
