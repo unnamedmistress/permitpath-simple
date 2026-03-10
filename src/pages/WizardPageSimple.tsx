@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
-  ArrowLeft, DollarSign, Clock, FileText, ExternalLink,
+  ArrowLeft, ArrowRight, DollarSign, Clock, FileText, ExternalLink,
   CheckCircle2, AlertCircle, ChevronRight, Upload, HelpCircle,
   Phone, ClipboardList, Info
 } from 'lucide-react';
@@ -450,14 +450,40 @@ export default function WizardPageSimple() {
           )}
         </div>
 
+        {/* ── PERMIT DECISION BANNER — most important thing on the page ── */}
+        {job.permitNotRequired ? (
+          <div className="mb-5 rounded-2xl bg-green-500 p-5 text-white text-center shadow-md">
+            <div className="text-4xl mb-1">✅</div>
+            <h2 className="text-xl font-extrabold tracking-tight">No Permit Needed!</h2>
+            <p className="text-sm text-green-100 mt-1 leading-relaxed">
+              Based on your answers, this job does not require a permit in Pinellas County.
+              You can start work right away.
+            </p>
+            <p className="text-xs text-green-200 mt-2">
+              Not sure? Call <a href="tel:7274643888" className="underline font-semibold">(727) 464-3888</a> to confirm.
+            </p>
+          </div>
+        ) : (
+          <div className="mb-5 rounded-2xl bg-blue-600 p-5 text-white text-center shadow-md">
+            <div className="text-4xl mb-1">📋</div>
+            <h2 className="text-xl font-extrabold tracking-tight">Yes — A Permit Is Required</h2>
+            <p className="text-sm text-blue-100 mt-1 leading-relaxed">
+              Here is your checklist. Complete each item below before submitting your permit.
+            </p>
+          </div>
+        )}
+
         {/* Stats row */}
+        {!job.permitNotRequired && (
         <div className="grid grid-cols-3 gap-2.5 mb-5">
           <StatCard label="Permit Fee" value={job.estimatedCost || 'Varies'} icon={DollarSign} color="bg-green-500" />
           <StatCard label="Timeline" value={job.estimatedTimeline || '5-10 days'} icon={Clock} color="bg-blue-500" />
           <StatCard label="Required" value={`${requiredCompleted}/${requiredCount}`} icon={FileText} color="bg-purple-500" />
         </div>
+        )}
 
-        {/* County portal CTA — always visible */}
+        {/* County portal CTA — only show when permit IS required */}
+        {!job.permitNotRequired && (
         <div className="mb-5 rounded-xl border border-blue-200 bg-blue-50 p-4">
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
@@ -485,8 +511,10 @@ export default function WizardPageSimple() {
             </Button>
           </div>
         </div>
+        )}
 
-        {/* Tabs */}
+        {/* Tabs — only show when permit IS required */}
+        {!job.permitNotRequired && (
         <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-5">
           <button
             onClick={() => setActiveTab('checklist')}
@@ -509,9 +537,10 @@ export default function WizardPageSimple() {
             Job Info
           </button>
         </div>
+        )}
 
-        {/* Checklist tab */}
-        {activeTab === 'checklist' && (
+        {/* Checklist tab — only when permit required */}
+        {!job.permitNotRequired && activeTab === 'checklist' && (
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-gray-900">What You Need</h2>
@@ -547,8 +576,8 @@ export default function WizardPageSimple() {
           </div>
         )}
 
-        {/* Info tab */}
-        {activeTab === 'info' && (
+        {/* Info tab — only when permit required */}
+        {!job.permitNotRequired && activeTab === 'info' && (
           <div className="space-y-4">
             <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
               <h3 className="font-semibold text-gray-900 text-sm">Job Details</h3>
@@ -624,21 +653,43 @@ export default function WizardPageSimple() {
       {/* Fixed bottom bar */}
       <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
         <div className="max-w-2xl mx-auto flex gap-2.5">
-          <Button
-            variant="outline"
-            className="flex-1 gap-1.5"
-            onClick={() => window.open(`tel:${jurisdictionInfo.phone}`)}
-          >
-            <Phone size={15} />
-            Call Office
-          </Button>
-          <Button
-            className="flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700"
-            onClick={() => window.open(jurisdictionInfo.portalUrl, '_blank')}
-          >
-            Submit Permit
-            <ExternalLink size={15} />
-          </Button>
+          {job.permitNotRequired ? (
+            <>
+              <Button
+                variant="outline"
+                className="flex-1 gap-1.5"
+                onClick={() => window.open('tel:7274643888')}
+              >
+                <Phone size={15} />
+                Call to Confirm
+              </Button>
+              <Button
+                className="flex-1 gap-1.5 bg-green-600 hover:bg-green-700"
+                onClick={() => navigate('/')}
+              >
+                Start New Job
+                <ArrowRight size={15} />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                className="flex-1 gap-1.5"
+                onClick={() => window.open(`tel:${jurisdictionInfo.phone}`)}
+              >
+                <Phone size={15} />
+                Call Office
+              </Button>
+              <Button
+                className="flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700"
+                onClick={() => window.open(jurisdictionInfo.portalUrl, '_blank')}
+              >
+                Submit Permit
+                <ExternalLink size={15} />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </PageWrapper>

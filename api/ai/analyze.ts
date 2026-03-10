@@ -22,6 +22,9 @@ const AnalyzeRequestSchema = z.object({
   fenceMaterial: z.string().optional(),
   panelAmps: z.string().optional(),
   hvacTonnage: z.string().optional(),
+  bathMovingPlumbing: z.boolean().optional(),
+  bathMovingElectric: z.boolean().optional(),
+  bathStructural: z.boolean().optional(),
 });
 
 function setCorsHeaders(res: any, origin?: string) {
@@ -449,6 +452,44 @@ export default async function handler(req: any, res: any) {
    const { jobType, jurisdiction, address, description, squareFootage, yearBuilt, ...jobAnswers } = validation.data;
   const estimates = getJobEstimates(jobType);
   const jurisdictionInfo = JURISDICTION_PORTALS[jurisdiction] || JURISDICTION_PORTALS.PINELLAS_COUNTY;
+
+  // ── Bathroom remodel: permit NOT required if no plumbing/electrical/structural work ──
+  if (
+    jobType === 'SMALL_BATH_REMODEL' &&
+    jobAnswers.bathMovingPlumbing === false &&
+    jobAnswers.bathMovingElectric === false &&
+    jobAnswers.bathStructural === false
+  ) {
+    return res.status(200).json({
+      requirements: [
+        {
+          id: 'no-permit-required',
+          jobId: '',
+          category: 'document',
+          title: 'No Permit Required for This Work',
+          description: 'Based on your answers, this bathroom remodel does not require a permit in Pinellas County.',
+          isRequired: false,
+          confidence: 0.95,
+          status: 'pending',
+          actionType: 'Read',
+          sourceUrl: 'https://pinellas.gov/express-permits/',
+          plainLanguageWhy: 'In Pinellas County, replacing fixtures like toilets, sinks, tubs, and tile — without moving any pipes, wires, or walls — does not require a permit. This is called "like-for-like" replacement.',
+          minimumCriteria: 'No plumbing lines moved, no electrical wiring changed, no walls removed or added.',
+          whoCanHelp: 'If you are unsure, call the Pinellas County Building Department at (727) 464-3888 before starting work.',
+          acceptedFormats: ['N/A'],
+          goodUploadExample: '',
+          permitNotRequired: true,
+        },
+      ],
+      ...estimates,
+      estimatedCost: '$0 — No permit fee',
+      estimatedTimeline: 'No permit needed — start when ready',
+      confidenceScore: 0.95,
+      permitNotRequired: true,
+      fallback: false,
+      rateLimit,
+    });
+  }
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return res.status(200).json({
