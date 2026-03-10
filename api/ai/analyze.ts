@@ -89,10 +89,13 @@ function makeReq(id: number, category: string, title: string, description: strin
 }
 
 function getJobSpecificFallbacks(jobType: string, data: any): any[] {
-  const permitApp = makeReq(1, 'document', 'Permit Application', 'Completed Pinellas County building permit application form (BLD-100)', 'This is the official form that starts your permit review. The county cannot process your job without it.', 'https://pinellas.gov/wp-content/uploads/2023/06/BLD-100-Building-Permit-Application.pdf', 'Download, fill out, and upload', ['PDF']);
-  const contractorLicense = makeReq(2, 'license', 'Contractor License', 'Valid Florida state contractor license (certified or registered)', 'Florida law requires all permit work to be done by a licensed contractor. The county verifies this before approving your permit.', 'https://www.myfloridalicense.com/wl11.asp', 'Upload a copy of your license', ['PDF', 'JPG', 'PNG']);
-  const insurance = makeReq(3, 'insurance', 'Certificate of Insurance', 'General liability insurance certificate showing active coverage during the project period', 'The county requires proof of insurance to protect the homeowner and the public in case of accidents during the permitted work.', 'https://pinellas.gov/topic/building-development/permits/', 'Request from your insurance agent and upload', ['PDF']);
-  const nocForm = makeReq(4, 'document', 'Notice of Commencement', 'Recorded Notice of Commencement (NOC) from Pinellas County Clerk — required for jobs over $2,500', 'Florida law requires a Notice of Commencement to be recorded before work begins on jobs over $2,500. This protects the homeowner from contractor liens.', 'https://www.pinellasclerk.org/services/recording/', 'Record with Clerk of Court, then upload a copy', ['PDF']);
+  // Use jurisdiction-specific portal URL if available, otherwise default to Pinellas County
+  const portalUrl = data.jurisdictionPortal || 'https://aca-prod.accela.com/pinellas/Default.aspx';
+  const deskPhone = data.jurisdictionPhone || '(727) 464-3888';
+  const permitApp = makeReq(1, 'document', 'Permit Application', 'Completed building permit application form for your jurisdiction', 'This is the official form that starts your permit review. The county cannot process your job without it.', portalUrl, 'Download from your jurisdiction portal, fill out, and upload', ['PDF']);
+  const contractorLicense = makeReq(2, 'license', 'Contractor License', 'Valid Florida state contractor license (certified or registered)', 'Florida law requires all permit work to be done by a licensed contractor. The county verifies this before approving your permit.', 'https://www.myfloridalicense.com/wl11.asp', 'Upload a copy of your license — verify it is Active at myfloridalicense.com', ['PDF', 'JPG', 'PNG']);
+  const insurance = makeReq(3, 'insurance', 'Certificate of Insurance', 'General liability insurance certificate showing active coverage during the project period', 'The county requires proof of insurance to protect the homeowner and the public in case of accidents during the permitted work.', portalUrl, 'Request from your insurance agent and upload', ['PDF']);
+  const nocForm = makeReq(4, 'document', 'Notice of Commencement', 'Recorded Notice of Commencement (NOC) from Pinellas County Clerk — required for jobs over $2,500 (Florida Statute 713.13)', 'Florida law requires a Notice of Commencement to be recorded BEFORE work begins on jobs over $2,500. This protects the homeowner from contractor liens.', 'https://www.mypinellasclerk.gov', 'Record with Clerk of Court online or in person, then upload a certified copy', ['PDF']);
 
   switch (jobType) {
     case 'RE_ROOFING':
@@ -277,25 +280,120 @@ function getJobEstimates(jobType: string): { estimatedCost: string; estimatedTim
   return { estimatedCost: est.cost, estimatedTimeline: est.timeline };
 }
 
-const SYSTEM_PROMPT = `You are a permit requirements expert for Pinellas County, Florida. Generate
- a precise, accurate list of permit requirements for a specific construction job.
+// ─── Verified Pinellas County Building Department Data (March 2026) ─────────
+// Source: https://pinellas.gov/building-departments-in-pinellas-county/
+// Fee schedule: FY25 BDRS fees effective Oct 1, 2024
+// Florida Building Code: 8th Edition (2023) — current as of March 2026
+const JURISDICTION_PORTALS: Record<string, { portal: string; phone: string; address: string }> = {
+  PINELLAS_COUNTY: { portal: 'https://aca-prod.accela.com/pinellas/Default.aspx', phone: '(727) 464-3888', address: '440 Court Street, Clearwater, FL 33756' },
+  ST_PETERSBURG:   { portal: 'https://www.stpete.org/business/building_permitting/building_permits.php', phone: '(727) 893-7231', address: 'One 4th Street N, St. Petersburg, FL 33701' },
+  CLEARWATER:      { portal: 'https://aca-prod.accela.com/CLEARWATER/Default.aspx', phone: '(727) 562-4567', address: '2741 State Road 580, Clearwater, FL 33761' },
+  LARGO:           { portal: 'https://www.largo.com/building_services/index.php', phone: '(727) 586-7488', address: '201 Highland Ave, Largo, FL 33770' },
+  DUNEDIN:         { portal: 'https://www.dunedin.gov/City-Services/Business-Development/Building-Codes-Permits-Construction', phone: '(727) 298-3210', address: '737 Louden Avenue, Dunedin, FL 34698' },
+  TARPON_SPRINGS:  { portal: 'https://www.ctsfl.us/309/GoPost-Online-Permit-Application-Portal', phone: '(727) 942-5617', address: '324 East Pine Street, Tarpon Springs, FL 34689' },
+  SEMINOLE:        { portal: 'https://myseminole.com/website/building.html', phone: '(727) 392-1966', address: '9199 113th Street, Seminole, FL 33772' },
+  PINELLAS_PARK:   { portal: 'https://www.pinellas-park.com/1981/Applying-for-a-Permit', phone: '(727) 369-5647', address: '6051 78th Avenue N, Pinellas Park, FL 33781' },
+  GULFPORT:        { portal: 'https://mygulfport.us/community-development/', phone: '(727) 893-1024', address: '5330 23rd Ave S, Gulfport, FL 33707' },
+  ST_PETE_BEACH:   { portal: 'https://www.stpetebeach.org/200/Building-Permitting', phone: '(727) 367-2735', address: '155 Corey Hall, St. Pete Beach, FL 33706' },
+  TREASURE_ISLAND: { portal: 'https://mytreasureisland.org/building_department/index.php', phone: '(727) 547-4575', address: '10451 Gulf Blvd, Treasure Island, FL 33706' },
+  MADEIRA_BEACH:   { portal: 'https://madeirabeachfl.gov/building-department/', phone: '(727) 391-9951', address: '300 Municipal Drive, Madeira Beach, FL 33708' },
+  INDIAN_SHORES:   { portal: 'https://myindianshores.com/2229/Building-Department', phone: '(727) 474-7786', address: '19305 Gulf Blvd, Indian Shores, FL 33785' },
+  SOUTH_PASADENA:  { portal: 'https://mysouthpasadena.com/government/departments/community_improvement', phone: '(727) 343-4192', address: '6940 Hibiscus Avenue, South Pasadena, FL 33707' },
+  BELLEAIR:        { portal: 'https://townofbelleair.com/401/Building', phone: '(727) 588-1477', address: '901 Ponce de Leon Blvd, Belleair, FL 33756' },
+  PALM_HARBOR:     { portal: 'https://aca-prod.accela.com/pinellas/Default.aspx', phone: '(727) 464-3888', address: '440 Court Street, Clearwater, FL 33756' },
+};
+
+const SYSTEM_PROMPT = `You are a permit requirements expert for Pinellas County, Florida.
+Generate a precise, accurate list of permit requirements for a specific construction job.
+Always use the jurisdiction-specific portal URL and phone number provided in the request context.
+
+FLORIDA BUILDING CODE (FBC) — CURRENT EDITION:
+- Florida Building Code, 8th Edition (2023) is the current adopted code statewide
+- Roofing: FBC-Residential Chapter 9 / FBC-Building Chapter 15
+- Electrical: FBC-Building Chapter 27 (adopts NEC 2020)
+- Plumbing: Florida Plumbing Code (FPC) 8th Edition 2023
+- Mechanical/HVAC: Florida Mechanical Code (FMC) 8th Edition 2023
+- Energy: Florida Energy Conservation Code (FECC) 8th Edition 2023
+- Pinellas County Coastal Construction Code applies to all coastal properties
 
 PINELLAS COUNTY PERMIT RULES:
+- Permit required for any work over $500 or requiring inspection (Pinellas County Ordinance)
 - All permits: https://pinellas.gov/topic/building-development/permits/
-- Online portal: https://epermitting.pinellascounty.org/
-- Express permits (same-day): re-roofing, water heater, AC/HVAC changeout, window/door replacement, electrical panel upgrade (like-for-like)
-- Permits requiring plan review: room additions, decks over 200 sqft, electrical rewiring, plumbing main line
-- Jobs over $2,500 require a recorded Notice of Commencement (Florida Statute 713.13)
-- Florida Product Approval (NOA) required for: roofing materials, windows, doors, exterior cladding
-- All work must be done by a licensed Florida contractor
-- Pinellas County is in a High-Velocity Hurricane Zone
+- Forms & applications: https://pinellas.gov/forms-permit-applications-checklists/
+- Express permits guide: https://pinellas.gov/express-permits/
+- Inspection scheduling: (727) 453-4000 (cut-off 3:30pm for next-day)
+- Permit validity: 6 months from issuance or last passed inspection
+- Contractor license verification: https://www.pcclb.com (PCCLB) or https://www.myfloridalicense.com/wl11.asp (state)
 
-JURISDICTION PORTALS:
-- PINELLAS_COUNTY: https://epermitting.pinellascounty.org/ (727) 464-3888
-- ST_PETERSBURG: https://stpetepermits.com (727) 893-7221
-- CLEARWATER: https://www.myclearwater.com/government/city-departments/planning-development/building (727) 562-4567
-- LARGO: https://www.largo.com/departments/development_services/building_inspections/index.php (727) 587-6710
-- PALM_HARBOR: https://epermitting.pinellascounty.org/ (727) 464-3888
+EXPRESS PERMITS (same-day or next-day, no plan review required):
+Building: Garage Door, Shutters, Siding/Soffit/Fascia, Windows/Doors (like-for-like)
+Electrical: Service Change (1-2 Family), Pool Pump/Heat Pump, Recert/Restore Power
+Gas: LP Gas Supplier, Gas Appliance Replacement, Natural Gas Water Heater Replacement, Conv. Electric to Gas Water Heater
+Mechanical: A/C Equal Change Out (all subtypes), Duct Replacement, Furnace Change Out, Furnace with A/C
+Plumbing: Water Heater Equal Change Out, Plumbing Fixture Replacement, Re-pipe Water Distribution, Tub-to-Shower, Walk-In Tub, Shower Pan, Water Softener
+Roofing: Reroof Metal/Aluminum, Shingle and/or Flat, Tile
+
+PERMITS REQUIRING PLAN REVIEW (standard review, 5-15 business days):
+- Room additions, new construction
+- Decks over 200 sq ft or over 30 inches high
+- Electrical rewiring, new circuits, panel upgrades with service change
+- Plumbing main line replacement
+- Pool/spa installation
+- Generator installation
+- Foundation repair
+- Kitchen remodel with structural changes
+
+VERIFIED FEE SCHEDULE (FY25, effective Oct 1, 2024 — Pinellas County BDRS):
+- Reroof: $180 for first 20 squares + $1.50/each additional square
+- Water heater replacement: $85 flat
+- Electrical service change (residential): $135 flat
+- Electrical service change (commercial): $170 flat
+- Windows/doors/shutters/garage doors: $145 per 20 openings; $5/each additional
+- Solar PV system: $250 flat (includes plan review)
+- Generator: $300 flat (all trades + plan review)
+- Swimming pool/spa: $550 + $5.50/$1,000 over $40,000
+- Demolition (residential): $225 / (commercial): $325
+- Reinspection fee: $75
+- After-the-fact permit: 2x normal permit fee
+- Residential construction (valuation < $600K): $11.00 per $1,000; min $100/inspection
+- Plan review: 25% of permit fee; min $125
+Note: AC/HVAC, fence, deck, and other mechanical permits are based on project valuation.
+Estimated AC changeout: $150-$350. Estimated fence: $100-$250. Estimated deck: $200-$600.
+Other cities (St. Pete, Clearwater, Largo, etc.) have their own fee schedules — direct user to their portal.
+
+NOTICE OF COMMENCEMENT (NOC):
+- Required for ALL projects over $2,500 (Florida Statute 713.13)
+- Must be recorded with Pinellas County Clerk BEFORE work begins
+- Clerk's office: https://www.mypinellasclerk.gov
+- NOC form: https://pinellas.gov/forms-permit-applications-checklists/
+- Failure to record NOC can result in lien issues for the property owner
+
+FLORIDA PRODUCT APPROVAL:
+- Required for: roofing materials, windows, doors, impact shutters, exterior cladding
+- Search: https://floridabuilding.org/pr/pr_app_srch.aspx
+- Contractor must provide Product Approval Number on permit application
+- Pinellas County is in a High-Velocity Hurricane Zone (HVHZ) — stricter wind ratings apply
+
+ROOFING SPECIFIC RULES:
+- 25% Rule: If repairs exceed 25% of total roof area, entire roof must meet current FBC
+- Re-Roofing Affidavit required: https://pinellas.gov/forms-permit-applications-checklists/
+- Roof work under $750 does NOT require a permit
+- All roofing materials must have Florida Product Approval
+- Pinellas County Roofing Inspection Policy: https://pinellas.gov/building-codes-county-policies/
+
+FENCE RULES (Pinellas County Unincorporated):
+- Fences under 6 feet do NOT require a building permit (but must comply with zoning)
+- Fences over 6 feet DO require a permit
+- Rear/side yard: max 6 feet; front yard: max 4 feet
+- Pool barrier fences: must meet Florida Statute 515 (pool safety)
+- Zoning code: Pinellas County Code Section 138-3702
+
+CONTRACTOR LICENSING:
+- All work must be done by a licensed Florida contractor
+- PCCLB (Pinellas County): https://www.pcclb.com — (727) 464-3888
+- State DBPR license lookup: https://www.myfloridalicense.com/wl11.asp
+- License must be Active status to pull permits
+- Owner-builder exemption: Florida Statute 489.103(7) — homeowners can pull their own permits
 
 Return valid JSON only:
 {
@@ -306,7 +404,7 @@ Return valid JSON only:
       "description": "One sentence describing exactly what this document is",
       "isRequired": true,
       "actionType": "What the user must do to get this",
-      "sourceUrl": "Direct URL to the form or resource",
+      "sourceUrl": "Direct URL to the form or resource — use jurisdiction-specific URL",
       "minimumCriteria": "What makes this document acceptable",
       "whoCanHelp": "Who can help the user get this (be specific with phone numbers)",
       "plainLanguageWhy": "One sentence explaining WHY this is needed in plain English",
@@ -315,17 +413,21 @@ Return valid JSON only:
       "goodUploadExample": "What a good upload looks like"
     }
   ],
-  "estimatedCost": "Fee range in dollars",
-  "estimatedTimeline": "Business days range",
+  "estimatedCost": "Fee range in dollars — use verified fee schedule above",
+  "estimatedTimeline": "Business days range — express permits: same-day to 1 day; plan review: 5-15 days",
   "confidenceScore": 0.9
 }
-
 RULES:
 1. Be SPECIFIC to the job type — do not return generic requirements
-2. Include correct Pinellas County form URLs where possible
-3. For express permits, note they can be obtained same-day
-4. Always include plain language explanations a contractor can understand
-5. Sort requirements in the order the contractor should complete them`;
+2. Use the jurisdiction-specific portal URL from the request context
+3. For express permits, explicitly state they can be obtained same-day online
+4. Always include plain language explanations a contractor with limited experience can understand
+5. Sort requirements in the order the contractor should complete them
+6. Use verified fee amounts from the fee schedule above
+7. Include the NOC requirement for any project over $2,500
+8. For roofing, always mention Florida Product Approval requirement
+9. For electrical, always mention PCCLB license requirement
+10. For any coastal property, note HVHZ wind rating requirements`;
 
 export default async function handler(req: any, res: any) {
   const origin = req.headers?.origin;
@@ -344,13 +446,13 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Invalid request', details: validation.error.errors });
   }
 
-  const { jobType, jurisdiction, address, description, squareFootage, yearBuilt, ...jobAnswers } = validation.data;
+   const { jobType, jurisdiction, address, description, squareFootage, yearBuilt, ...jobAnswers } = validation.data;
   const estimates = getJobEstimates(jobType);
+  const jurisdictionInfo = JURISDICTION_PORTALS[jurisdiction] || JURISDICTION_PORTALS.PINELLAS_COUNTY;
   const apiKey = process.env.OPENAI_API_KEY;
-
   if (!apiKey) {
     return res.status(200).json({
-      requirements: getJobSpecificFallbacks(jobType, jobAnswers),
+      requirements: getJobSpecificFallbacks(jobType, { ...jobAnswers, jurisdictionPortal: jurisdictionInfo.portal, jurisdictionPhone: jurisdictionInfo.phone }),
       ...estimates,
       confidenceScore: 0.85,
       fallback: true,
@@ -360,9 +462,13 @@ export default async function handler(req: any, res: any) {
 
   try {
     const openai = new OpenAI({ apiKey });
+    const jurisdictionData = JURISDICTION_PORTALS[jurisdiction] || JURISDICTION_PORTALS.PINELLAS_COUNTY;
     const userPrompt = [
       `Job Type: ${jobType}`,
       `Jurisdiction: ${jurisdiction}`,
+      `Jurisdiction Portal URL: ${jurisdictionData.portal}`,
+      `Jurisdiction Phone: ${jurisdictionData.phone}`,
+      `Jurisdiction Address: ${jurisdictionData.address}`,
       `Address: ${address}`,
       description ? `Additional Details: ${description}` : '',
       squareFootage ? `Square Footage: ${squareFootage}` : '',

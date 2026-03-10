@@ -15,36 +15,136 @@ import type { Requirement } from '@/types/permit';
 import { calculateProgress } from '@/services/requirements';
 
 // ─── Jurisdiction helpers ──────────────────────────────────────────────────
-const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUrl: string; portalLabel: string }> = {
+// All data verified from https://pinellas.gov/building-departments-in-pinellas-county/
+// Portal URLs verified March 2026. Pinellas County BDRS portal: aca-prod.accela.com/pinellas
+const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUrl: string; portalLabel: string; address: string; hours: string }> = {
+  PINELLAS_COUNTY: {
+    label: 'Unincorporated Pinellas County',
+    phone: '(727) 464-3888',
+    portalUrl: 'https://aca-prod.accela.com/pinellas/Default.aspx',
+    portalLabel: 'Pinellas County Access Portal',
+    address: '440 Court Street, Clearwater, FL 33756',
+    hours: 'Mon–Fri, 8am–4pm',
+  },
   ST_PETERSBURG: {
     label: 'St. Petersburg',
-    phone: '(727) 893-7221',
-    portalUrl: 'https://stpetepermits.com',
-    portalLabel: 'St. Pete Permit Portal',
+    phone: '(727) 893-7231',
+    portalUrl: 'https://www.stpete.org/business/building_permitting/building_permits.php',
+    portalLabel: 'St. Pete Building Permits',
+    address: 'One 4th Street N, St. Petersburg, FL 33701',
+    hours: 'Mon–Fri, 8am–4pm',
   },
   CLEARWATER: {
     label: 'Clearwater',
     phone: '(727) 562-4567',
-    portalUrl: 'https://www.myclearwater.com/government/city-departments/planning-development/building',
-    portalLabel: 'Clearwater Building Dept',
+    portalUrl: 'https://aca-prod.accela.com/CLEARWATER/Default.aspx',
+    portalLabel: 'Clearwater Permit Portal',
+    address: '2741 State Road 580, Clearwater, FL 33761',
+    hours: 'Mon–Fri, 8am–4:30pm (Wed closes 2:30pm)',
   },
   LARGO: {
     label: 'Largo',
-    phone: '(727) 587-6710',
-    portalUrl: 'https://www.largo.com/departments/development_services/building_inspections/index.php',
-    portalLabel: 'Largo Building Dept',
+    phone: '(727) 586-7488',
+    portalUrl: 'https://www.largo.com/building_services/index.php',
+    portalLabel: 'Largo Building Services',
+    address: '201 Highland Ave, Largo, FL 33770',
+    hours: 'Mon–Fri, 8am–4pm (Wed closes 3pm)',
+  },
+  DUNEDIN: {
+    label: 'Dunedin',
+    phone: '(727) 298-3210',
+    portalUrl: 'https://www.dunedin.gov/City-Services/Business-Development/Building-Codes-Permits-Construction',
+    portalLabel: 'Dunedin Building & Permits',
+    address: '737 Louden Avenue, Dunedin, FL 34698',
+    hours: 'Mon–Fri, 8am–4:30pm',
+  },
+  TARPON_SPRINGS: {
+    label: 'Tarpon Springs',
+    phone: '(727) 942-5617',
+    portalUrl: 'https://www.ctsfl.us/309/GoPost-Online-Permit-Application-Portal',
+    portalLabel: 'Tarpon Springs GoPost Portal',
+    address: '324 East Pine Street, Tarpon Springs, FL 34689',
+    hours: 'Mon–Fri, 8am–4:30pm (Wed closes noon)',
+  },
+  SEMINOLE: {
+    label: 'Seminole',
+    phone: '(727) 392-1966',
+    portalUrl: 'https://myseminole.com/website/building.html',
+    portalLabel: 'Seminole Building Dept',
+    address: '9199 113th Street, Seminole, FL 33772',
+    hours: 'Mon–Fri, 8am–3:30pm',
+  },
+  PINELLAS_PARK: {
+    label: 'Pinellas Park',
+    phone: '(727) 369-5647',
+    portalUrl: 'https://www.pinellas-park.com/1981/Applying-for-a-Permit',
+    portalLabel: 'Pinellas Park Permits',
+    address: '6051 78th Avenue N, Pinellas Park, FL 33781',
+    hours: 'Mon–Fri, 8am–4:30pm',
+  },
+  GULFPORT: {
+    label: 'Gulfport',
+    phone: '(727) 893-1024',
+    portalUrl: 'https://mygulfport.us/community-development/',
+    portalLabel: 'Gulfport Community Development',
+    address: '5330 23rd Ave S, Gulfport, FL 33707',
+    hours: 'Mon–Fri, 8am–4:30pm (Thu closes 3:30pm)',
+  },
+  ST_PETE_BEACH: {
+    label: 'St. Pete Beach',
+    phone: '(727) 367-2735',
+    portalUrl: 'https://www.stpetebeach.org/200/Building-Permitting',
+    portalLabel: 'St. Pete Beach Building',
+    address: '155 Corey Hall, St. Pete Beach, FL 33706',
+    hours: 'Mon–Fri, 8am–4:30pm',
+  },
+  TREASURE_ISLAND: {
+    label: 'Treasure Island',
+    phone: '(727) 547-4575',
+    portalUrl: 'https://mytreasureisland.org/building_department/index.php',
+    portalLabel: 'Treasure Island Building Dept',
+    address: '10451 Gulf Blvd, Treasure Island, FL 33706',
+    hours: 'Mon–Fri, 9am–4pm',
+  },
+  MADEIRA_BEACH: {
+    label: 'Madeira Beach',
+    phone: '(727) 391-9951',
+    portalUrl: 'https://madeirabeachfl.gov/building-department/',
+    portalLabel: 'Madeira Beach Building Dept',
+    address: '300 Municipal Drive, Madeira Beach, FL 33708',
+    hours: 'Mon–Fri, 8:30am–4:30pm',
+  },
+  INDIAN_SHORES: {
+    label: 'Indian Shores',
+    phone: '(727) 474-7786',
+    portalUrl: 'https://myindianshores.com/2229/Building-Department',
+    portalLabel: 'Indian Shores Building Dept',
+    address: '19305 Gulf Blvd, Indian Shores, FL 33785',
+    hours: 'Mon–Fri, 8am–4pm',
+  },
+  SOUTH_PASADENA: {
+    label: 'South Pasadena',
+    phone: '(727) 343-4192',
+    portalUrl: 'https://mysouthpasadena.com/government/departments/community_improvement',
+    portalLabel: 'South Pasadena Community Improvement',
+    address: '6940 Hibiscus Avenue, South Pasadena, FL 33707',
+    hours: 'Mon–Fri, 7:30am–12:30pm (public)',
+  },
+  BELLEAIR: {
+    label: 'Belleair',
+    phone: '(727) 588-1477',
+    portalUrl: 'https://townofbelleair.com/401/Building',
+    portalLabel: 'Belleair Building Dept',
+    address: '901 Ponce de Leon Blvd, Belleair, FL 33756',
+    hours: 'Mon–Fri, 8:30am–4:30pm',
   },
   PALM_HARBOR: {
-    label: 'Palm Harbor',
+    label: 'Palm Harbor (Unincorporated)',
     phone: '(727) 464-3888',
-    portalUrl: 'https://epermitting.pinellascounty.org/',
-    portalLabel: 'Pinellas ePermitting Portal',
-  },
-  PINELLAS_COUNTY: {
-    label: 'Pinellas County',
-    phone: '(727) 464-3888',
-    portalUrl: 'https://epermitting.pinellascounty.org/',
-    portalLabel: 'Pinellas ePermitting Portal',
+    portalUrl: 'https://aca-prod.accela.com/pinellas/Default.aspx',
+    portalLabel: 'Pinellas County Access Portal',
+    address: '440 Court Street, Clearwater, FL 33756',
+    hours: 'Mon–Fri, 8am–4pm',
   },
 };
 
@@ -368,6 +468,12 @@ export default function WizardPageSimple() {
               <p className="text-xs text-blue-700 mt-0.5">
                 {jurisdictionInfo.label} — {jurisdictionInfo.phone}
               </p>
+              <p className="text-xs text-blue-600 mt-0.5">
+                {jurisdictionInfo.address}
+              </p>
+              <p className="text-xs text-blue-500 mt-0.5">
+                {jurisdictionInfo.hours}
+              </p>
             </div>
             <Button
               size="sm"
@@ -473,6 +579,14 @@ export default function WizardPageSimple() {
             <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
               <h3 className="font-semibold text-gray-900 text-sm">Permit Office</h3>
               <div className="space-y-2 text-sm">
+                <div className="flex items-start justify-between">
+                  <span className="text-gray-600">Address</span>
+                  <span className="font-medium text-gray-900 text-right text-xs max-w-[60%]">{jurisdictionInfo.address}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Hours</span>
+                  <span className="font-medium text-gray-900 text-xs">{jurisdictionInfo.hours}</span>
+                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Phone</span>
                   <a href={`tel:${jurisdictionInfo.phone}`} className="font-medium text-blue-600">
