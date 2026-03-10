@@ -75,9 +75,38 @@ const JOB_CONDITIONAL_QUESTIONS: Record<JobType, Array<{
       field: 'isGas',
     },
   ],
-  ELECTRICAL_PANEL: [],
+  ELECTRICAL_PANEL: [
+    {
+      id: 'panelAmps',
+      label: 'New panel size?',
+      type: 'radio',
+      options: [
+        { value: '100', label: '100 amp' },
+        { value: '150', label: '150 amp' },
+        { value: '200', label: '200 amp' },
+        { value: '400', label: '400 amp' },
+      ],
+      field: 'panelAmps',
+    },
+  ],
   ELECTRICAL_REWIRING: [],
-  AC_HVAC_CHANGEOUT: [],
+  AC_HVAC_CHANGEOUT: [
+    {
+      id: 'hvacTonnage',
+      label: 'System size (tonnage)?',
+      type: 'radio',
+      options: [
+        { value: '1.5', label: '1.5 ton' },
+        { value: '2', label: '2 ton' },
+        { value: '2.5', label: '2.5 ton' },
+        { value: '3', label: '3 ton' },
+        { value: '3.5', label: '3.5 ton' },
+        { value: '4', label: '4 ton' },
+        { value: '5', label: '5 ton' },
+      ],
+      field: 'hvacTonnage',
+    },
+  ],
   EV_CHARGER: [],
   GENERATOR_INSTALL: [],
   PLUMBING_MAIN_LINE: [],
@@ -103,7 +132,32 @@ const JOB_CONDITIONAL_QUESTIONS: Record<JobType, Array<{
       field: 'isAttached',
     },
   ],
-  FENCE_INSTALLATION: [],
+  FENCE_INSTALLATION: [
+    {
+      id: 'fenceHeight',
+      label: 'Fence height?',
+      type: 'radio',
+      options: [
+        { value: 'under-4ft', label: 'Under 4 feet' },
+        { value: '4-6ft', label: '4 to 6 feet' },
+        { value: 'over-6ft', label: 'Over 6 feet' },
+      ],
+      field: 'fenceHeight',
+    },
+    {
+      id: 'fenceMaterial',
+      label: 'Fence material?',
+      type: 'radio',
+      options: [
+        { value: 'wood', label: 'Wood' },
+        { value: 'vinyl', label: 'Vinyl / PVC' },
+        { value: 'chain-link', label: 'Chain link' },
+        { value: 'aluminum', label: 'Aluminum' },
+        { value: 'masonry', label: 'Masonry / Block' },
+      ],
+      field: 'fenceMaterial',
+    },
+  ],
   POOL_BARRIER: [],
   ROOM_ADDITION: [],
   FOUNDATION_REPAIR: [],
@@ -264,12 +318,22 @@ export default function QuickStartPage() {
         updatedAt: new Date(),
       };
 
-      // Analyze requirements via backend
+      // Analyze requirements via backend — pass all job-specific answers
       const analysis = await analyzeJobRequirements({
         jobType: data.jobType,
         jurisdiction: data.jurisdiction,
         address: data.address,
         description: data.description || `Job type: ${data.jobType}`,
+        buildingType: formData.buildingType as string | undefined,
+        isAlteringShape: formData.isAlteringShape as boolean | undefined,
+        isTankless: formData.isTankless as boolean | undefined,
+        isGas: formData.isGas as boolean | undefined,
+        deckHeight: formData.deckHeight as string | undefined,
+        isAttached: formData.isAttached as boolean | undefined,
+        fenceHeight: formData.fenceHeight as string | undefined,
+        fenceMaterial: formData.fenceMaterial as string | undefined,
+        panelAmps: formData.panelAmps as string | undefined,
+        hvacTonnage: formData.hvacTonnage as string | undefined,
       });
 
       // Update job with results
@@ -338,12 +402,21 @@ export default function QuickStartPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
           >
-            <h1 className="text-xl font-bold text-gray-900 mb-2">
-              What permit do you need in Pinellas County?
+            <h1 className="text-xl font-bold text-gray-900 mb-1">
+              What work are you doing?
             </h1>
-            <p className="text-sm text-gray-500 mb-6">
-              Select the type of work you're doing
+            <p className="text-sm text-gray-500 mb-4">
+              Tap the type of job to get your permit checklist
             </p>
+
+            {/* Permit not required info */}
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl flex gap-2">
+              <AlertCircle size={15} className="text-green-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-green-800">
+                <span className="font-semibold">Small repairs may not need a permit.</span>{' '}
+                Replacing fixtures like faucets, outlets, or light switches typically don't require one. When in doubt, call the county at <a href="tel:7274643888" className="underline font-medium">(727) 464-3888</a>.
+              </p>
+            </div>
 
             {isMobile ? (
               <JobTypeList onSelect={handleSelectJobType} selectedType={selectedType || undefined} />
@@ -354,14 +427,14 @@ export default function QuickStartPage() {
             {/* Manual entry option */}
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-500 text-center mb-3">
-                Don't see what you need?
+                Don't see your job type listed?
               </p>
               <Button 
                 variant="outline" 
                 className="w-full"
                 onClick={() => {
                   setStep('details');
-                  toast.info('Enter your project details below and click "Analyze My Project" for AI recommendations');
+                  toast.info('Describe your project and click "Analyze My Project" for AI recommendations');
                 }}
               >
                 Describe your project in your own words
@@ -379,11 +452,17 @@ export default function QuickStartPage() {
             className="space-y-5"
           >
             <div>
+              {selectedType && (
+                <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1 rounded-full border border-blue-200 mb-3">
+                  <Check size={12} />
+                  {selectedType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                </div>
+              )}
               <h1 className="text-xl font-bold text-gray-900 mb-1">
-                Tell us about your job
+                Where is the job?
               </h1>
               <p className="text-sm text-gray-500">
-                Just 2-3 questions and we'll generate your checklist
+                Answer a few quick questions to get your exact checklist
               </p>
             </div>
 
@@ -413,7 +492,7 @@ export default function QuickStartPage() {
             {/* Jurisdiction select */}
             <div className="space-y-2">
               <Label htmlFor="jurisdiction" className="text-sm font-medium">
-                Jurisdiction
+                Which city or area is the property in?
               </Label>
               <select
                 id="jurisdiction"
@@ -425,6 +504,7 @@ export default function QuickStartPage() {
                   <option key={j.value} value={j.value}>{j.label}</option>
                 ))}
               </select>
+              <p className="text-xs text-gray-400">Not sure? Choose "Pinellas County" — it covers unincorporated areas.</p>
             </div>
 
             {/* Conditional questions based on job type */}
@@ -494,11 +574,11 @@ export default function QuickStartPage() {
             {/* Optional description */}
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium">
-                Notes (optional)
+                Anything else we should know? <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
               <textarea
                 id="description"
-                placeholder="Any additional details about the job..."
+                placeholder="e.g. 2,000 sq ft roof, 3-tab shingles, built in 1985..."
                 value={formData.description || ''}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 className="w-full h-20 px-3 py-2 rounded-md border border-input bg-background text-sm resize-none"
