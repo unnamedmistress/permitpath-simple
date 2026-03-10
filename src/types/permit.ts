@@ -190,6 +190,17 @@ export interface JobAnalysisRequest {
   description: string;
   squareFootage?: number;
   yearBuilt?: number;
+  // Job-specific answers from the wizard
+  buildingType?: string;
+  isAlteringShape?: boolean;
+  isTankless?: boolean;
+  isGas?: boolean;
+  deckHeight?: string;
+  isAttached?: boolean;
+  fenceHeight?: string;
+  fenceMaterial?: string;
+  panelAmps?: string;
+  hvacTonnage?: string;
 }
 
 export interface JobAnalysisResponse {
