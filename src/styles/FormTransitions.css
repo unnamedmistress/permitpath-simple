@@ -1,0 +1,26 @@
+/* Form transition styles */
+.form-step {
+  position: absolute;
+  width: 100%;
+  transition: opacity 300ms, transform 300ms;
+}
+
+.form-step.enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.form-step.enter-active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.form-step.exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.form-step.exit-active {
+  opacity: 0;
+  transform: translateX(-20px);
+}
