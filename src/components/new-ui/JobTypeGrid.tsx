@@ -14,7 +14,7 @@ interface JobTypeOption {
 
 const JOB_TYPES: JobTypeOption[] = [
   { type: 'RE_ROOFING',           label: 'Roof',           icon: Home,       color: 'bg-orange-500',  bgLight: 'hover:bg-orange-50',  borderColor: 'hover:border-orange-300',  description: 'Replace or repair' },
-  { type: 'SMALL_BATH_REMODEL',   label: 'Bathroom',       icon: Bath,       color: 'bg-sky-500',     bgLight: 'hover:bg-sky-50',     borderColor: 'hover:border-sky-300',     description: 'Remodel or update' },
+  { type: 'SMALL_BATH_REMODEL',   label: 'Bathroom',       icon: Bath,       color: 'bg-blue-400',    bgLight: 'hover:bg-blue-50',    borderColor: 'hover:border-blue-300',    description: 'Remodel or update' },
   { type: 'AC_HVAC_CHANGEOUT',    label: 'AC / HVAC',      icon: Wind,       color: 'bg-green-500',   bgLight: 'hover:bg-green-50',   borderColor: 'hover:border-green-300',   description: 'System changeout' },
   { type: 'WATER_HEATER',         label: 'Water Heater',   icon: Droplets,   color: 'bg-blue-500',    bgLight: 'hover:bg-blue-50',    borderColor: 'hover:border-blue-300',    description: 'Replace or install' },
   { type: 'ELECTRICAL_PANEL',     label: 'Electric Panel', icon: Zap,        color: 'bg-yellow-500',  bgLight: 'hover:bg-yellow-50',  borderColor: 'hover:border-yellow-300',  description: 'Upgrade or replace' },
