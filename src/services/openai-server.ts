@@ -3,8 +3,21 @@
 
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY,
+// Lazy-init: do NOT instantiate at module load time so Vite build works without a key
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    _openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || process.env.VITE_OPENAI_API_KEY,
+    });
+  }
+  return _openai;
+}
+// Keep 'openai' as an alias so existing call-sites don't need changes
+const openai = new Proxy({} as OpenAI, {
+  get(_target, prop) {
+    return (getOpenAI() as any)[prop];
+  },
 });
 
 // Rate limiting storage (use Redis in production)

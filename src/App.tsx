@@ -12,7 +12,6 @@ import { PhotoProvider } from "@/context/PhotoContext";
 import BottomNav from "@/components/layout/BottomNav";
 import NotFound from "@/pages/NotFound";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
-import ConciergeChatWidget from "@/components/ConciergeChatWidget";
 
 // Simplified pages
 const HomePageSimple = lazy(() => import("@/pages/HomePageSimple"));
@@ -149,14 +148,14 @@ function App() {
                       
                       {/* Checklist/Wizard - Full screen (no nav) */}
                       <Route path="/wizard/:jobId" element={<LazyPage><WizardPageSimple /></LazyPage>} />
-                      
-                      {/* NEW: Ultra-simplified wizard flow */}
+
+                      {/* Simplified 4-step wizard — alternate entry, Phase 2 will promote this to primary */}
                       <Route path="/simple/job-type" element={<LazyPage><SimplifiedJobTypePage /></LazyPage>} />
                       <Route path="/simple/location/:jobId" element={<LazyPage><SimplifiedLocationPage /></LazyPage>} />
                       <Route path="/simple/details/:jobId" element={<LazyPage><SimplifiedDetailsPage /></LazyPage>} />
                       <Route path="/simple/wizard/:jobId" element={<LazyPage><SimplifiedWizardPage /></LazyPage>} />
-                      
-                      {/* Legacy route redirects */}
+
+                      {/* Legacy route redirects — all old entry points funnel to quick-start */}
                       <Route path="/wizard" element={<Navigate to="/quick-start" replace />} />
                       <Route path="/new" element={<Navigate to="/quick-start" replace />} />
                       
@@ -166,7 +165,6 @@ function App() {
                   </AnimatePresence>
                 </main>
                 <Analytics />
-                <ConciergeChatWidget />
               </BrowserRouter>
             </TooltipProvider>
           </PhotoProvider>

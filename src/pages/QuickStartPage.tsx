@@ -16,6 +16,7 @@ import { saveJob, getJobs, deleteJob } from '@/services/jobStorage';
 import { analyzeJobRequirements } from '@/services/ai-backend';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { generatePrediction, detectIntent, Prediction } from '@/services/predictionEngine';
+import { detectJurisdiction, DetectedJurisdiction } from '@/services/jurisdictionDetect';
 import AIPredictionsPanel from '@/components/AIPredictionsPanel';
 
 const JURISDICTIONS: { value: Jurisdiction; label: string }[] = [
@@ -219,6 +220,7 @@ export default function QuickStartPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [showAIPredictions, setShowAIPredictions] = useState(false);
+  const [autoDetected, setAutoDetected] = useState<DetectedJurisdiction | null>(null);
 
   const [isSelecting, setIsSelecting] = useState(false);
   
@@ -278,6 +280,17 @@ export default function QuickStartPage() {
   const handleInputChange = (field: keyof QuickStartInput, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setErrors([]);
+
+    // Phase 3: auto-detect jurisdiction when the address changes
+    if (field === 'address') {
+      const detected = detectJurisdiction(value as string);
+      if (detected) {
+        setAutoDetected(detected);
+        setFormData(prev => ({ ...prev, address: value as string, jurisdiction: detected.jurisdiction }));
+      } else {
+        setAutoDetected(null);
+      }
+    }
   };
 
   const handleBack = () => {
@@ -418,7 +431,7 @@ export default function QuickStartPage() {
       {/* Progress bar */}
       <div className="h-1 bg-gray-200 rounded-full mb-6 overflow-hidden">
         <motion.div
-          className="h-full bg-blue-500"
+          className="h-full bg-blueprint"
           initial={{ width: '0%' }}
           animate={{ 
             width: step === 'type' ? '50%' : '100%'
@@ -486,7 +499,7 @@ export default function QuickStartPage() {
           >
             <div>
               {selectedType && (
-                <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1 rounded-full border border-blue-200 mb-3">
+                <div className="inline-flex items-center gap-1.5 bg-blueprint-50 text-blueprint text-xs font-medium px-3 py-1 rounded-full border border-blueprint-200 mb-3">
                   <Check size={12} />
                   {selectedType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </div>
@@ -522,22 +535,62 @@ export default function QuickStartPage() {
               )}
             </div>
 
-            {/* Jurisdiction select */}
+            {/* Jurisdiction select — with Phase 3 auto-detection */}
             <div className="space-y-2">
-              <Label htmlFor="jurisdiction" className="text-sm font-medium">
+              <Label htmlFor="jurisdiction" className="text-sm font-medium flex items-center gap-1.5">
                 Which city or area is the property in?
+                {autoDetected && (
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${
+                    autoDetected.confidence === 'high'
+                      ? 'bg-blueprint-50 text-blueprint border-blueprint-200'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                    <Check size={10} />
+                    {autoDetected.confidence === 'high' ? 'Auto-detected' : 'ZIP estimate'}
+                  </span>
+                )}
               </Label>
-              <select
-                id="jurisdiction"
-                value={formData.jurisdiction}
-                onChange={(e) => handleInputChange('jurisdiction', e.target.value)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-              >
-                {JURISDICTIONS.map((j) => (
-                  <option key={j.value} value={j.value}>{j.label}</option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-400">Not sure? Choose "Pinellas County" — it covers unincorporated areas.</p>
+
+              {/* Auto-detected city badge */}
+              {autoDetected && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 rounded-lg bg-blueprint-50 border border-blueprint-200 px-3 py-2"
+                >
+                  <MapPin size={14} className="text-blueprint flex-shrink-0" />
+                  <span className="text-sm font-medium text-blueprint-900">{autoDetected.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAutoDetected(null);
+                      setFormData(prev => ({ ...prev, jurisdiction: 'PINELLAS_COUNTY' }));
+                    }}
+                    className="ml-auto text-blueprint-400 hover:text-blueprint-700 text-xs underline"
+                  >
+                    Change
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Show the full select only when not auto-detected (or user dismissed) */}
+              {!autoDetected && (
+                <>
+                  <select
+                    id="jurisdiction"
+                    value={formData.jurisdiction}
+                    onChange={(e) => handleInputChange('jurisdiction', e.target.value as Jurisdiction)}
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                  >
+                    {JURISDICTIONS.map((j) => (
+                      <option key={j.value} value={j.value}>{j.label}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400">
+                    Start typing your address above — we'll detect your city automatically.
+                  </p>
+                </>
+              )}
             </div>
 
             {/* Conditional questions based on job type */}
@@ -570,9 +623,9 @@ export default function QuickStartPage() {
                         />
                         <label
                           htmlFor={`${question.id}-${opt.value}`}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer transition-all peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 hover:bg-gray-50"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer transition-all peer-data-[state=checked]:border-blueprint peer-data-[state=checked]:bg-blueprint-50 hover:bg-gray-50"
                         >
-                          <div className="w-4 h-4 rounded-full border border-gray-300 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-500" />
+                          <div className="w-4 h-4 rounded-full border border-gray-300 peer-data-[state=checked]:border-blueprint peer-data-[state=checked]:bg-blueprint-500" />
                           <span className="text-sm">{opt.label}</span>
                         </label>
                       </div>
@@ -591,7 +644,7 @@ export default function QuickStartPage() {
                         className={`
                           px-4 py-2 rounded-lg border text-sm font-medium transition-all
                           ${formData[question.field] === opt.value
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            ? 'border-blueprint bg-blueprint-50 text-blueprint'
                             : 'border-gray-200 hover:bg-gray-50 text-gray-700'
                           }
                         `}
@@ -659,9 +712,9 @@ export default function QuickStartPage() {
             className="flex flex-col items-center justify-center py-12 text-center"
           >
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin" />
+              <div className="w-16 h-16 border-4 border-blueprint-100 border-t-blueprint rounded-full animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Check size={24} className="text-blue-500 animate-pulse" />
+                <Check size={24} className="text-blueprint animate-pulse" />
               </div>
             </div>
             <h2 className="text-lg font-semibold text-gray-900 mt-6">

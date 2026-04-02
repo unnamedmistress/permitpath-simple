@@ -17,13 +17,13 @@
     --popover: 0 0% 100%;
     --popover-foreground: 218 23% 23%;
 
-    /* Primary - Blueprint Blue #0A3A7E */
-    --primary: 214 85% 27%;
+    /* Primary - Trust Blue #0B5FB5 (brighter, more approachable than old navy) */
+    --primary: 214 88% 38%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary - Light Blue Sky */
     --secondary: 213 40% 94%;
-    --secondary-foreground: 214 85% 27%;
+    --secondary-foreground: 214 88% 38%;
 
     /* Muted - Steel Gray */
     --muted: 210 20% 94%;
@@ -52,18 +52,28 @@
 
     --radius: 0.75rem;
     
-    /* Design System Colors */
-    --blueprint: #0A3A7E;
-    --blueprint-50: #E6EEF8;
-    --blueprint-100: #DDE8F5;
-    --blueprint-200: #B8D0EB;
-    --blueprint-300: #8FB8E0;
-    --blueprint-400: #5C94D1;
-    --blueprint-500: #3A7ABF;
-    --blueprint-600: #0A3A7E;
-    --blueprint-700: #082E65;
-    --blueprint-800: #06234C;
-    --blueprint-900: #041733;
+    /* Design System Colors — Trust Blue palette */
+    --blueprint: #0B5FB5;
+    --blueprint-50: #EBF3FC;
+    --blueprint-100: #D6E8F9;
+    --blueprint-200: #ADD1F3;
+    --blueprint-300: #7DB6EC;
+    --blueprint-400: #4D96E4;
+    --blueprint-500: #2478D0;
+    --blueprint-600: #0B5FB5;
+    --blueprint-700: #094D96;
+    --blueprint-800: #073A72;
+    --blueprint-900: #04264D;
+
+    /* Semantic role assignments — use ONLY these, never raw colors in components */
+    --color-trust: #0B5FB5;       /* Navigation, headings, primary buttons */
+    --color-success: #16A34A;     /* Confirmations, completed steps */
+    --color-warning: #D97706;     /* Alerts, cost CTAs, deadlines */
+    --color-danger: #DC2626;      /* Fines, CDL risk, non-compliance */
+    --color-neutral-bg: #F8FAFC;  /* Page background */
+    --color-card: #FFFFFF;        /* Card surfaces */
+    --color-text-primary: #1E293B;
+    --color-text-secondary: #475569;
     
     --parchment: #F7FAFC;
     --steel: #4A5568;
@@ -299,41 +309,3 @@
     display: none !important;
   }
 }
-
-/* ─────────────────────────────────────────────────────────────
-   Design Refresh — visual polish layer
-   ───────────────────────────────────────────────────────────── */
-
-/* Richer page background — subtle warm gradient instead of flat */
-body {
-  background: linear-gradient(180deg, #EFF6FF 0%, #F8FAFF 30%, #FFFFFF 100%);
-  background-attachment: fixed;
-}
-
-/* Job-type card icon — smooth pop on hover */
-@layer utilities {
-  .job-card-icon {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .job-card-icon:hover {
-    transform: scale(1.08);
-    box-shadow: 0 4px 12px -2px rgba(0,0,0,0.18);
-  }
-}
-
-/* Hero gradient helper used by HomePageSimple */
-.hero-gradient {
-  background: linear-gradient(160deg, #EBF4FF 0%, #F0F9FF 45%, #F8FAFF 100%);
-}
-
-/* Elevated card with colored left accent on hover */
-.permit-card {
-  @apply relative bg-white rounded-xl border border-gray-200 shadow-sm
-         transition-all duration-200 cursor-pointer
-         hover:shadow-md hover:border-blue-200 hover:-translate-y-0.5;
-}
-
-/* Trust badge variants */
-.badge-blue    { @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-700; }
-.badge-green   { @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700; }
-.badge-violet  { @apply flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-violet-50 border border-violet-200 text-violet-700; }

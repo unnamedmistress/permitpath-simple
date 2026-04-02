@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, ArrowRight, DollarSign, Clock, FileText, ExternalLink,
   CheckCircle2, AlertCircle, ChevronRight, Upload, HelpCircle,
-  Phone, ClipboardList, Info
+  Phone, ClipboardList, Info, TriangleAlert, MapPin, Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
@@ -17,7 +17,20 @@ import { calculateProgress } from '@/services/requirements';
 // ─── Jurisdiction helpers ──────────────────────────────────────────────────
 // All data verified from https://pinellas.gov/building-departments-in-pinellas-county/
 // Portal URLs verified March 2026. Pinellas County BDRS portal: aca-prod.accela.com/pinellas
-const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUrl: string; portalLabel: string; address: string; hours: string }> = {
+interface JurisdictionInfo {
+  label: string;
+  phone: string;
+  portalUrl: string;
+  portalLabel: string;
+  address: string;
+  hours: string;
+  /** Phase 3: local rules specific to this jurisdiction. Each string is one bullet. */
+  localRules?: string[];
+  /** Phase 3: express permits available (flat fee, no plan review) */
+  expressPermitsAvailable?: boolean;
+}
+
+const JURISDICTION_INFO: Record<string, JurisdictionInfo> = {
   PINELLAS_COUNTY: {
     label: 'Unincorporated Pinellas County',
     phone: '(727) 464-3888',
@@ -25,6 +38,12 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Pinellas County Access Portal',
     address: '440 Court Street, Clearwater, FL 33756',
     hours: 'Mon–Fri, 8am–4pm',
+    expressPermitsAvailable: true,
+    localRules: [
+      'Express permits (roof, HVAC, water heater, windows) are issued same-day at the counter — no plan review required.',
+      'Work over $500 requires a permit per Pinellas County Code General Permit Requirements.',
+      'Permit fees are valuation-based starting at $100 for work up to $1,000.',
+    ],
   },
   ST_PETERSBURG: {
     label: 'St. Petersburg',
@@ -33,6 +52,12 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'St. Pete Building Permits',
     address: 'One 4th Street N, St. Petersburg, FL 33701',
     hours: 'Mon–Fri, 8am–4pm',
+    expressPermitsAvailable: true,
+    localRules: [
+      'Wednesday hours are shortened: 8am–12pm only — plan your visit accordingly.',
+      'ePlan Help Desk available at (727) 893-7230 for online submission questions.',
+      'Last customer taken 30 minutes before closing.',
+    ],
   },
   CLEARWATER: {
     label: 'Clearwater',
@@ -41,6 +66,11 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Clearwater Permit Portal',
     address: '2741 State Road 580, Clearwater, FL 33761',
     hours: 'Mon–Fri, 8am–4:30pm (Wed closes 2:30pm)',
+    expressPermitsAvailable: true,
+    localRules: [
+      'Wednesday closes at 2:30pm — earlier than most Pinellas cities.',
+      'Online submissions via Clearwater Permit Portal are encouraged to avoid counter wait times.',
+    ],
   },
   LARGO: {
     label: 'Largo',
@@ -49,6 +79,10 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Largo Building Services',
     address: '201 Highland Ave, Largo, FL 33770',
     hours: 'Mon–Fri, 8am–4pm (Wed closes 3pm)',
+    expressPermitsAvailable: true,
+    localRules: [
+      'Wednesday closes at 3pm — plan morning visits for mid-week submissions.',
+    ],
   },
   DUNEDIN: {
     label: 'Dunedin',
@@ -57,6 +91,7 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Dunedin Building & Permits',
     address: '737 Louden Avenue, Dunedin, FL 34698',
     hours: 'Mon–Fri, 8am–4:30pm',
+    expressPermitsAvailable: true,
   },
   TARPON_SPRINGS: {
     label: 'Tarpon Springs',
@@ -65,6 +100,10 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Tarpon Springs GoPost Portal',
     address: '324 East Pine Street, Tarpon Springs, FL 34689',
     hours: 'Mon–Fri, 8am–4:30pm (Wed closes noon)',
+    localRules: [
+      'Wednesday closes at noon — avoid Wednesday for in-person submissions.',
+      'Tarpon Springs uses the GoPost portal (not Accela) — bookmark the correct link.',
+    ],
   },
   SEMINOLE: {
     label: 'Seminole',
@@ -73,6 +112,9 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Seminole Building Dept',
     address: '9199 113th Street, Seminole, FL 33772',
     hours: 'Mon–Fri, 8am–3:30pm',
+    localRules: [
+      'Counter closes at 3:30pm daily — one of the earlier closing times in the county.',
+    ],
   },
   PINELLAS_PARK: {
     label: 'Pinellas Park',
@@ -81,6 +123,7 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Pinellas Park Permits',
     address: '6051 78th Avenue N, Pinellas Park, FL 33781',
     hours: 'Mon–Fri, 8am–4:30pm',
+    expressPermitsAvailable: true,
   },
   GULFPORT: {
     label: 'Gulfport',
@@ -89,6 +132,9 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Gulfport Community Development',
     address: '5330 23rd Ave S, Gulfport, FL 33707',
     hours: 'Mon–Fri, 8am–4:30pm (Thu closes 3:30pm)',
+    localRules: [
+      'Thursday closes at 3:30pm — the unusual day off from standard hours.',
+    ],
   },
   ST_PETE_BEACH: {
     label: 'St. Pete Beach',
@@ -97,6 +143,10 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'St. Pete Beach Building',
     address: '155 Corey Hall, St. Pete Beach, FL 33706',
     hours: 'Mon–Fri, 8am–4:30pm',
+    localRules: [
+      'Coastal/beach properties may require additional FEMA flood zone compliance documentation.',
+      'Confirm flood zone designation at msc.fema.gov before submitting structural permit applications.',
+    ],
   },
   TREASURE_ISLAND: {
     label: 'Treasure Island',
@@ -105,6 +155,10 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Treasure Island Building Dept',
     address: '10451 Gulf Blvd, Treasure Island, FL 33706',
     hours: 'Mon–Fri, 9am–4pm',
+    localRules: [
+      'Counter opens at 9am (later than most Pinellas offices) — plan accordingly.',
+      'Coastal/barrier island properties require FEMA flood zone compliance documentation.',
+    ],
   },
   MADEIRA_BEACH: {
     label: 'Madeira Beach',
@@ -113,6 +167,10 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Madeira Beach Building Dept',
     address: '300 Municipal Drive, Madeira Beach, FL 33708',
     hours: 'Mon–Fri, 8:30am–4:30pm',
+    localRules: [
+      'Counter opens at 8:30am (30 min later than most Pinellas offices).',
+      'Barrier island location: flood zone documentation typically required for structural work.',
+    ],
   },
   INDIAN_SHORES: {
     label: 'Indian Shores',
@@ -121,6 +179,9 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Indian Shores Building Dept',
     address: '19305 Gulf Blvd, Indian Shores, FL 33785',
     hours: 'Mon–Fri, 8am–4pm',
+    localRules: [
+      'Barrier island jurisdiction — coastal construction setback lines (CCSL) apply for exterior work near the beach.',
+    ],
   },
   SOUTH_PASADENA: {
     label: 'South Pasadena',
@@ -137,6 +198,9 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Belleair Building Dept',
     address: '901 Ponce de Leon Blvd, Belleair, FL 33756',
     hours: 'Mon–Fri, 8:30am–4:30pm',
+    localRules: [
+      'Counter opens at 8:30am — 30 minutes later than the county standard.',
+    ],
   },
   PALM_HARBOR: {
     label: 'Palm Harbor (Unincorporated)',
@@ -145,6 +209,11 @@ const JURISDICTION_INFO: Record<string, { label: string; phone: string; portalUr
     portalLabel: 'Pinellas County Access Portal',
     address: '440 Court Street, Clearwater, FL 33756',
     hours: 'Mon–Fri, 8am–4pm',
+    expressPermitsAvailable: true,
+    localRules: [
+      'Palm Harbor is unincorporated — permits go through Pinellas County, not a city building dept.',
+      'Express permits (roof, HVAC, water heater, windows) are issued same-day at the county counter.',
+    ],
   },
 };
 
@@ -154,7 +223,7 @@ function getJurisdictionInfo(jurisdiction: string) {
 
 // ─── Category config ───────────────────────────────────────────────────────
 const CATEGORY_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ElementType }> = {
-  document: { label: 'Document', color: 'text-blue-600', bg: 'bg-blue-50', icon: FileText },
+  document: { label: 'Document', color: 'text-blueprint', bg: 'bg-blueprint-50', icon: FileText },
   drawing: { label: 'Drawing', color: 'text-purple-600', bg: 'bg-purple-50', icon: ClipboardList },
   inspection: { label: 'Inspection', color: 'text-orange-600', bg: 'bg-orange-50', icon: CheckCircle2 },
   fee: { label: 'Fee', color: 'text-green-600', bg: 'bg-green-50', icon: DollarSign },
@@ -210,11 +279,17 @@ function RequirementCard({
           </div>
         </div>
 
-        {/* Why needed — always visible, not hidden */}
-        {req.plainLanguageWhy && !isCompleted && (
-          <div className="mt-3 flex gap-2 bg-amber-50 border border-amber-100 rounded-lg p-2.5">
-            <Info size={14} className="text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-800 leading-relaxed">{req.plainLanguageWhy}</p>
+        {/* Why needed — always visible, blue info style */}
+        {req.plainLanguageWhy && (
+          <div className={`mt-3 flex gap-2 rounded-lg p-2.5 ${
+            isCompleted
+              ? 'bg-gray-50 border border-gray-100'
+              : 'bg-blueprint-50 border border-blueprint-100'
+          }`}>
+            <Info size={14} className={`flex-shrink-0 mt-0.5 ${isCompleted ? 'text-gray-400' : 'text-blueprint'}`} />
+            <p className={`text-xs leading-relaxed ${isCompleted ? 'text-gray-400' : 'text-blueprint-700'}`}>
+              {req.plainLanguageWhy}
+            </p>
           </div>
         )}
 
@@ -381,7 +456,7 @@ export default function WizardPageSimple() {
     return (
       <PageWrapper className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-12 h-12 border-4 border-blueprint-200 border-t-blueprint rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-500">Building your checklist...</p>
         </div>
       </PageWrapper>
@@ -428,11 +503,11 @@ export default function WizardPageSimple() {
         <div className="mb-5">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs font-medium text-gray-600">Your progress</span>
-            <span className="text-xs font-semibold text-blue-600">{Math.round(progress)}%</span>
+            <span className="text-xs font-semibold text-blueprint">{Math.round(progress)}%</span>
           </div>
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
+              className="h-full bg-gradient-to-r from-blueprint to-blueprint-700 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -464,46 +539,47 @@ export default function WizardPageSimple() {
             </p>
           </div>
         ) : (
-          <div className="mb-5 rounded-2xl bg-blue-600 p-5 text-white text-center shadow-md">
+          <div className="mb-5 rounded-2xl bg-blueprint p-5 text-white text-center shadow-md">
             <div className="text-4xl mb-1">📋</div>
             <h2 className="text-xl font-extrabold tracking-tight">Yes — A Permit Is Required</h2>
-            <p className="text-sm text-blue-100 mt-1 leading-relaxed">
+            <p className="text-sm text-blueprint-100 mt-1 leading-relaxed">
               Here is your checklist. Complete each item below before submitting your permit.
             </p>
           </div>
         )}
 
-        {/* Stats row */}
+        {/* Stats grid — 2×2 */}
         {!job.permitNotRequired && (
-        <div className="grid grid-cols-3 gap-2.5 mb-5">
+        <div className="grid grid-cols-2 gap-2.5 mb-5">
           <StatCard label="Permit Fee" value={job.estimatedCost || 'Varies'} icon={DollarSign} color="bg-green-500" />
-          <StatCard label="Timeline" value={job.estimatedTimeline || '5-10 days'} icon={Clock} color="bg-blue-500" />
-          <StatCard label="Required" value={`${requiredCompleted}/${requiredCount}`} icon={FileText} color="bg-purple-500" />
+          <StatCard label="Timeline" value={job.estimatedTimeline || '5-10 days'} icon={Clock} color="bg-blueprint-500" />
+          <StatCard label="Required Items" value={`${requiredCompleted}/${requiredCount}`} icon={FileText} color="bg-purple-500" />
+          <StatCard label="Skip Risk" value="Up to $10K fine" icon={TriangleAlert} color="bg-amber-500" />
         </div>
         )}
 
         {/* County portal CTA — only show when permit IS required */}
         {!job.permitNotRequired && (
-        <div className="mb-5 rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <div className="mb-5 rounded-xl border border-blueprint-200 bg-blueprint-50 p-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-blueprint flex items-center justify-center flex-shrink-0">
               <ExternalLink size={16} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-blue-900">Submit Your Permit Online</p>
-              <p className="text-xs text-blue-700 mt-0.5">
+              <p className="text-sm font-semibold text-blueprint-900">Submit Your Permit Online</p>
+              <p className="text-xs text-blueprint-700 mt-0.5">
                 {jurisdictionInfo.label} — {jurisdictionInfo.phone}
               </p>
-              <p className="text-xs text-blue-600 mt-0.5">
+              <p className="text-xs text-blueprint-600 mt-0.5">
                 {jurisdictionInfo.address}
               </p>
-              <p className="text-xs text-blue-500 mt-0.5">
+              <p className="text-xs text-blueprint-500 mt-0.5">
                 {jurisdictionInfo.hours}
               </p>
             </div>
             <Button
               size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white flex-shrink-0"
+              className="bg-blueprint hover:bg-blueprint-700 text-white flex-shrink-0"
               onClick={() => window.open(jurisdictionInfo.portalUrl, '_blank')}
             >
               Open Portal
@@ -537,6 +613,44 @@ export default function WizardPageSimple() {
             Job Info
           </button>
         </div>
+        )}
+
+        {/* ── Phase 3: Local Rules Apply card ─────────────────────────── */}
+        {!job.permitNotRequired && (jurisdictionInfo.localRules?.length || jurisdictionInfo.expressPermitsAvailable) && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-5 rounded-xl border border-blueprint-200 bg-blueprint-50 overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-blueprint-100">
+              <div className="w-7 h-7 rounded-lg bg-blueprint flex items-center justify-center flex-shrink-0">
+                <MapPin size={14} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-blueprint-900">Local Rules Apply</p>
+                <p className="text-xs text-blueprint-600">{jurisdictionInfo.label}</p>
+              </div>
+              {jurisdictionInfo.expressPermitsAvailable && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-200">
+                  <Zap size={10} />
+                  Express permits
+                </span>
+              )}
+            </div>
+
+            {/* Rules list */}
+            {jurisdictionInfo.localRules && jurisdictionInfo.localRules.length > 0 && (
+              <ul className="px-4 py-3 space-y-2">
+                {jurisdictionInfo.localRules.map((rule, i) => (
+                  <li key={i} className="flex gap-2 text-xs text-blueprint-800 leading-relaxed">
+                    <span className="text-blueprint mt-0.5 flex-shrink-0">•</span>
+                    {rule}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </motion.div>
         )}
 
         {/* Checklist tab — only when permit required */}
@@ -618,7 +732,7 @@ export default function WizardPageSimple() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Phone</span>
-                  <a href={`tel:${jurisdictionInfo.phone}`} className="font-medium text-blue-600">
+                  <a href={`tel:${jurisdictionInfo.phone}`} className="font-medium text-blueprint">
                     {jurisdictionInfo.phone}
                   </a>
                 </div>
@@ -626,7 +740,7 @@ export default function WizardPageSimple() {
                   <span className="text-gray-600">Online Portal</span>
                   <button
                     onClick={() => window.open(jurisdictionInfo.portalUrl, '_blank')}
-                    className="font-medium text-blue-600 flex items-center gap-1"
+                    className="font-medium text-blueprint flex items-center gap-1"
                   >
                     {jurisdictionInfo.portalLabel}
                     <ExternalLink size={12} />
@@ -682,7 +796,7 @@ export default function WizardPageSimple() {
                 Call Office
               </Button>
               <Button
-                className="flex-1 gap-1.5 bg-blue-600 hover:bg-blue-700"
+                className="flex-1 gap-1.5 bg-blueprint hover:bg-blueprint-700"
                 onClick={() => window.open(jurisdictionInfo.portalUrl, '_blank')}
               >
                 Submit Permit
