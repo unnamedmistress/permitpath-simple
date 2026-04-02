@@ -28,8 +28,8 @@ export const validateEnv = (): void => {
     .map((entry) => entry.key);
 
   if (missingEnvVars.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missingEnvVars.join(", ")}. Add them to your .env file and restart the app.`
+    console.warn(
+      `Missing environment variables: ${missingEnvVars.join(", ")}. AI and save features will be limited.`
     );
   }
 };
