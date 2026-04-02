@@ -30,7 +30,7 @@ const CONFIDENCE_ANCHORS = [
     colorClass: 'text-green-700',
     bgClass: 'bg-green-50',
     borderClass: 'border-green-200',
-    label: 'Most permits cost',
+    label: 'Typical cost',
     value: '$50 – $250',
   },
   {
@@ -46,7 +46,7 @@ const CONFIDENCE_ANCHORS = [
     colorClass: 'text-amber-700',
     bgClass: 'bg-amber-50',
     borderClass: 'border-amber-200',
-    label: 'Skipping one costs',
+    label: 'Skip penalty',
     value: 'Up to $10K',
   },
 ];
@@ -169,8 +169,8 @@ export default function HomePageSimple() {
               />
             </div>
 
-            {/* Example prompts */}
-            <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+            {/* Example prompts — horizontally scrollable row */}
+            <div className="px-4 pb-3 flex gap-1.5 overflow-x-auto scrollbar-hide" style={{ flexWrap: 'nowrap', overflowX: 'auto' }}>
               {EXAMPLE_PROMPTS.map((p) => (
                 <button
                   key={p}
@@ -178,7 +178,8 @@ export default function HomePageSimple() {
                     setQuery(p);
                     inputRef.current?.focus();
                   }}
-                  className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-blueprint-50 hover:text-blueprint transition-colors"
+                  style={{ minHeight: 36 }}
+                  className="text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-blueprint-50 hover:text-blueprint transition-colors flex-shrink-0 whitespace-nowrap"
                 >
                   {p}
                 </button>
@@ -213,20 +214,23 @@ export default function HomePageSimple() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="grid grid-cols-3 gap-2 mb-6"
+          className="flex gap-2.5 mb-5 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4"
+          style={{ flexWrap: 'nowrap', overflowX: 'auto' }}
         >
           {CONFIDENCE_ANCHORS.map((anchor) => (
             <div
               key={anchor.label}
-              className={`flex flex-col items-center gap-1 p-3 rounded-xl border ${anchor.bgClass} ${anchor.borderClass}`}
+              className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border flex-shrink-0 ${anchor.bgClass} ${anchor.borderClass}`}
             >
-              <anchor.icon size={16} className={anchor.colorClass} />
-              <span className={`text-xs font-bold leading-tight text-center ${anchor.colorClass}`}>
-                {anchor.value}
-              </span>
-              <span className="text-xs text-gray-500 text-center leading-tight">
-                {anchor.label}
-              </span>
+              <anchor.icon size={18} className={anchor.colorClass} />
+              <div>
+                <p className={`text-sm font-bold leading-tight ${anchor.colorClass}`}>
+                  {anchor.value}
+                </p>
+                <p className="text-xs text-gray-500 leading-tight whitespace-nowrap">
+                  {anchor.label}
+                </p>
+              </div>
             </div>
           ))}
         </motion.div>

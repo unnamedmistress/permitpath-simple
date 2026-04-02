@@ -480,7 +480,7 @@ export default function WizardPageSimple() {
   const jobLabel = job.jobType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   return (
-    <PageWrapper className="pb-32">
+    <PageWrapper className="pb-40">
       {/* Sticky header */}
       <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 border-b border-gray-100 -mx-4 px-4 py-3 mb-4">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
@@ -552,7 +552,7 @@ export default function WizardPageSimple() {
         {!job.permitNotRequired && (
         <div className="grid grid-cols-2 gap-2.5 mb-5">
           <StatCard label="Permit Fee" value={job.estimatedCost || 'Varies'} icon={DollarSign} color="bg-green-500" />
-          <StatCard label="Timeline" value={job.estimatedTimeline || '5-10 days'} icon={Clock} color="bg-blueprint-500" />
+          <StatCard label="Timeline" value={(job.estimatedTimeline || '5-10 days').replace(' business', '')} icon={Clock} color="bg-blueprint-500" />
           <StatCard label="Required Items" value={`${requiredCompleted}/${requiredCount}`} icon={FileText} color="bg-purple-500" />
           <StatCard label="Skip Risk" value="Up to $10K fine" icon={TriangleAlert} color="bg-amber-500" />
         </div>
@@ -561,22 +561,12 @@ export default function WizardPageSimple() {
         {/* County portal CTA — only show when permit IS required */}
         {!job.permitNotRequired && (
         <div className="mb-5 rounded-xl border border-blueprint-200 bg-blueprint-50 p-4">
-          <div className="flex items-start gap-3">
+          {/* Top row: icon + title + button */}
+          <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-lg bg-blueprint flex items-center justify-center flex-shrink-0">
               <ExternalLink size={16} className="text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-blueprint-900">Submit Your Permit Online</p>
-              <p className="text-xs text-blueprint-700 mt-0.5">
-                {jurisdictionInfo.label} — {jurisdictionInfo.phone}
-              </p>
-              <p className="text-xs text-blueprint-600 mt-0.5">
-                {jurisdictionInfo.address}
-              </p>
-              <p className="text-xs text-blueprint-500 mt-0.5">
-                {jurisdictionInfo.hours}
-              </p>
-            </div>
+            <p className="text-sm font-semibold text-blueprint-900 flex-1 min-w-0">Submit Permit Online</p>
             <Button
               size="sm"
               className="bg-blueprint hover:bg-blueprint-700 text-white flex-shrink-0"
@@ -585,6 +575,14 @@ export default function WizardPageSimple() {
               Open Portal
               <ExternalLink size={12} className="ml-1.5" />
             </Button>
+          </div>
+          {/* Contact info indented under icon */}
+          <div className="ml-12 space-y-0.5">
+            <p className="text-xs text-blueprint-700">
+              {jurisdictionInfo.label} — {jurisdictionInfo.phone}
+            </p>
+            <p className="text-xs text-blueprint-600">{jurisdictionInfo.address}</p>
+            <p className="text-xs text-blueprint-500">{jurisdictionInfo.hours}</p>
           </div>
         </div>
         )}
@@ -763,6 +761,9 @@ export default function WizardPageSimple() {
           </div>
         )}
       </div>
+
+      {/* Bottom spacer — ensures last checklist card clears the fixed bar (bottom-14 = 56px + bar ~69px = 125px from viewport bottom) */}
+      <div style={{ height: 100 }} aria-hidden="true" />
 
       {/* Fixed bottom bar */}
       <div className="fixed bottom-14 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
