@@ -5,6 +5,40 @@ import { cn } from '@/lib/utils';
 import Button from '@/components/shared/Button';
 import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
+const CITY_TO_JURISDICTION: Record<string, string> = {
+  'saint petersburg': 'ST_PETERSBURG',
+  'st. petersburg': 'ST_PETERSBURG',
+  'st petersburg': 'ST_PETERSBURG',
+  'clearwater': 'CLEARWATER',
+  'largo': 'LARGO',
+  'dunedin': 'DUNEDIN',
+  'tarpon springs': 'TARPON_SPRINGS',
+  'seminole': 'SEMINOLE',
+  'pinellas park': 'PINELLAS_PARK',
+  'gulfport': 'GULFPORT',
+  'st. pete beach': 'ST_PETE_BEACH',
+  'saint pete beach': 'ST_PETE_BEACH',
+  'st pete beach': 'ST_PETE_BEACH',
+  'south pasadena': 'PINELLAS_COUNTY',
+  'treasure island': 'PINELLAS_COUNTY',
+  'madeira beach': 'PINELLAS_COUNTY',
+  'indian rocks beach': 'PINELLAS_COUNTY',
+  'belleair': 'PINELLAS_COUNTY',
+  'safety harbor': 'PINELLAS_COUNTY',
+  'oldsmar': 'PINELLAS_COUNTY',
+  'kenneth city': 'PINELLAS_COUNTY',
+  'palm harbor': 'PALM_HARBOR',
+  'tampa': 'HILLSBOROUGH_COUNTY',
+  'brandon': 'HILLSBOROUGH_COUNTY',
+  'riverview': 'HILLSBOROUGH_COUNTY',
+  'plant city': 'PLANT_CITY',
+  'temple terrace': 'TEMPLE_TERRACE',
+};
+
+function cityToJurisdiction(city: string): string {
+  return CITY_TO_JURISDICTION[city.toLowerCase().trim()] ?? 'PINELLAS_COUNTY';
+}
+
 export interface PropertyType {
   id: string;
   label: string;
@@ -28,8 +62,9 @@ const PROPERTY_TYPES: PropertyType[] = [
     icon: <Warehouse className="w-6 h-6" />,
   },
 ];
+
 interface SimpleAddressFormProps {
-  onSubmit: (data: { address: string; propertyType: string; latitude?: number; longitude?: number; addressComponents?: { street: string; city: string; state: string; zip: string } }) => void;
+  onSubmit: (data: { address: string; propertyType: string; jurisdiction: string; latitude?: number; longitude?: number; addressComponents?: { street: string; city: string; state: string; zip: string } }) => void;
   initialAddress?: string;
 }
 
@@ -39,10 +74,11 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
   const [selectedPropertyType, setSelectedPropertyType] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [placeData, setPlaceData] = useState<{
+    jurisdiction: string;
     latitude?: number;
     longitude?: number;
     addressComponents?: { street: string; city: string; state: string; zip: string };
-  }>({});
+  }>({ jurisdiction: 'PINELLAS_COUNTY' });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -58,6 +94,7 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
         componentRestrictions: { country: 'us' },
         fields: ['formatted_address', 'geometry', 'address_components'],
       });
+
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
         if (!place.formatted_address) return;
@@ -81,7 +118,9 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
                      (getComponent('sublocality') as { long_name?: string } | undefined)?.long_name || '';
         const state = (getComponent('administrative_area_level_1') as { short_name?: string } | undefined)?.short_name || '';
         const zip = (getComponent('postal_code') as { long_name?: string } | undefined)?.long_name || '';
+
         setPlaceData({
+          jurisdiction: cityToJurisdiction(city),
           latitude: lat,
           longitude: lng,
           addressComponents: {
@@ -108,6 +147,7 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
       }
     };
   }, [initAutocomplete]);
+
   const handleAddressSubmit = () => {
     if (!address.trim()) return;
     setIsAnimating(true);
@@ -133,6 +173,7 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
     setStep('address');
     setSelectedPropertyType(null);
   };
+
   return (
     <div className="w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
@@ -160,7 +201,8 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
                   onChange={(e) => setAddress(e.target.value)}
                   onKeyDown={(e) => {
                     // Don't submit on Enter if autocomplete dropdown is open
-                    if (e.key === 'Enter') {                      // Small delay to let autocomplete selection happen first
+                    if (e.key === 'Enter') {
+                      // Small delay to let autocomplete selection happen first
                       setTimeout(() => handleAddressSubmit(), 100);
                     }
                   }}
@@ -189,7 +231,8 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
             {/* Continue Button */}
             <Button
               onClick={handleAddressSubmit}
-              disabled={!address.trim() || isAnimating}              className="w-full"
+              disabled={!address.trim() || isAnimating}
+              className="w-full"
               size="lg"
               icon={<ArrowRight className="w-5 h-5" />}
             >
@@ -218,6 +261,7 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
               <label className="block text-sm font-medium text-foreground">
                 What type of property is this?
               </label>
+
               <div className="space-y-2">
                 {PROPERTY_TYPES.map((propertyType, index) => {
                   const isSelected = selectedPropertyType === propertyType.id;
@@ -246,7 +290,8 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-muted-foreground'
                         )}
-                      >                        {propertyType.icon}
+                      >
+                        {propertyType.icon}
                       </div>
 
                       {/* Label */}
@@ -274,7 +319,8 @@ export default function SimpleAddressForm({ onSubmit, initialAddress = '' }: Sim
             <div className="p-3 rounded-lg bg-muted/50 border border-border">
               <p className="text-xs text-muted-foreground mb-1">Selected Address</p>
               <p className="text-sm font-medium text-foreground">{address}</p>
-            </div>          </motion.div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

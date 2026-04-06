@@ -26,7 +26,8 @@ export default function SimplifiedDetailsPage() {
         const job = await getJob(jobId);
         if (job?.address) {
           setInitialAddress(job.address);
-        }      } catch (err) {
+        }
+      } catch (err) {
         toast.error('Failed to load job');
       } finally {
         setIsLoading(false);
@@ -36,14 +37,15 @@ export default function SimplifiedDetailsPage() {
     loadJob();
   }, [jobId, navigate, getJob]);
 
-  const handleFormSubmit = async (data: { address: string; propertyType: string; latitude?: number; longitude?: number; addressComponents?: { street: string; city: string; state: string; zip: string } }) => {
+  const handleFormSubmit = async (data: { address: string; propertyType: string; jurisdiction: string; latitude?: number; longitude?: number; addressComponents?: { street: string; city: string; state: string; zip: string } }) => {
     if (!jobId) return;
 
     setIsGenerating(true);
     try {
-      // Update job with address, property type, and geocoded data
+      // Update job with address, property type, jurisdiction, and geocoded data
       await updateJob(jobId, {
         address: data.address,
+        jurisdiction: data.jurisdiction,
         ...(data.latitude !== undefined && { latitude: data.latitude }),
         ...(data.longitude !== undefined && { longitude: data.longitude }),
         ...(data.addressComponents && { addressComponents: data.addressComponents }),
@@ -54,8 +56,8 @@ export default function SimplifiedDetailsPage() {
 
       toast.success('Details saved!');
       // Navigate to the simplified checklist/wizard page
-      // Note: Requirements generation happens on the backend when job is created
-      navigate(`/simple/wizard/${jobId}`);    } catch (err) {
+      navigate(`/simple/wizard/${jobId}`);
+    } catch (err) {
       console.error('Failed to save details:', err);
       toast.error(err instanceof Error ? err.message : 'Something went wrong');
       setIsGenerating(false);
@@ -63,11 +65,7 @@ export default function SimplifiedDetailsPage() {
   };
 
   const handleBack = () => {
-    if (jobId) {
-      navigate(`/simple/location/${jobId}`);
-    } else {
-      navigate('/simple/job-type');
-    }
+    navigate('/simple/job-type');
   };
 
   if (isLoading) {
@@ -83,6 +81,7 @@ export default function SimplifiedDetailsPage() {
       </PageWrapper>
     );
   }
+
   return (
     <PageWrapper hasBottomNav={false}>
       <div className="min-h-screen flex flex-col">
@@ -110,6 +109,7 @@ export default function SimplifiedDetailsPage() {
             </motion.div>
           </div>
         </header>
+
         {/* Main Content */}
         <main className="flex-1 px-4 py-6 sm:py-8">
           <div className="max-w-md mx-auto">
