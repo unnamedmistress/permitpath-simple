@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatAnyJobType } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CheckSquare, 
@@ -79,7 +80,7 @@ export default function TabbedChecklist({
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg font-bold text-foreground">
-              {job.jobType.replace(/_/g, ' ')}
+              {formatAnyJobType(job.jobType)}
             </h2>
             <p className="text-sm text-muted-foreground">{job.address}</p>
           </div>

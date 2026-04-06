@@ -29,3 +29,26 @@ export function formatJobTypeLabel(jobType: JobType): string {
   };
   return labels[jobType] || jobType.replace(/_/g, " ");
 }
+
+// Grid IDs (SimplifiedJobTypeGrid) → human-readable display names
+const GRID_ID_LABELS: Record<string, string> = {
+  ROOF_REPLACEMENT: "Re-Roofing",
+  BATHROOM_REMODEL: "Bath Remodel",
+  AC_HVAC:          "AC/HVAC",
+  WINDOW_DOOR:      "Window / Door",
+  DECK_PATIO:       "Deck / Patio",
+  FENCE:            "Fence",
+  WATER_HEATER:     "Water Heater",
+  INTERIOR_PAINT:   "Interior Paint",
+};
+
+/** Formats ANY job-type string — canonical or simplified-grid ID — to a readable label. */
+export function formatAnyJobType(jobType: string): string {
+  if (!jobType) return "";
+  if (GRID_ID_LABELS[jobType]) return GRID_ID_LABELS[jobType];
+  // Try canonical labels (cast required because JobType union doesn't include grid IDs)
+  const canonical = formatJobTypeLabel(jobType as JobType);
+  if (canonical !== jobType.replace(/_/g, " ")) return canonical; // label map hit
+  // Fallback: title-case the raw string
+  return jobType.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}

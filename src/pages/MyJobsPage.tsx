@@ -139,7 +139,7 @@ export default function MyJobsPage() {
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold truncate text-charcoal">{job.jobType.replace(/_/g, " ")}</h3>
+                <h3 className="font-semibold truncate text-charcoal">{formatAnyJobType(job.jobType)}</h3>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color} cursor-help flex items-center gap-1`}>

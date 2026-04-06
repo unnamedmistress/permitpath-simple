@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, CalendarClock, ClipboardList, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { formatAnyJobType } from '@/lib/utils';
 import TabbedChecklist from '@/components/new-ui/TabbedChecklist';
 import ContractorMatchList from '@/components/permit/ContractorMatchList';
 import InspectionSchedulerPanel from '@/components/permit/InspectionSchedulerPanel';
@@ -135,7 +136,7 @@ export default function SimplifiedWizardPage() {
                   Permit Checklist
                 </h1>
                 <p className="text-xs text-muted-foreground truncate">
-                  {job.jobType.replace(/_/g, ' ')}
+                  {formatAnyJobType(job.jobType)}
                 </p>
               </div>
             </div>
