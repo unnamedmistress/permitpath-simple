@@ -148,7 +148,7 @@ export function categorizeRequirements(requirements: Requirement[]) {
 }
 
 export function calculateProgress(requirements: Requirement[]) {
-  if (requirements.length === 0) return 0;
+  if (requirements.length === 0) return 100; // no requirements = nothing to do = complete
   const completed = requirements.filter((r) => r.status === 'completed').length;
   return Math.round((completed / requirements.length) * 100);
 }
