@@ -30,6 +30,9 @@ const SimplifiedLocationPage = lazy(() => import("@/pages/SimplifiedLocationPage
 const SimplifiedDetailsPage = lazy(() => import("@/pages/SimplifiedDetailsPage"));
 const SimplifiedWizardPage = lazy(() => import("@/pages/SimplifiedWizardPage"));
 
+// Week 7: Contractor Pro
+const ContractorDashboardPage = lazy(() => import("@/pages/ContractorDashboardPage"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -154,6 +157,9 @@ function App() {
                       <Route path="/simple/location/:jobId" element={<LazyPage><SimplifiedLocationPage /></LazyPage>} />
                       <Route path="/simple/details/:jobId" element={<LazyPage><SimplifiedDetailsPage /></LazyPage>} />
                       <Route path="/simple/wizard/:jobId" element={<LazyPage><SimplifiedWizardPage /></LazyPage>} />
+
+                      {/* Week 7: Contractor Pro (full-screen, no bottom nav) */}
+                      <Route path="/contractor" element={<LazyPage><ContractorDashboardPage /></LazyPage>} />
 
                       {/* Legacy route redirects — all old entry points funnel to quick-start */}
                       <Route path="/wizard" element={<Navigate to="/quick-start" replace />} />

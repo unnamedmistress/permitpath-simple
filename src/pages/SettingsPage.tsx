@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { ExternalLink, AlertTriangle, Check, X, Settings2, User, Database, Code, Info } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ExternalLink, AlertTriangle, Check, X, Settings2, User, Database, Code, Info, Zap, Building2, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import PageWrapper from "@/components/layout/PageWrapper";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { isFirebaseConfigured, isOpenAIConfigured } from "@/config/env";
 import { clearSessionId, getSessionId } from "@/utils/sessionId";
+import { isProSubscriber } from "@/services/contractorService";
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const [sessionId] = useState(getSessionId());
+  const isPro = isProSubscriber();
   const firebaseConfigured = isFirebaseConfigured();
   const openaiConfigured = isOpenAIConfigured();
   const [notifications, setNotifications] = useState(true);
@@ -246,6 +250,46 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
 VITE_FIREBASE_APP_ID=your_app_id
 VITE_OPENAI_API_KEY=sk-your_openai_key`}
             </pre>
+          </div>
+        </motion.section>
+
+        {/* Contractor Pro */}
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-xl border border-violet-200 overflow-hidden"
+        >
+          <div className="px-4 py-3 border-b border-violet-100">
+            <h2 className="font-semibold text-violet-900 flex items-center gap-2">
+              <Building2 size={18} className="text-violet-600" />
+              Contractor Pro
+            </h2>
+          </div>
+          <div className="px-4 py-4 flex items-center justify-between">
+            <div>
+              {isPro ? (
+                <>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <Zap size={14} className="text-yellow-500 fill-yellow-400" />
+                    <span className="text-sm font-bold text-violet-900">Pro Active</span>
+                  </div>
+                  <p className="text-xs text-violet-600">Manage leads and your contractor profile</p>
+                </>
+              ) : (
+                <>
+                  <div className="text-sm font-semibold text-violet-900 mb-0.5">Upgrade to Pro</div>
+                  <p className="text-xs text-violet-600">$29/mo · Get permit leads in your area</p>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => navigate("/contractor")}
+              className="flex items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white hover:bg-violet-700 transition-colors"
+            >
+              {isPro ? "Dashboard" : "Learn More"}
+              <ChevronRight size={14} />
+            </button>
           </div>
         </motion.section>
 
