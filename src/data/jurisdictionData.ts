@@ -1,3 +1,8 @@
+import {
+  getHillsboroughBuildingDepartment,
+  HILLSBOROUGH_CITY_DEPARTMENTS,
+} from '@/data/hillsborough';
+
 /**
  * Jurisdiction determination for Pinellas County permit submission
  * Helps users know WHERE to submit their permit application
@@ -121,26 +126,29 @@ export const CITY_BUILDING_DEPARTMENTS: Record<string, BuildingDepartment> = {
 };
 
 /**
- * Determines the building department based on city name from address
- * Falls back to Pinellas County for unincorporated areas
+ * Determines the building department based on city name from address.
+ * Checks Hillsborough cities first (since Tampa is unambiguous), then Pinellas.
+ * Falls back to Pinellas County for unincorporated areas.
  */
 export function getBuildingDepartment(address?: string): BuildingDepartment {
-  if (!address) {
-    // Default to Pinellas County if no address provided
-    return PINELLAS_COUNTY_BUILDING;
+  if (!address) return PINELLAS_COUNTY_BUILDING;
+
+  const normalized = address.toUpperCase();
+
+  // Check Hillsborough cities first
+  for (const [cityName, dept] of Object.entries(HILLSBOROUGH_CITY_DEPARTMENTS)) {
+    if (normalized.includes(cityName.toUpperCase())) {
+      return dept;
+    }
   }
-  
-  // Normalize address to uppercase for comparison
-  const normalizedAddress = address.toUpperCase();
-  
-  // Check each city
+
+  // Check Pinellas cities
   for (const [cityName, department] of Object.entries(CITY_BUILDING_DEPARTMENTS)) {
-    if (normalizedAddress.includes(cityName.toUpperCase())) {
+    if (normalized.includes(cityName.toUpperCase())) {
       return department;
     }
   }
-  
-  // Default to Pinellas County for unincorporated areas
+
   return PINELLAS_COUNTY_BUILDING;
 }
 

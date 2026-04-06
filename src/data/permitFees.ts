@@ -1,3 +1,5 @@
+import { HILLSBOROUGH_PERMIT_FEES } from '@/data/hillsborough';
+
 /**
  * Permit Fee Information for Pinellas County Jurisdictions
  * Based on published fee schedules (as of January 2026)
@@ -345,7 +347,11 @@ export const PERMIT_FEES: PermitFee[] = [
     officialScheduleUrl: "https://pinellas.gov/permits-and-inspections/building-permits/",
     lastUpdated: "2026-01-30"
   },
+  // Hillsborough County fees are imported and merged below
 ];
+
+// Merge Hillsborough fees at module level
+PERMIT_FEES.push(...HILLSBOROUGH_PERMIT_FEES);
 
 /**
  * Get fee estimate for a specific job type and jurisdiction

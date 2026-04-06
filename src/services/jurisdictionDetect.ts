@@ -9,6 +9,7 @@
  */
 
 import { Jurisdiction } from '@/types/permit';
+import { HILLSBOROUGH_ZIP_MAP, HILLSBOROUGH_CITY_PATTERNS } from '@/data/hillsborough';
 
 export interface DetectedJurisdiction {
   jurisdiction: Jurisdiction;
@@ -178,4 +179,60 @@ export function detectJurisdiction(address: string): DetectedJurisdiction | null
   }
 
   return null;
+}
+
+/**
+ * Detect jurisdiction from an address that may be in Pinellas OR Hillsborough county.
+ * Returns the best match along with which county it belongs to.
+ */
+export function detectJurisdictionMultiCounty(address: string): DetectedJurisdiction | null {
+  if (!address || address.trim().length < 5) return null;
+  const normalized = address.toLowerCase();
+
+  // 1. Hillsborough city patterns (checked first since Tampa is a big city)
+  for (const entry of HILLSBOROUGH_CITY_PATTERNS) {
+    for (const pattern of entry.patterns) {
+      if (normalized.includes(pattern)) {
+        return { jurisdiction: entry.jurisdiction, label: entry.label, confidence: 'high' };
+      }
+    }
+  }
+
+  // 2. Pinellas city patterns
+  for (const entry of CITY_PATTERNS) {
+    for (const pattern of entry.patterns) {
+      if (normalized.includes(pattern)) {
+        return { jurisdiction: entry.jurisdiction, label: entry.label, confidence: 'high' };
+      }
+    }
+  }
+
+  // 3. ZIP fallback — Hillsborough first, then Pinellas
+  const zipMatch = normalized.match(/\b(\d{5})\b/);
+  if (zipMatch) {
+    const zip = zipMatch[1];
+    const hillJur = HILLSBOROUGH_ZIP_MAP[zip];
+    if (hillJur) {
+      const entry = HILLSBOROUGH_CITY_PATTERNS.find(e => e.jurisdiction === hillJur);
+      return { jurisdiction: hillJur, label: entry?.label ?? hillJur.replace(/_/g, ' '), confidence: 'low' };
+    }
+    const pinJur = ZIP_MAP[zip];
+    if (pinJur) {
+      const entry = CITY_PATTERNS.find(e => e.jurisdiction === pinJur);
+      return { jurisdiction: pinJur, label: entry?.label ?? pinJur.replace(/_/g, ' '), confidence: 'low' };
+    }
+  }
+
+  return null;
+}
+
+/** Quick helper: which county does this address appear to be in? */
+export function detectCounty(address: string): 'PINELLAS' | 'HILLSBOROUGH' | null {
+  const result = detectJurisdictionMultiCounty(address);
+  if (!result) return null;
+  const hillJurs: Jurisdiction[] = [
+    'HILLSBOROUGH_COUNTY', 'TAMPA', 'TEMPLE_TERRACE', 'PLANT_CITY',
+    'BRANDON', 'RIVERVIEW', 'VALRICO', 'BRANDON_UNINCORP',
+  ];
+  return hillJurs.includes(result.jurisdiction) ? 'HILLSBOROUGH' : 'PINELLAS';
 }
