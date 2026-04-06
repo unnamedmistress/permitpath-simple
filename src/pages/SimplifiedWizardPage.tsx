@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, ClipboardList, Users } from 'lucide-react';
+import { ArrowLeft, CalendarClock, ClipboardList, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import TabbedChecklist from '@/components/new-ui/TabbedChecklist';
 import ContractorMatchList from '@/components/permit/ContractorMatchList';
+import InspectionSchedulerPanel from '@/components/permit/InspectionSchedulerPanel';
 import { useJob } from '@/hooks/useJobs';
 import { useDocumentUpload } from '@/services/storage';
 import { Job } from '@/types/permit';
 
-type WizardTab = 'checklist' | 'contractors';
+type WizardTab = 'checklist' | 'contractors' | 'inspections';
 
 export default function SimplifiedWizardPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -153,6 +154,17 @@ export default function SimplifiedWizardPage() {
                 Checklist
               </button>
               <button
+                onClick={() => setActiveTab('inspections')}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
+                  activeTab === 'inspections'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <CalendarClock className="h-3.5 w-3.5" />
+                Inspections
+              </button>
+              <button
                 onClick={() => setActiveTab('contractors')}
                 className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
                   activeTab === 'contractors'
@@ -161,7 +173,7 @@ export default function SimplifiedWizardPage() {
                 }`}
               >
                 <Users className="h-3.5 w-3.5" />
-                Find Contractors
+                Contractors
               </button>
             </div>
           </div>
@@ -170,7 +182,7 @@ export default function SimplifiedWizardPage() {
         {/* Main Content */}
         <main className="max-w-2xl mx-auto px-4 py-4 pb-24">
           <AnimatePresence mode="wait">
-            {activeTab === 'checklist' ? (
+            {activeTab === 'checklist' && (
               <motion.div
                 key="checklist"
                 initial={{ opacity: 0, x: -16 }}
@@ -192,7 +204,24 @@ export default function SimplifiedWizardPage() {
                   onDocumentUpload={handleDocumentUpload}
                 />
               </motion.div>
-            ) : (
+            )}
+            {activeTab === 'inspections' && (
+              <motion.div
+                key="inspections"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+              >
+                <InspectionSchedulerPanel
+                  jobId={job.id}
+                  jobType={job.jobType}
+                  address={job.address}
+                  jurisdiction={job.jurisdiction}
+                />
+              </motion.div>
+            )}
+            {activeTab === 'contractors' && (
               <motion.div
                 key="contractors"
                 initial={{ opacity: 0, x: 16 }}
