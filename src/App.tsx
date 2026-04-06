@@ -29,6 +29,7 @@ const SimplifiedJobTypePage = lazy(() => import("@/pages/SimplifiedJobTypePage")
 const SimplifiedLocationPage = lazy(() => import("@/pages/SimplifiedLocationPage"));
 const SimplifiedDetailsPage = lazy(() => import("@/pages/SimplifiedDetailsPage"));
 const SimplifiedWizardPage = lazy(() => import("@/pages/SimplifiedWizardPage"));
+const LandingPage = lazy(() => import("@/pages/LandingPage"));
 
 // Week 7: Contractor Pro
 const ContractorDashboardPage = lazy(() => import("@/pages/ContractorDashboardPage"));
@@ -125,10 +126,15 @@ function App() {
                       <Route path="/auth" element={<AuthRedirect />} />
                       <Route path="/auth/callback" element={<AuthRedirect />} />
                       
+                      {/* Landing - role selection */}
+                      <Route path="/landing" element={<LazyPage><LandingPage /></LazyPage>} />
+
                       {/* Main app routes with bottom nav */}
                       <Route element={<ProtectedLayout />}>
                         {/* Simplified Home - One Question Start */}
                         <Route path="/" element={<LazyPage><HomePageSimple /></LazyPage>} />
+                        
+                        {/* Landing redirect for fresh users */}
                         
                         {/* Quick Start - Single Screen Wizard */}
                         <Route path="/quick-start" element={<LazyPage><QuickStartPage /></LazyPage>} />

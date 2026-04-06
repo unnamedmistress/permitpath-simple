@@ -5,6 +5,7 @@ import { ArrowLeft, CalendarClock, ClipboardList, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { formatAnyJobType } from '@/lib/utils';
+import { useUserRole } from '@/hooks/useUserRole';
 import TabbedChecklist from '@/components/new-ui/TabbedChecklist';
 import ContractorMatchList from '@/components/permit/ContractorMatchList';
 import InspectionSchedulerPanel from '@/components/permit/InspectionSchedulerPanel';
@@ -21,6 +22,7 @@ export default function SimplifiedWizardPage() {
   const { upload, getDocuments } = useDocumentUpload();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<any[]>([]);
+  const { userRole } = useUserRole();
   const [activeTab, setActiveTab] = useState<WizardTab>('checklist');
 
   useEffect(() => {
@@ -202,6 +204,7 @@ export default function SimplifiedWizardPage() {
                     estimatedDays: job.estimatedDays,
                   }}
                   onRequirementAction={handleRequirementAction}
+                userRole={userRole}
                   onDocumentUpload={handleDocumentUpload}
                 />
               </motion.div>

@@ -1,12 +1,17 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from "react";
-import { AppState, AppAction } from "@/types";
+import { AppState, AppAction, UserRole } from "@/types";
 import { getSessionId } from "@/utils/sessionId";
+
+const storedRole = (typeof window !== "undefined"
+  ? (localStorage.getItem("permitpath_user_role") as UserRole)
+  : null);
 
 const initialState: AppState = {
   currentJobId: null,
   sessionId: "",
   demoMode: false,
   isLoading: false,
+  userRole: storedRole || null,
 };
 
 const AppContext = createContext<{
@@ -22,6 +27,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, demoMode: action.payload };
     case "SET_LOADING":
       return { ...state, isLoading: action.payload };
+    case "SET_USER_ROLE":
+      if (action.payload) {
+        localStorage.setItem("permitpath_user_role", action.payload);
+      } else {
+        localStorage.removeItem("permitpath_user_role");
+      }
+      return { ...state, userRole: action.payload };
     default:
       return state;
   }
@@ -30,11 +42,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Initialize session ID on mount
   useEffect(() => {
     const sessionId = getSessionId();
-    // Session ID is stored in localStorage and accessed via getSessionId()
-    // We don't need to dispatch it since getSessionId() always returns the same value
   }, []);
 
   return (

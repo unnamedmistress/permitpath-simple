@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import PageWrapper from '@/components/layout/PageWrapper';
+import { useUserRole } from '@/hooks/useUserRole';
+import AddressAutocomplete from '@/components/new-ui/AddressAutocomplete';
+import type { AddressResult } from '@/components/new-ui/AddressAutocomplete';
 import SimplifiedLocationSelector, { Location } from '@/components/new-ui/SimplifiedLocationSelector';
 import Button from '@/components/shared/Button';
 import { useJobs } from '@/hooks/useJobs';
@@ -11,6 +14,7 @@ import { useJobs } from '@/hooks/useJobs';
 export default function SimplifiedLocationPage() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+  const { userRole } = useUserRole();
   const { getJob, updateJob } = useJobs();
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [isSaving, setIsSaving] = useState(false);

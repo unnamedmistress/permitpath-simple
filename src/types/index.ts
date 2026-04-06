@@ -95,6 +95,9 @@ export interface Job {
   answers: Record<string, unknown>;
   title?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
+  addressComponents?: { street: string; city: string; state: string; zip: string };
   detailedScope?: DetailedScope; // New field for intelligent permit determination
 }
 
@@ -137,17 +140,21 @@ export interface Message {
 }
 
 // App Context Types
+export type UserRole = "homeowner" | "contractor" | null;
+
 export interface AppState {
   currentJobId: string | null;
   sessionId: string;
   demoMode: boolean;
   isLoading: boolean;
+  userRole: UserRole;
 }
 
 export type AppAction =
   | { type: "SET_CURRENT_JOB"; payload: string | null }
   | { type: "SET_DEMO_MODE"; payload: boolean }
-  | { type: "SET_LOADING"; payload: boolean };
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_USER_ROLE"; payload: UserRole };
 
 // Form Types
 export interface NewJobFormData {

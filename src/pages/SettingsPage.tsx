@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ExternalLink, AlertTriangle, Check, X, Settings2, User, Database, Code, Info, Zap, Building2, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import PageWrapper from "@/components/layout/PageWrapper";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { isFirebaseConfigured, isOpenAIConfigured } from "@/config/env";
@@ -15,6 +16,7 @@ export default function SettingsPage() {
   const isPro = isProSubscriber();
   const firebaseConfigured = isFirebaseConfigured();
   const openaiConfigured = isOpenAIConfigured();
+  const { userRole, setUserRole } = useUserRole();
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
@@ -99,6 +101,29 @@ export default function SettingsPage() {
             </h2>
           </div>
           <div className="px-4">
+            {/* Role Toggle */}
+            <SettingRow
+              icon={User}
+              label="I am a..."
+              description="Switch between homeowner and contractor views"
+            >
+              <div className="flex gap-1.5">
+                {(["homeowner", "contractor"] as const).map((role) => (
+                  <button
+                    key={role}
+                    onClick={() => setUserRole(role)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors ${
+                      userRole === role
+                        ? 'bg-blueprint text-white border-blueprint'
+                        : 'bg-white text-charcoal border-lightGray hover:border-blueprint/40'
+                    }`}
+                  >
+                    {role === "homeowner" ? "Homeowner" : "Contractor"}
+                  </button>
+                ))}
+              </div>
+            </SettingRow>
+
             <SettingRow 
               icon={Bell}
               label="Notifications"
