@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, ClipboardList, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import TabbedChecklist from '@/components/new-ui/TabbedChecklist';
+import ContractorMatchList from '@/components/permit/ContractorMatchList';
 import { useJob } from '@/hooks/useJobs';
 import { useDocumentUpload } from '@/services/storage';
 import { Job } from '@/types/permit';
+
+type WizardTab = 'checklist' | 'contractors';
 
 export default function SimplifiedWizardPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -16,6 +19,7 @@ export default function SimplifiedWizardPage() {
   const { upload, getDocuments } = useDocumentUpload();
   const [loading, setLoading] = useState(true);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<WizardTab>('checklist');
 
   useEffect(() => {
     if (!jobId) {
@@ -134,30 +138,76 @@ export default function SimplifiedWizardPage() {
                 </p>
               </div>
             </div>
+
+            {/* Page-level tabs */}
+            <div className="flex gap-1 mt-3 bg-muted rounded-xl p-1">
+              <button
+                onClick={() => setActiveTab('checklist')}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
+                  activeTab === 'checklist'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <ClipboardList className="h-3.5 w-3.5" />
+                Checklist
+              </button>
+              <button
+                onClick={() => setActiveTab('contractors')}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition-all ${
+                  activeTab === 'contractors'
+                    ? 'bg-teal-600 text-white shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Find Contractors
+              </button>
+            </div>
           </div>
         </header>
 
         {/* Main Content */}
         <main className="max-w-2xl mx-auto px-4 py-4 pb-24">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <TabbedChecklist
-              job={{
-                id: job.id,
-                jobType: job.jobType,
-                address: job.address,
-                jurisdiction: job.jurisdiction,
-                requirements: job.requirements,
-                estimatedCost: job.estimatedCost,
-                estimatedDays: job.estimatedDays,
-              }}
-              onRequirementAction={handleRequirementAction}
-              onDocumentUpload={handleDocumentUpload}
-            />
-          </motion.div>
+          <AnimatePresence mode="wait">
+            {activeTab === 'checklist' ? (
+              <motion.div
+                key="checklist"
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 16 }}
+                transition={{ duration: 0.2 }}
+              >
+                <TabbedChecklist
+                  job={{
+                    id: job.id,
+                    jobType: job.jobType,
+                    address: job.address,
+                    jurisdiction: job.jurisdiction,
+                    requirements: job.requirements,
+                    estimatedCost: job.estimatedCost,
+                    estimatedDays: job.estimatedDays,
+                  }}
+                  onRequirementAction={handleRequirementAction}
+                  onDocumentUpload={handleDocumentUpload}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="contractors"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ContractorMatchList
+                  jobType={job.jobType}
+                  jurisdiction={job.jurisdiction}
+                  jobId={job.id}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     </PageWrapper>
