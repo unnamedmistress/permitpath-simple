@@ -23,6 +23,16 @@ const STORAGE_KEY = 'permitpath:inspections';
 
 type PhaseTemplate = { name: string; timing: string };
 
+// Alias map: simplified-flow grid IDs to canonical JobType keys
+const JOBTYPE_ALIAS: Record<string, string> = {
+  ROOF_REPLACEMENT:  'RE_ROOFING',
+  BATHROOM_REMODEL:  'SMALL_BATH_REMODEL',
+  AC_HVAC:           'AC_HVAC_CHANGEOUT',
+  WINDOW_DOOR:       'WINDOW_DOOR_REPLACEMENT',
+  DECK_PATIO:        'DECK_INSTALLATION',
+  FENCE:             'FENCE_INSTALLATION',
+};
+
 const PHASE_TEMPLATES: Record<JobType, PhaseTemplate[]> = {
   RE_ROOFING: [
     { name: 'Dry-In Inspection',  timing: 'Before covering deck with final roofing material' },
@@ -137,7 +147,8 @@ export function getOrInitSchedule(jobId: string, jobType: JobType): InspectionSc
   const all = readAll();
   if (all[jobId]) return all[jobId];
 
-  const templates = PHASE_TEMPLATES[jobType] ?? [];
+  const canonicalType = (JOBTYPE_ALIAS[jobType as string] ?? jobType) as JobType;
+  const templates = PHASE_TEMPLATES[canonicalType] ?? [];
   const appointments: InspectionAppointment[] = templates.map((tpl, idx) => ({
     id: generateId(),
     jobId,
