@@ -91,7 +91,7 @@ export default function SimplifiedLocationPage() {
 
   return (
     <PageWrapper hasBottomNav={false}>
-      <div className="min-h-screen flex flex-col">
+      <div className="h-screen flex flex-col">
         {/* Header */}
         <header className="bg-card border-b px-4 py-4 safe-area-inset-top">
           <div className="max-w-md mx-auto">
