@@ -91,7 +91,7 @@ export default function SimplifiedLocationPage() {
 
   return (
     <PageWrapper hasBottomNav={false}>
-      <div className="flex flex-col">
+      <div className="min-h-screen flex flex-col">
         {/* Header */}
         <header className="bg-card border-b px-4 py-4 safe-area-inset-top">
           <div className="max-w-md mx-auto">
@@ -118,7 +118,7 @@ export default function SimplifiedLocationPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 py-6 sm:py-8 pb-24">
+        <main className="flex-1 overflow-y-auto px-4 py-6 sm:py-8">
           <div className="max-w-md mx-auto">
             <SimplifiedLocationSelector
               onSelect={handleLocationSelect}
@@ -128,7 +128,7 @@ export default function SimplifiedLocationPage() {
         </main>
 
         {/* Footer with Continue Button */}
-        <footer className="sticky bottom-0 bg-card border-t px-4 py-4 z-10">
+        <footer className="bg-card border-t px-4 py-4">
           <div className="max-w-md mx-auto">
             <Button
               onClick={handleContinue}
