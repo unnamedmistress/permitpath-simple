@@ -150,19 +150,13 @@ export function useJobs() {
         permitHistory: input.permitHistory,
       };
 
-      // Check quota before saving
-      const quota = checkLocalStorageQuota();
-      if (!quota.hasSpace) {
-        throw new Error('Storage limit reached. Please delete some old jobs to create new ones.');
-      }
-
       // Save to localStorage
       const currentJobs = getJobsFromStorage();
       const updatedJobs = [newJob, ...currentJobs];
-      saveJobsToStorage(updatedJobs);
+      saveJobToStorage(newJob);
       
       // Save requirements separately
-      if (requirements.length > 0) {
+      if (requirements && requirements.length > 0) {
         saveRequirementsToStorage(jobId, requirements.map(r => ({ ...r, jobId })));
       }
 
@@ -187,7 +181,7 @@ export function useJobs() {
           ? { ...job, ...updates, updatedAt: new Date() } 
           : job
       );
-      saveJobsToStorage(updatedJobs);
+      saveJobToStorage(newJob);
       setJobs(updatedJobs);
     } catch (err) {
       console.error('Error updating job:', err);
@@ -198,7 +192,7 @@ export function useJobs() {
     try {
       const currentJobs = getJobsFromStorage();
       const updatedJobs = currentJobs.filter(job => job.id !== jobId);
-      saveJobsToStorage(updatedJobs);
+      saveJobToStorage(newJob);
       
       // Also clean up requirements
       try {
